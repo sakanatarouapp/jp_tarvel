@@ -522,7 +522,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="hotel-showcase-pricing">
                   <div class="hotel-price-box">
                     <span class="hotel-price-range">${h.priceRange}</span>
-                    <strong class="hotel-price-thb">~${estTHB.toLocaleString()} บาท/คืน</strong>
+                    <strong class="hotel-price-thb">เริ่มต้น ~${estTHB.toLocaleString()} บาท/คืน</strong>
                   </div>
                   <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
                     🗺️ ดูแผนที่ & เช็กห้องว่าง
@@ -585,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="hotel-showcase-pricing">
                 <div class="hotel-price-box">
                   <span class="hotel-price-range">${h.priceRange}</span>
-                  <strong class="hotel-price-thb">~${estTHB.toLocaleString()} บาท/คืน</strong>
+                  <strong class="hotel-price-thb">เริ่มต้น ~${estTHB.toLocaleString()} บาท/คืน</strong>
                 </div>
                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
                   🗺️ ดูแผนที่ & เช็กห้องว่าง
