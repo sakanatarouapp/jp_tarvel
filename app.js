@@ -563,10 +563,13 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="hotel-showcase-grid">
         ${currentItem.nearbyHotels.map((h, idx) => {
           const estTHB = Math.round(h.priceJPY * currentExchangeRate);
+          const badgeHtml = h.promoBadge 
+            ? `<span class="hotel-rank-badge" style="background: #dc2626; color: white;">${h.promoBadge}</span>`
+            : `<span class="hotel-rank-badge">#${idx + 1} ยอดนิยม</span>`;
           return `
             <div class="hotel-showcase-card">
               <div class="hotel-card-badge-row">
-                <span class="hotel-rank-badge">#${idx + 1} ยอดนิยม</span>
+                ${badgeHtml}
                 <span class="hotel-rating-badge">⭐ ${h.rating} / 5.0</span>
               </div>
               <h4 class="hotel-showcase-name">${h.name}</h4>
@@ -2717,17 +2720,27 @@ document.addEventListener("DOMContentLoaded", () => {
       setGlobalExchangeRate(liveSheetData["config_exchange_rate"].priceJPY, true);
     }
 
-    if (typeof HOTELS_DATA !== "undefined") {
-      Object.keys(HOTELS_DATA).forEach(key => {
-        const hotel = HOTELS_DATA[key];
-        if (liveSheetData[key]) {
-          if (liveSheetData[key].priceJPY > 0) {
-            const finalPrice = Math.round(liveSheetData[key].priceJPY * (1 - (liveSheetData[key].discountPercent / 100)));
-            hotel.priceTHB = Math.round(finalPrice * currentExchangeRate);
-          }
-          if (liveSheetData[key].promoBadge) {
-            hotel.badge = liveSheetData[key].promoBadge;
-          }
+    // Override nearbyHotels in JAPAN_DATA
+    if (typeof JAPAN_DATA !== "undefined") {
+      JAPAN_DATA.forEach(item => {
+        if (item.nearbyHotels && item.nearbyHotels.length > 0) {
+          item.nearbyHotels.forEach(h => {
+            const hNameLower = h.name.toLowerCase();
+            Object.keys(liveSheetData).forEach(sheetKey => {
+              const sheetItem = liveSheetData[sheetKey];
+              const keyWords = sheetKey.replace("hotel-", "").split("-");
+              const isMatch = keyWords.every(w => hNameLower.includes(w));
+
+              if (isMatch && sheetItem.priceJPY > 0) {
+                const finalPrice = Math.round(sheetItem.priceJPY * (1 - (sheetItem.discountPercent / 100)));
+                h.priceJPY = finalPrice;
+                h.priceRange = `¥${finalPrice.toLocaleString()} / คืน`;
+                if (sheetItem.promoBadge && sheetItem.promoBadge !== "") {
+                  h.promoBadge = sheetItem.promoBadge;
+                }
+              }
+            });
+          });
         }
       });
     }
