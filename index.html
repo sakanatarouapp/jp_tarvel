@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nippon Explorer — คู่มือเที่ยวญี่ปุ่น สถิติฤดูกาล คำนวณงบ & ข้อมูลครบวงจร</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="header">
+    <div class="container header-top-row">
+      <a href="#" class="brand-logo">
+        <span class="logo-icon">⛩️</span>
+        <div class="brand-text">
+          <span class="brand-name">NIPPON EXPLORER</span>
+          <span class="brand-sub">日本旅行ガイド & 統計ツール</span>
+        </div>
+      </a>
+      <div class="header-right-actions">
+        <button type="button" class="immigration-header-btn" id="open-immigration-modal-top-btn" title="คู่มือผ่าน ตม. ญี่ปุ่น & การ์ดสรุปข้อมูลยื่น ตม.">
+          <span>🛂</span> <span class="btn-text-full">คู่มือผ่าน ตม. 🔊</span><span class="btn-text-short">ตม. 🔊</span>
+        </button>
+        <a href="#itinerary" class="plan-link" id="nav-itinerary-btn">
+          <span>📋</span> <span class="btn-text-full">แผนการเดินทาง</span><span class="btn-text-short">แผน</span> <span class="badge" id="itinerary-count-badge">0</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Dedicated Sub-Navbar Slide Bar Track -->
+    <div class="nav-slider-container">
+      <div class="container nav-slider-wrap">
+        <button class="nav-scroll-arrow left-arrow" id="nav-scroll-left" aria-label="เลื่อนซ้าย">&#8249;</button>
+        <nav class="nav-links" id="main-nav-links">
+          <div class="nav-sliding-pill" id="nav-sliding-pill"></div>
+          <a href="#explore" class="nav-link active">🏯 ที่เที่ยว & ของกิน</a>
+          <a href="#hotel-guide" class="nav-link">🏨 โรงแรมใกล้ที่เที่ยว</a>
+          <a href="#route-simulator" class="nav-link">🗺️ จำลองเส้นทางเที่ยว</a>
+          <a href="#season-stats" class="nav-link">📊 สถิติฤดูกาล</a>
+          <a href="#budget-calculator" class="nav-link">💰 คำนวณงบ</a>
+          <a href="#theme-park-tickets" class="nav-link">🎟️ ตั๋ว USJ & ธีมพาร์ค</a>
+          <a href="#jr-pass-calc" class="nav-link">🚅 คำนวณ JR Pass</a>
+          <a href="#konbini-guide" class="nav-link">🍱 ของกิน & ของฝาก</a>
+          <a href="#currency-calc" class="nav-link">💴 แปลงเงิน & Tax-Free</a>
+          <a href="#weather-guide" class="nav-link">⛅ แต่งตัวตามอากาศ</a>
+          <a href="#bloom-forecast" class="nav-link">🌸 พยากรณ์ซากุระ</a>
+          <a href="#phrasebook" class="nav-link">🗣️ ประโยคญี่ปุ่น 🔊</a>
+          <a href="#emergency-sos" class="nav-link">🚨 การ์ดฉุกเฉิน</a>
+          <a href="#checklist" class="nav-link">✈️ เช็กลิสต์ก่อนบิน</a>
+          <a href="#transit-tips" class="nav-link">🚅 กฎการเดินทาง</a>
+        </nav>
+        <button class="nav-scroll-arrow right-arrow" id="nav-scroll-right" aria-label="เลื่อนขวา">&#8250;</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-tag">✨ คัดสรรพิกัดยอดฮิต สถิติเที่ยวญี่ปุ่น & ข้อมูลครบวงจร 2026</div>
+      <h1 class="hero-title">วางแผนเที่ยวญี่ปุ่น<br><span class="highlight">เลือกฤดูกาล คุมงบอยู่ เดินทางง่าย</span></h1>
+      <p class="hero-desc">ดูสถิติว่าช่วงไหนคนไปเมืองไหนเยอะสุด พร้อมพิกัดแลนด์มาร์ก สตรีทฟู้ดห้ามพลาด และเครื่องมือช่วยเที่ยวครบในที่เดียว</p>
+
+      <!-- Search & Filter Controls -->
+      <div class="search-box-wrapper">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="ค้นหาชื่อสถานที่, อาหาร, สายรถไฟ, ฤดู หรือเมือง เช่น 'ซากุระ', 'ราเมง', 'ฟูจิ', 'ชิบูย่า'...">
+          <button class="clear-search-btn" id="clear-search-btn" style="display: none;">&times;</button>
+        </div>
+
+        <!-- Season Selector Pills -->
+        <div class="filter-group-wrap">
+          <span class="filter-label">🍂 เลือกช่วงเวลา / ฤดูกาล:</span>
+          <div class="pills-row" id="season-pills">
+            <button class="pill active" data-season="all">🍁 ทุกช่วงเวลา</button>
+            <button class="pill" data-season="spring">🌸 ฤดูใบไม้ผลิ (มี.ค. - พ.ค.)</button>
+            <button class="pill" data-season="summer">☀️ ฤดูร้อน (มิ.ย. - ส.ค.)</button>
+            <button class="pill" data-season="autumn">🍁 ฤดูใบไม้เปลี่ยนสี (ก.ย. - พ.ย.)</button>
+            <button class="pill" data-season="winter">❄️ ฤดูหนาว/หิมะ (ธ.ค. - ก.พ.)</button>
+          </div>
+        </div>
+
+        <!-- Region Selector Pills -->
+        <div class="filter-group-wrap">
+          <span class="filter-label">🗾 เลือกภูมิภาค:</span>
+          <div class="pills-row" id="region-pills">
+            <button class="pill active" data-region="all">🗾 ทุกภูมิภาค</button>
+            <button class="pill" data-region="tokyo">🗼 โตเกียว (Tokyo)</button>
+            <button class="pill" data-region="kyoto">⛩️ เกียวโต (Kyoto)</button>
+            <button class="pill" data-region="osaka">🐙 โอซาก้า (Osaka)</button>
+            <button class="pill" data-region="chubu">🗻 ภูเขาไฟฟูจิ & ชูบุ</button>
+            <button class="pill" data-region="hokkaido">❄️ ฮอกไกโด (Hokkaido)</button>
+            <button class="pill" data-region="fukuoka">🍜 ฟุกุโอกะ (Fukuoka)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 1: Main Attraction & Food Directory -->
+  <main class="main-container" id="explore">
+    <div class="container">
+      <div class="category-tabs-row">
+        <button class="tab-btn active" data-category="all">
+          <span class="tab-icon">🌟</span> ทั้งหมด (<span id="count-all">0</span>)
+        </button>
+        <button class="tab-btn" data-category="attraction">
+          <span class="tab-icon">🏯</span> แลนด์มาร์ก & ที่เที่ยว (<span id="count-attraction">0</span>)
+        </button>
+        <button class="tab-btn" data-category="food">
+          <span class="tab-icon">🍣</span> แหล่งของกิน & สตรีทฟู้ด (<span id="count-food">0</span>)
+        </button>
+        <button class="tab-btn" data-category="transport">
+          <span class="tab-icon">🚅</span> คู่มือการเดินทาง & รถไฟ (<span id="count-transport">0</span>)
+        </button>
+      </div>
+
+      <div class="results-header">
+        <span class="results-count" id="results-count">กำลังแสดง 0 รายการ</span>
+      </div>
+
+      <!-- Cards Grid Container -->
+      <div class="cards-grid" id="cards-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Cards Pagination Container (6 cards per page) -->
+      <div class="cards-pagination-wrap" id="cards-pagination">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Section 2: Dedicated Nearby Hotel Guide -->
+  <section class="hotel-guide-section" id="hotel-guide">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🏨 NEARBY HOTELS & RYOKAN GUIDE</span>
+        <h2>โรงแรม & ที่พักแนะนำตามสถานที่ท่องเที่ยว (ใกล้จุดสำคัญ เดินทางสะดวก)</h2>
+        <p>เลือกสถานที่ท่องเที่ยวที่คุณจะไป เพื่อดู 3 โรงแรมยอดนิยมประจำย่าน พร้อมราคาประเมินเป็นเงินบาทและระยะทางเดินจริง</p>
+      </div>
+
+      <!-- Modern 2-Tier Clean Selector Panel -->
+      <div class="hotel-filter-panel">
+        <!-- Tier 1: City / Region Selector Tabs -->
+        <div class="hotel-region-bar">
+          <span class="hotel-step-label">1️⃣ เลือกเมือง / ภูมิภาค:</span>
+          <div class="hotel-region-pills" id="hotel-region-pills">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Tier 2: Landmark Chips for Selected City + Direct Dropdown -->
+        <div class="hotel-landmark-bar">
+          <div class="hotel-landmark-left">
+            <span class="hotel-step-label">2️⃣ จุดท่องเที่ยวประจำย่าน:</span>
+            <div class="hotel-landmark-pills" id="hotel-landmark-pills">
+              <!-- Injected via JavaScript -->
+            </div>
+          </div>
+          <div class="hotel-direct-select-wrap">
+            <label for="hotel-direct-select" class="hotel-select-label">🔍 หรือค้นหาจุดหมายทั้งหมด:</label>
+            <select id="hotel-direct-select" class="hotel-direct-select">
+              <!-- Injected via JavaScript -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Attraction Hotels Display -->
+      <div class="hotel-attraction-display" id="hotel-attraction-display">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Interactive Route Simulator -->
+  <section class="route-simulator-section" id="route-simulator">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🗺️ SMART ROUTE SIMULATOR & TIMELINE</span>
+        <h2>ระบบจำลองเส้นทางท่องเที่ยวอัจฉริยะ (เมื่อ Mark สถานที่หรือเลือกแผน)</h2>
+        <p>จำลองการเดินทาง ต่อรถไฟ แนะนำเวลาเที่ยว และเล่นอนิเมชันยานพาหนะเคลื่อนที่จริงตามจุดหมายที่คุณเลือก</p>
+      </div>
+
+      <!-- Quick Preset Selector Pills -->
+      <div class="route-preset-bar">
+        <div class="preset-bar-label">⚡ เลือกดูเส้นทางยอดนิยมสำเร็จรูป (1-Click Presets):</div>
+        <div class="preset-pills-row" id="route-preset-pills">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Route Simulator Grid Container -->
+      <div class="route-simulator-grid">
+        <!-- Left Column: Visual Map & Controls & Summary -->
+        <div class="route-map-panel">
+          <div class="route-map-header">
+            <div class="map-title-wrap">
+              <span class="map-live-dot"></span>
+              <h4>แผนที่จำลองการเดินทาง (Interactive Map)</h4>
+            </div>
+            <div style="display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;">
+              <button class="map-pin-mode-btn" id="map-pin-mode-btn" title="เปิดโหมดคลิกเพื่อปักหมุดโรงแรม/ร้านอาหารลงบนแผนที่โดยตรง">
+                📌 คลิกปักหมุด
+              </button>
+              <div class="map-view-switcher" id="map-view-switcher">
+                <button class="map-switch-btn active" data-view="map">🗺️ แผนที่</button>
+                <button class="map-switch-btn" data-view="metro">🚇 ผังเส้นทาง</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pin Mode Active Hint Banner -->
+          <div class="map-pin-hint-banner" id="map-pin-hint-banner" style="display: none;">
+            <span>📍 <strong>เปิดโหมดปักหมุดอยู่:</strong> คลิกตำแหน่งใดก็ได้บนแผนที่เพื่อเพิ่มสถานที่</span>
+            <button type="button" id="close-pin-mode-btn" class="close-pin-hint-btn">ปิดโหมดปักหมุด ✕</button>
+          </div>
+
+          <!-- Real Interactive Leaflet Map Container -->
+          <div class="route-leaflet-container" id="route-leaflet-container">
+            <div id="route-leaflet-map"></div>
+          </div>
+
+          <!-- Metro Schematic Transit Track (Alternative View) -->
+          <div class="route-metro-container" id="route-metro-container" style="display: none;">
+            <div class="metro-track-line" id="metro-track-line">
+              <!-- Injected via JavaScript -->
+            </div>
+          </div>
+
+          <!-- Simulation Player Controls -->
+          <div class="simulation-player-bar">
+            <div class="player-buttons-group">
+              <button class="sim-btn play" id="sim-play-btn">▶️ เริ่มจำลองเส้นทาง</button>
+              <button class="sim-btn pause" id="sim-pause-btn" disabled>⏸️ พัก</button>
+              <button class="sim-btn reset" id="sim-reset-btn">🔄 เริ่มต้นใหม่</button>
+            </div>
+            <div class="player-speed-group">
+              <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">ความเร็ว:</span>
+              <button class="speed-btn active" data-speed="1">1x</button>
+              <button class="speed-btn" data-speed="2">2x</button>
+            </div>
+          </div>
+
+          <!-- Live Journey Status Text Banner -->
+          <div class="journey-status-banner" id="journey-status-banner">
+            📍 พร้อมเริ่มการจำลองเส้นทาง — คลิก <strong>"▶️ เริ่มจำลองเส้นทาง"</strong> เพื่อชมการเคลื่อนที่
+          </div>
+
+          <!-- Route Analytics Summary Card -->
+          <div class="route-summary-box" id="route-summary-box">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Right Column: Step-by-Step Route Timeline -->
+        <div class="route-timeline-panel">
+          <div class="timeline-panel-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <div>
+                <h4>📋 รายละเอียดเส้นทาง & ลำดับการต่อรถ (Step-by-Step)</h4>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">สามารถลากสลับหรือกด ⬆️ ⬇️ เพื่อปรับลำดับ</span>
+              </div>
+              <button class="btn" id="open-custom-place-btn-route" style="background: #059669; color: white; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
+                ✨ + เพิ่มจุดหมาย / โรงแรมของฉัน
+              </button>
+            </div>
+          </div>
+
+          <div class="route-timeline-list" id="route-timeline-list">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Season & City Analytics Section -->
+  <section class="season-stats-section" id="season-stats">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">📊 SEASON & CITY ANALYTICS</span>
+        <h2>สถิติเที่ยวญี่ปุ่นตามฤดูกาล: ช่วงไหนเมืองไหนน่าไปที่สุด?</h2>
+        <p>วิเคราะห์สภาพอากาศ ไฮไลต์ธรรมชาติ และสถิติความนิยมของนักท่องเที่ยวในแต่ละช่วงของปี</p>
+      </div>
+
+      <!-- Season Tabs for Analytics -->
+      <div class="analytics-tabs-row" id="analytics-season-tabs">
+        <button class="analytics-tab-btn active" data-analytics-season="spring">🌸 ฤดูใบไม้ผลิ (มี.ค.-พ.ค.)</button>
+        <button class="analytics-tab-btn" data-analytics-season="summer">☀️ ฤดูร้อน (มิ.ย.-ส.ค.)</button>
+        <button class="analytics-tab-btn" data-analytics-season="autumn">🍁 ฤดูใบไม้เปลี่ยนสี (ก.ย.-พ.ย.)</button>
+        <button class="analytics-tab-btn" data-analytics-season="winter">❄️ ฤดูหนาว (ธ.ค.-ก.พ.)</button>
+      </div>
+
+      <!-- Dynamic Analytics Content Container -->
+      <div id="season-analytics-content">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Statistical Budget Calculator -->
+  <section class="budget-section" id="budget-calculator">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">💰 STATISTICAL BUDGET ESTIMATOR</span>
+        <h2>ประมาณการงบประมาณเที่ยวญี่ปุ่นตามสถิติจริง (2026)</h2>
+        <p>คำนวณงบประมาณตามจำนวนวันและสไตล์การท่องเที่ยว พร้อมแจกแจงค่าใช้จ่ายจริง</p>
+      </div>
+
+      <div class="budget-calculator-box">
+        <div class="calculator-controls">
+          <div class="calc-control-group">
+            <label>📅 จำนวนวันที่เดินทาง:</label>
+            <div class="btn-toggle-group" id="days-selector">
+              <button class="toggle-choice day-btn" data-days="3">3 วัน 2 คืน</button>
+              <button class="toggle-choice day-btn active" data-days="5">5 วัน 4 คืน</button>
+              <button class="toggle-choice day-btn" data-days="7">7 วัน 6 คืน</button>
+              <button class="toggle-choice day-btn" data-days="10">10 วัน 9 คืน</button>
+            </div>
+          </div>
+
+          <div class="calc-control-group">
+            <label>🧳 สไตล์การเดินทาง:</label>
+            <div class="btn-toggle-group" id="style-selector">
+              <button class="toggle-choice style-btn" data-style-index="0">🎒 สายประหยัด</button>
+              <button class="toggle-choice style-btn active" data-style-index="1">✈️ สายมาตรฐาน</button>
+              <button class="toggle-choice style-btn" data-style-index="2">👑 สายพรีเมียม / เรียวกัง</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="budget-calculated-result" id="budget-calculated-result">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- 3 Budget Tiers Comparison Grid -->
+      <div class="budget-tiers-grid" id="budget-tiers-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Konbini Gourmet & Souvenirs Guide -->
+  <section class="konbini-section" id="konbini-guide">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🏪 KONBINI & SOUVENIRS GUIDE</span>
+        <h2>รวมฮิตของกินร้านสะดวกซื้อ & ของฝากห้ามพลาด</h2>
+        <p>ตามล่าเมนูเด็ดใน 7-Eleven, Lawson, FamilyMart และของฝากยอดนิยมอันดับ 1 ของแต่ละเมือง</p>
+      </div>
+
+      <div class="konbini-tabs-row" id="konbini-tabs">
+        <button class="konbini-tab-btn active" data-konbini-filter="all">🌟 ทั้งหมด</button>
+        <button class="konbini-tab-btn" data-konbini-filter="7-eleven">🟢 7-Eleven</button>
+        <button class="konbini-tab-btn" data-konbini-filter="lawson">🔵 Lawson</button>
+        <button class="konbini-tab-btn" data-konbini-filter="familymart">🔵 FamilyMart</button>
+        <button class="konbini-tab-btn" data-konbini-filter="souvenirs">🎁 ของฝากยอดฮิต</button>
+      </div>
+
+      <div class="konbini-grid" id="konbini-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Real-time Currency & Tax-Free Calculator -->
+  <section class="currency-section" id="currency-calc">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">💴 CURRENCY & TAX-FREE TOOLS</span>
+        <h2>เครื่องแปลงค่าเงินเยน (JPY ↔ THB) & คำนวณคืนภาษี Tax-Free 10%</h2>
+        <p>แปลงค่าเงินเยนเป็นบาทแบบทันใจ พร้อมคำนวณเงินคืนเมื่อช้อปปิ้งครบ 5,000 เยน</p>
+      </div>
+
+      <div class="currency-calculator-card">
+        <div class="currency-grid-row">
+          <div class="currency-input-block">
+            <label>🇯🇵 จำนวนเงินเยน (JPY - ¥):</label>
+            <div class="currency-input-wrap">
+              <input type="number" id="input-jpy" value="10000" min="0" step="100">
+              <span class="unit-tag">เยน (¥)</span>
+            </div>
+          </div>
+          <div class="currency-exchange-icon">⇄</div>
+          <div class="currency-input-block">
+            <label>🇹🇭 คิดเป็นเงินบาท (THB - ฿):</label>
+            <div class="currency-input-wrap">
+              <input type="number" id="input-thb" value="2350" min="0" step="10">
+              <span class="unit-tag">บาท (฿)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rate-adjust-bar">
+          <div class="rate-custom-input-box">
+            <label for="custom-rate-input">
+              <span>✏️ กำหนดเรทแลกเงินของคุณเอง (1 เยน = กี่บาท?):</span>
+            </label>
+            <div class="rate-input-inline-wrap">
+              <input type="number" id="custom-rate-input" class="custom-rate-num-input" value="0.235" step="0.001" min="0.05" max="2.0" placeholder="0.235">
+              <span class="rate-calc-note">(เทียบเท่า 100 เยน = <strong id="current-rate-display">23.50</strong> บาท)</span>
+              <button type="button" id="reset-rate-default-btn" class="rate-reset-btn" title="รีเซ็ตเป็นเรทมาตรฐาน (0.235)">↺ คืนค่าเดิม</button>
+            </div>
+          </div>
+          <div class="rate-presets-wrap">
+            <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">เรทยอดนิยม:</span>
+            <div class="rate-presets">
+              <button class="rate-chip" data-rate="0.220">0.220</button>
+              <button class="rate-chip" data-rate="0.230">0.230</button>
+              <button class="rate-chip active" data-rate="0.235">0.235 (เฉลี่ย)</button>
+              <button class="rate-chip" data-rate="0.240">0.240</button>
+              <button class="rate-chip" data-rate="0.250">0.250</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tax-free-box">
+          <div class="tax-free-header">
+            <h4>🛍️ เครื่องคำนวณการคืนภาษี Tax-Free (10%)</h4>
+            <span class="tax-qualify-badge" id="tax-qualify-badge">✓ ช้อปเกิน 5,000 เยน ลดภาษีได้!</span>
+          </div>
+          <div class="tax-free-results">
+            <div class="tax-result-item">
+              <span>ราคาสินค้ารวมภาษี:</span>
+              <strong id="tax-gross-price">¥10,000 เยน</strong>
+            </div>
+            <div class="tax-result-item highlight-green">
+              <span>ยอดเงินที่ประหยัดได้ (Tax-Free 10%):</span>
+              <strong id="tax-saved-price">-¥909 เยน (~213 บาท)</strong>
+            </div>
+            <div class="tax-result-item">
+              <span>ราคาจ่ายจริงสุทธิ (Net Price):</span>
+              <strong id="tax-net-price">¥9,091 เยน (~2,136 บาท)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Travel Japanese Audio Phrasebook -->
+  <section class="phrasebook-section" id="phrasebook">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🗣️ TRAVEL JAPANESE PHRASEBOOK</span>
+        <h2>ประโยคภาษาญี่ปุ่นจำเป็นสำหรับท่องเที่ยว (กดฟังเสียงพูดได้ 🔊)</h2>
+        <p>ออกเสียงถูกต้อง เอาตัวรอดได้ทุกสถานการณ์ ทั้งสั่งอาหาร ถามทาง ช้อปปิ้ง และจ่ายเงิน</p>
+      </div>
+
+      <div class="phrasebook-categories-grid" id="phrasebook-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 7: Pre-Flight Checklist -->
+  <section class="checklist-section" id="checklist">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">✈️ PRE-FLIGHT CHECKLIST</span>
+        <h2>เช็กลิสต์เตรียมตัวก่อนบินไปญี่ปุ่น 2026</h2>
+        <p>ติ๊กตรวจสอบความพร้อมก่อนออกเดินทาง ป้องกันการลืมเอกสารสำคัญและขั้นตอนเข้าเมือง</p>
+      </div>
+
+      <div class="checklist-card">
+        <!-- Direct Immigration Hub Entry Banner -->
+        <div style="background: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%); border: 1.5px solid #fecdd3; border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 2rem;">🛂</span>
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: #991b1b; margin-bottom: 2px;">ต้องการซ้อมตอบคำถาม ตม. หรือเตรียมการ์ดยื่น ตม.?</h4>
+              <p style="font-size: 0.8rem; color: #7f1d1d; margin: 0;">เปิดระบบจำลองเสียงพูดภาษาอังกฤษ/ญี่ปุ่น และสรุปข้อมูลที่พักยื่น ตม. ได้ทันที</p>
+            </div>
+          </div>
+          <button type="button" class="btn primary" id="open-immigration-from-checklist-btn" style="background: #dc2626; color: white; padding: 0.55rem 1.15rem; font-weight: 700; border-radius: 20px; font-size: 0.82rem; white-space: nowrap;">
+            🛂 เปิดคู่มือผ่าน ตม. 🔊
+          </button>
+        </div>
+
+        <div class="checklist-progress-wrap">
+          <div class="checklist-progress-info">
+            <span>ความพร้อมก่อนบิน:</span>
+            <strong id="checklist-progress-text">0 / 6 รายการ (0%)</strong>
+          </div>
+          <div class="checklist-progress-bg">
+            <div class="checklist-progress-fill" id="checklist-progress-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="checklist-items-list" id="checklist-items-list">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 8: JR Pass vs Single Ticket Calculator -->
+  <section class="jrpass-section" id="jr-pass-calc">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🎫 JR PASS ROI CALCULATOR</span>
+        <h2>คำนวณความคุ้มค่า JR Pass vs ซื้อตั๋วรถไฟแยกเที่ยว</h2>
+        <p>เช็กให้ชัวร์ก่อนจ่ายเงินก้อน! ติ๊กเส้นทาง Shinkansen ที่คุณจะนั่ง แล้วระบบจะคำนวณเปรียบเทียบกับราคา All Japan JR Pass ให้ทันที</p>
+      </div>
+
+      <div class="jrpass-calculator-card">
+        <div class="jrpass-controls-row">
+          <div class="jrpass-pass-choice">
+            <label>เลือกตั๋ว JR Pass ที่ต้องการเทียบ:</label>
+            <div class="btn-toggle-group" id="jrpass-type-group">
+              <button class="toggle-choice active" data-pass-type="7_days">7 วัน (¥50,000)</button>
+              <button class="toggle-choice" data-pass-type="14_days">14 วัน (¥80,000)</button>
+              <button class="toggle-choice" data-pass-type="21_days">21 วัน (¥100,000)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="jrpass-routes-container">
+          <h4>🗺️ ติ๊กเลือกเส้นทางรถไฟ Shinkansen / Express ที่คุณวางแผนจะนั่ง:</h4>
+          <div class="jrpass-routes-grid" id="jrpass-routes-grid">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <div class="jrpass-result-verdict" id="jrpass-result-verdict">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 9: Theme Park & USJ Ticket Pricing Guide -->
+  <section class="themepark-section" id="theme-park-tickets">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🎟️ THEME PARK & USJ TICKET GUIDE</span>
+        <h2>ราคาตั๋ว Universal Studios Japan (USJ) & ธีมพาร์คตามช่วงเวลา</h2>
+        <p>เช็กราคาตั๋ว 1-Day Pass แต่ละระดับ Tier A-E, บัตร Express Pass, และวิธีเข้าโซน Super Nintendo World & Fantasy Springs ให้คุ้มที่สุด</p>
+      </div>
+
+      <div class="park-selector-tabs" id="park-selector-tabs">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <div class="park-ticket-display-card" id="park-ticket-display">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 10: Weather & Clothing (OOTD) Guide -->
+  <section class="weather-section" id="weather-guide">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">⛅ WEATHER & CLOTHING GUIDE</span>
+        <h2>สภาพอากาศ & คู่มือแต่งตัวเที่ยวญี่ปุ่น (OOTD)</h2>
+        <p>เที่ยวญี่ปุ่นเดือนไหน อุณหภูมิเท่าไหร่ แต่งตัวยังไงให้อุ่นสบายและถ่ายรูปสวย</p>
+      </div>
+
+      <div class="weather-temp-tabs" id="weather-temp-tabs">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <div class="weather-display-card" id="weather-display-card">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 10: Sakura & Autumn Bloom Forecast -->
+  <section class="bloom-section" id="bloom-forecast">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🌸 BLOOM & FOLIAGE TIMELINE</span>
+        <h2>ไทม์ไลน์พยากรณ์ ซากุระบาน & ใบไม้เปลี่ยนสี</h2>
+        <p>ช่วงเวลาที่ดีที่สุดในการชมดอกซากุระบานสะพรั่ง (Full Bloom) และใบไม้แดงพีคสุดทั่วประเทศ</p>
+      </div>
+
+      <div class="bloom-tabs-row" id="bloom-tabs">
+        <button class="bloom-tab-btn active" data-bloom="sakura">🌸 พยากรณ์ดอกซากุระบาน (Sakura Bloom)</button>
+        <button class="bloom-tab-btn" data-bloom="autumn">🍁 พยากรณ์ใบไม้เปลี่ยนสี (Autumn Foliage)</button>
+      </div>
+
+      <div class="bloom-timeline-grid" id="bloom-timeline-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 11: Emergency SOS & Show-to-Local Cards -->
+  <section class="sos-section" id="emergency-sos">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🚨 EMERGENCY SOS CARDS</span>
+        <h2>การ์ดฉุกเฉินภาษาญี่ปุ่น (กดเปิดยื่นให้คนญี่ปุ่นดูได้ทันที)</h2>
+        <p>อุ่นใจเมื่อเกิดเหตุฉุกเฉิน ทั้งแพ้อาหาร, ไม่สบาย, ของหาย หรือต้องการความช่วยเหลือด่วน พร้อมปุ่มกดฟังเสียงอ่าน</p>
+      </div>
+
+      <div class="sos-cards-grid" id="sos-cards-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 12: Transit Essential Guide Section -->
+  <section class="transit-guide-section" id="transit-tips">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sub-heading">🚅 JAPAN TRANSIT TIPS</span>
+        <h2>4 กฎทองการเดินทางในญี่ปุ่น ที่มือใหม่ต้องรู้</h2>
+        <p>เดินทางสะดวก ตรงเวลา ไม่หลงทาง ด้วยระบบขนส่งสาธารณะที่ดีที่สุดในโลก</p>
+      </div>
+
+      <div class="transit-tips-grid" id="transit-tips-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" id="detail-modal">
+    <div class="modal-container">
+      <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      <div class="modal-body" id="modal-body-content">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Itinerary Drawer / Modal -->
+  <div class="itinerary-drawer" id="itinerary-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <h3>📋 แผนการเดินทางของฉัน</h3>
+        <span id="drawer-item-count">0 รายการ</span>
+      </div>
+      <button class="drawer-close-btn" id="drawer-close-btn">&times;</button>
+    </div>
+
+    <!-- Quick Add Custom Place in Drawer -->
+    <div style="padding: 0.75rem 1.25rem; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 0.8rem; color: var(--text-muted);">อยากแวะโรงแรม/ร้านอาหาร?</span>
+      <button class="btn" id="open-custom-place-btn-drawer" style="background: #059669; color: white; padding: 0.35rem 0.75rem; font-size: 0.76rem; font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+        ✨ + เพิ่มสถานที่เอง
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="itinerary-list" id="itinerary-items-list">
+        <div class="empty-itinerary">
+          <span>🗾</span>
+          <p>ยังไม่มีสถานที่ในแผนเที่ยว</p>
+          <small>คลิกปุ่ม <strong>"+ เพิ่มในแผนเที่ยว"</strong> ที่การ์ดสถานที่เพื่อจัดทริปของคุณ</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="budget-summary">
+        <span>ประมาณการงบค่ากิน+เดินทาง:</span>
+        <strong id="estimated-budget-total">¥0 เยน</strong>
+      </div>
+      <div class="drawer-actions" style="flex-direction: column; gap: 0.5rem;">
+        <button class="btn primary" id="drawer-simulate-btn" style="background: #0284c7; width: 100%; padding: 0.75rem; font-weight: 700;">
+          🗺️ เปิดระบบจำลองเส้นทาง (Simulate Route)
+        </button>
+        <button class="btn" id="drawer-immigration-btn" style="background: #dc2626; color: white; width: 100%; padding: 0.65rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          🛂 การ์ดสรุปยื่น ตม. (Immigration Fast Pass) 🔊
+        </button>
+        <div style="display: flex; gap: 0.5rem; width: 100%;">
+          <button class="btn clear-btn" id="clear-itinerary-btn" style="flex: 1;">ล้างแผน</button>
+          <button class="btn print-btn" onclick="window.print()" style="flex: 1;">🖨️ เซฟ PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Custom Place Modal Hub -->
+  <div class="modal-backdrop" id="custom-place-modal" style="display: none;">
+    <div class="modal-container custom-place-modal-box" style="max-width: 780px;">
+      <button class="modal-close-btn" id="custom-modal-close-btn">&times;</button>
+      
+      <div class="custom-modal-header">
+        <div class="custom-modal-badge">⚡ Quick Place & Route Hub</div>
+        <h3>เพิ่มสถานที่ / โรงแรม / ร้านอาหารของฉัน</h3>
+        <p>เลือกเพิ่มจากจุดยอดนิยมใน 1 คลิก, ค้นหาพิกัด/วางลิงก์ Google Maps, หรือระบุรายละเอียดเอง</p>
+      </div>
+
+      <!-- 3-Tab Navigator -->
+      <div class="custom-modal-nav-tabs" id="custom-modal-nav-tabs">
+        <button type="button" class="custom-nav-tab active" data-tab="hotspots">⚡ จุดยอดนิยม (1-Click Add)</button>
+        <button type="button" class="custom-nav-tab" data-tab="search">🔍 ค้นหา / วางลิงก์ Google Maps</button>
+        <button type="button" class="custom-nav-tab" data-tab="form">✍️ กรอกพิกัดเอง</button>
+      </div>
+
+      <div class="custom-modal-body">
+        <!-- TAB 1: 1-Click Hotspots Catalog -->
+        <div class="custom-tab-content active" id="tab-content-hotspots">
+          <div class="hotspot-filter-pills" id="hotspot-filter-pills">
+            <button type="button" class="hotspot-filter-btn active" data-hotspot-filter="all">🌟 ทั้งหมด</button>
+            <button type="button" class="hotspot-filter-btn" data-hotspot-filter="hotel">🏨 โรงแรมดัง</button>
+            <button type="button" class="hotspot-filter-btn" data-hotspot-filter="food">🍜 ร้านอาหาร/คาเฟ่</button>
+            <button type="button" class="hotspot-filter-btn" data-hotspot-filter="shopping">🛍️ แหล่งช้อปปิ้ง</button>
+            <button type="button" class="hotspot-filter-btn" data-hotspot-filter="attraction">🎢 สวนสนุก/แลนด์มาร์ก</button>
+          </div>
+          <div class="hotspots-grid" id="hotspots-grid">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- TAB 2: Smart Search & Google Maps Link Parser -->
+        <div class="custom-tab-content" id="tab-content-search" style="display: none;">
+          <div class="custom-form-group">
+            <label class="custom-form-label">
+              <span>🔍 ค้นหาชื่อสถานที่ในญี่ปุ่น หรือวางลิงก์ Google Maps / พิกัด:</span>
+              <span class="custom-label-tip">รองรับทั้งชื่อ, ลิงก์ maps.app.goo.gl, หรือ Lat,Lng</span>
+            </label>
+            <div class="custom-search-input-wrap">
+              <input type="text" id="custom-search-input" class="custom-text-input" placeholder="เช่น Ichiran Shibuya, Hotel Gracery, Tokyo Disney, หรือวางลิงก์ Google Maps..." autocomplete="off">
+              <button type="button" id="custom-search-trigger-btn" class="custom-search-btn">ค้นหา</button>
+            </div>
+            <!-- Auto-Search Results Dropdown -->
+            <div class="custom-search-results" id="custom-search-results" style="display: none;"></div>
+          </div>
+          <div style="background: #f0fdf4; border: 1px dashed #86efac; border-radius: 10px; padding: 0.85rem 1rem; margin-top: 1rem; font-size: 0.82rem; color: #166534; line-height: 1.5;">
+            💡 <strong>คำแนะนำ:</strong> คุณสามารถเปิดแอป Google Maps ในมือถือ ➔ กดปุ่ม Share ➔ Copy Link แล้วนำมาวางในช่องนี้ได้ทันที ระบบจะดึงพิกัดและเมืองให้อัตโนมัติใน 1 วินาที!
+          </div>
+        </div>
+
+        <!-- TAB 3: Manual Custom Form -->
+        <div class="custom-tab-content" id="tab-content-form" style="display: none;">
+          <!-- Category Selector -->
+          <div class="custom-form-group">
+            <label class="custom-form-label">ประเภทสถานที่ (Category):</label>
+            <div class="custom-category-pills" id="custom-category-pills">
+              <button type="button" class="category-pill active" data-category="hotel" data-icon="🏨">🏨 โรงแรมที่พัก</button>
+              <button type="button" class="category-pill" data-category="food" data-icon="🍜">🍜 ร้านอาหาร / คาเฟ่</button>
+              <button type="button" class="category-pill" data-category="shopping" data-icon="🛍️">🛍️ แหล่งช้อปปิ้ง</button>
+              <button type="button" class="category-pill" data-category="attraction" data-icon="🎡">🎡 จุดท่องเที่ยว / สวนสนุก</button>
+              <button type="button" class="category-pill" data-category="spot" data-icon="📍">📍 จุดแวะทั่วไป</button>
+            </div>
+          </div>
+
+          <!-- Name & Japanese Name -->
+          <div class="custom-form-grid-2">
+            <div class="custom-form-group">
+              <label class="custom-form-label">ชื่อสถานที่ (ไทย หรือ อังกฤษ) *</label>
+              <input type="text" id="custom-place-name" class="custom-text-input" placeholder="เช่น APA Hotel Shinjuku Kabukicho" required>
+            </div>
+            <div class="custom-form-group">
+              <label class="custom-form-label">ชื่อภาษาญี่ปุ่น (Optional)</label>
+              <input type="text" id="custom-place-japanese" class="custom-text-input" placeholder="เช่น アパホテル 新宿 歌舞伎町">
+            </div>
+          </div>
+
+          <!-- Region & Nearest Station -->
+          <div class="custom-form-grid-2">
+            <div class="custom-form-group">
+              <label class="custom-form-label">เมือง / ภูมิภาค *</label>
+              <select id="custom-place-region" class="custom-select-input">
+                <option value="tokyo">🔵 โตเกียว (Tokyo & Kanto)</option>
+                <option value="kyoto">🟢 เกียวโต (Kyoto)</option>
+                <option value="osaka">🟠 โอซาก้า & นารา (Osaka & Kansai)</option>
+                <option value="chubu">🟡 ชูบุ & ฟูจิ (Chubu, Fuji, Shirakawago)</option>
+                <option value="hokkaido">🟣 ฮอกไกโด (Hokkaido)</option>
+                <option value="fukuoka">🏮 ฟุกุโอกะ (Fukuoka & Kyushu)</option>
+                <option value="hiroshima">🔴 ฮิโรชิมา (Hiroshima & Chugoku)</option>
+              </select>
+            </div>
+            <div class="custom-form-group">
+              <label class="custom-form-label">สถานีรถไฟใกล้เคียง</label>
+              <input type="text" id="custom-place-station" class="custom-text-input" placeholder="เช่น สถานี Shinjuku ทางออก East">
+            </div>
+          </div>
+
+          <!-- Stay Duration & Coordinates -->
+          <div class="custom-form-grid-2">
+            <div class="custom-form-group">
+              <label class="custom-form-label">เวลาที่แนะนำ / แวะพัก</label>
+              <input type="text" id="custom-place-stay" class="custom-text-input" placeholder="เช่น 1 - 2 ชม. หรือ เช็คอินพักค้างคืน" value="1 - 2 ชม.">
+            </div>
+            <div class="custom-form-group">
+              <label class="custom-form-label">พิกัดแผนที่ (Lat, Lng)</label>
+              <div style="display: flex; gap: 0.35rem;">
+                <input type="number" step="any" id="custom-place-lat" class="custom-text-input" placeholder="Latitude" value="35.6895" style="font-size: 0.8rem;">
+                <input type="number" step="any" id="custom-place-lng" class="custom-text-input" placeholder="Longitude" value="139.6917" style="font-size: 0.8rem;">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem; text-align: right;">
+            <button type="button" class="btn primary" id="custom-modal-submit-btn" style="background: #059669; color: white; font-weight: 700; padding: 0.65rem 1.35rem;">
+              ✨ + บันทึกและเพิ่มเข้าแผนเที่ยว
+            </button>
+          </div>
+        </div>
+
+        <!-- Notice / Status -->
+        <div id="custom-modal-msg" class="custom-modal-msg" style="display: none;"></div>
+      </div>
+
+      <div class="custom-modal-footer">
+        <button type="button" class="btn" id="custom-modal-cancel-btn" style="background: #f1f5f9; color: var(--text-main);">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Japan Immigration & Customs Fast Pass Hub Modal -->
+  <div class="modal-backdrop" id="immigration-modal" style="display: none;">
+    <div class="modal-container immigration-modal-box">
+      <button class="modal-close-btn" id="immigration-modal-close-btn">&times;</button>
+      
+      <div class="immigration-modal-header">
+        <div class="immigration-header-badge">🛂 JAPAN IMMIGRATION & CUSTOMS KIT</div>
+        <h3>คู่มือเตรียมพร้อมผ่าน ตม. & ศุลกากรญี่ปุ่น (2026)</h3>
+        <p>ซ้อมตอบคำถามจริงพร้อมเสียงพูด 🔊, สรุปการ์ดยื่น ตม. ภาษาอังกฤษ/ญี่ปุ่น, เช็กลิสต์ และกฎศุลกากรครบจบในที่เดียว</p>
+      </div>
+
+      <!-- 4-Tab Navigation -->
+      <div class="immigration-modal-tabs" id="immigration-modal-tabs">
+        <button type="button" class="imm-nav-tab active" data-tab="fastpass">📱 การ์ดยื่น ตม. (Fast Pass)</button>
+        <button type="button" class="imm-nav-tab" data-tab="qa">🗣️ ซ้อมตอบคำถาม (7 ข้อฮิต 🔊)</button>
+        <button type="button" class="imm-nav-tab" data-tab="checklist">📋 เช็กลิสต์ก่อนลงเครื่อง</button>
+        <button type="button" class="imm-nav-tab" data-tab="customs">🚫 ของต้องห้าม & ศุลกากร</button>
+      </div>
+
+      <div class="immigration-modal-body">
+        <!-- TAB 1: Fast Pass Card -->
+        <div class="imm-tab-content active" id="imm-tab-fastpass">
+          <div class="fastpass-intro-banner">
+            <span>💡 <strong>วิธีใช้:</strong> หากพูดภาษาอังกฤษไม่คล่อง สามารถกดปุ่ม <strong>"📱 โหมดโชว์เต็มจอ"</strong> แล้วยื่นหน้าจอนี้ให้เจ้าหน้าที่ ตม. ญี่ปุ่นดูได้เลยครับ</span>
+          </div>
+
+          <!-- The Official Immigration Fast Pass Card -->
+          <div class="fastpass-card" id="fastpass-card">
+            <div class="fastpass-card-header">
+              <div class="fastpass-emblem">🇯🇵</div>
+              <div class="fastpass-title-group">
+                <h4>JAPAN ENTRY INFORMATION CARD</h4>
+                <div class="fastpass-jp-sub">外国人入国記録・滞在情報サマリー</div>
+              </div>
+              <span class="fastpass-type-tag">TOURIST / 観光</span>
+            </div>
+
+            <div class="fastpass-card-grid">
+              <!-- Purpose & Duration -->
+              <div class="fastpass-field-group">
+                <span class="fastpass-label">🎯 PURPOSE OF VISIT (วัตถุประสงค์):</span>
+                <div class="fastpass-value-highlight">Sightseeing / Tourism (観光)</div>
+              </div>
+
+              <div class="fastpass-field-group">
+                <span class="fastpass-label">🗓️ LENGTH OF STAY (ระยะเวลาพำนัก):</span>
+                <div class="fastpass-duration-wrap">
+                  <input type="text" id="imm-input-duration" class="fastpass-input" value="5 Days / 4 Nights" placeholder="เช่น 5 Days / 4 Nights">
+                </div>
+              </div>
+
+              <!-- First Hotel Accommodation -->
+              <div class="fastpass-field-group full-width">
+                <span class="fastpass-label">🏨 1ST ACCOMMODATION IN JAPAN (ที่พักคืนแรก):</span>
+                <div class="fastpass-hotel-box" id="fastpass-hotel-box">
+                  <div class="fastpass-hotel-name" id="imm-hotel-name">Hotel Gracery Shinjuku (ホテルグレイスリー新宿)</div>
+                  <div class="fastpass-hotel-sub" id="imm-hotel-sub">📍 1-19-1 Kabukicho, Shinjuku-ku, Tokyo (Tel: +81-3-6833-1111)</div>
+                </div>
+                <div style="margin-top: 4px; display: flex; gap: 0.5rem; align-items: center;">
+                  <button type="button" class="fastpass-small-btn" id="imm-edit-hotel-btn">✏️ แก้ไขชื่อโรงแรม/ที่อยู่</button>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">(ดึงข้อมูลอัตโนมัติจากแผนเที่ยว)</span>
+                </div>
+                <div id="imm-hotel-edit-wrap" style="display: none; margin-top: 6px;">
+                  <input type="text" id="imm-custom-hotel-input" class="fastpass-input" placeholder="พิมพ์ชื่อโรงแรมและที่อยู่ เช่น APA Hotel Shinjuku, Tokyo...">
+                </div>
+              </div>
+
+              <!-- Return Flight Info -->
+              <div class="fastpass-field-group">
+                <span class="fastpass-label">✈️ RETURN FLIGHT NO. (เที่ยวบินขากลับ):</span>
+                <input type="text" id="imm-input-flight" class="fastpass-input" value="TG643 (BKK)" placeholder="เช่น TG643, JL707, XJ601">
+              </div>
+
+              <div class="fastpass-field-group">
+                <span class="fastpass-label">📅 RETURN DATE (วันเดินทางกลับ):</span>
+                <input type="text" id="imm-input-return-date" class="fastpass-input" value="วันที่ 5 ของทริป" placeholder="เช่น 24 Oct 2026">
+              </div>
+
+              <!-- Contact & Group -->
+              <div class="fastpass-field-group full-width">
+                <span class="fastpass-label">👥 TRAVEL GROUP (จำนวนผู้เดินทาง):</span>
+                <input type="text" id="imm-input-group" class="fastpass-input" value="Family / Friends (2 Persons)" placeholder="เช่น Solo Traveler (1 Person) หรือ 2 Persons">
+              </div>
+            </div>
+
+            <div class="fastpass-card-footer">
+              <span>Verified Itinerary by Nippon Explorer Engine</span>
+              <span>Keep Passport & Return Ticket Ready</span>
+            </div>
+          </div>
+
+          <!-- Fast Pass Actions -->
+          <div class="fastpass-actions-bar">
+            <button type="button" class="btn primary" id="imm-fullscreen-btn" style="background: #059669; padding: 0.65rem 1.25rem; font-weight: 700;">
+              📱 โหมดโชว์เต็มจอ (ยื่นให้ ตม. ดู)
+            </button>
+            <button type="button" class="btn" id="imm-save-pass-btn" style="background: white; border: 1.5px solid #cbd5e1; font-weight: 700; color: var(--primary-navy);">
+              🖨️ เซฟ / พิมพ์การ์ด
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 2: Q&A Audio Simulator -->
+        <div class="imm-tab-content" id="imm-tab-qa" style="display: none;">
+          <div class="qa-intro-banner">
+            <span>🗣️ <strong>ซ้อมฟังและตอบคำถามจริง:</strong> กดปุ่มลำโพง 🔊 เพื่อฟังเสียงสำเนียงภาษาอังกฤษและญี่ปุ่นของเจ้าหน้าที่</span>
+          </div>
+
+          <div class="qa-simulator-list" id="qa-simulator-list">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- TAB 3: Pre-Flight Checklist -->
+        <div class="imm-tab-content" id="imm-tab-checklist" style="display: none;">
+          <div class="checklist-intro-banner">
+            <span>📋 <strong>เช็กลิสต์เอกสารสำคัญ:</strong> ติ๊กรายการเพื่อตรวจความพร้อมก่อนออกจากบ้าน (บันทึกอัตโนมัติ)</span>
+          </div>
+
+          <div class="imm-checklist-container" id="imm-checklist-container">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- TAB 4: Customs Rules & Warnings -->
+        <div class="imm-tab-content" id="imm-tab-customs" style="display: none;">
+          <div class="customs-warning-grid">
+            <!-- Danger Alert: Meat Products -->
+            <div class="customs-card danger">
+              <div class="customs-card-header">
+                <span class="customs-card-icon">🥩</span>
+                <div>
+                  <h4>ห้ามนำเข้าเนื้อสัตว์แปรรูปทุกชนิด (เด็ดขาด)</h4>
+                  <small>Strictly Prohibited - Penalty up to 3M JPY or 3 Years Jail</small>
+                </div>
+              </div>
+              <p>ห้ามนำ กุนเชียง, แคบหมู, หมูหยอง, หมูแผ่น, ไส้กรอก, แหนม, เนื้อวัว/หมูแดดเดียว และบะหมี่กึ่งสำเร็จรูปที่มีชิ้นเนื้อสัตว์จริงเข้าญี่ปุ่นเด็ดขาด แม้จะบรรจุซองสุญญากาศก็ตาม</p>
+            </div>
+
+            <!-- Danger Alert: Fresh Plants & Fruits -->
+            <div class="customs-card danger">
+              <div class="customs-card-header">
+                <span class="customs-card-icon">🍎</span>
+                <div>
+                  <h4>ห้ามนำเข้าพืช ดิน ผลไม้สด</h4>
+                  <small>Fresh Fruits, Vegetables & Plants</small>
+                </div>
+              </div>
+              <p>ผลไม้สดทุกชนิด เช่น มะม่วง ทุเรียน มังคุด ส้ม พืชที่มีดินติด และเมล็ดพันธุ์พืช ห้ามนำเข้าโดยไม่ผ่านการกักกันพืชสากล</p>
+            </div>
+
+            <!-- Warning Alert: Restricted Medicines -->
+            <div class="customs-card warning">
+              <div class="customs-card-header">
+                <span class="customs-card-icon">💊</span>
+                <div>
+                  <h4>ยาต้องห้ามและยาที่ต้องควบคุม</h4>
+                  <small>Restricted Medications</small>
+                </div>
+              </div>
+              <p>ยาแก้หวัด/แก้แพ้ที่มีสาร <strong>Pseudoephedrine</strong> (เช่น Actifed, Sudafed) และยาแก้ปวดผสม <strong>Codeine</strong> เป็นสิ่งผิดกฎหมายในญี่ปุ่น ยาประจำตัวทั่วไปนำเข้าได้ไม่เกิน 1 เดือน (ควรพกฉลากภาษาอังกฤษ)</p>
+            </div>
+
+            <!-- Info Alert: Duty-Free Allowances -->
+            <div class="customs-card info">
+              <div class="customs-card-header">
+                <span class="customs-card-icon">🛍️</span>
+                <div>
+                  <h4>โควต้ายกเว้นภาษีศุลกากร (Duty-Free Allowances)</h4>
+                  <small>Per Adult Traveler</small>
+                </div>
+              </div>
+              <ul class="customs-allowance-list">
+                <li>🍷 <strong>เครื่องดื่มแอลกอฮอล์:</strong> ไม่เกิน 3 ขวด (ขวดละไม่เกิน 760 ml)</li>
+                <li>🚬 <strong>บุหรี่:</strong> ไม่เกิน 200 มวน หรือซิการ์ไม่เกิน 50 มวน</li>
+                <li>🌸 <strong>น้ำหอม:</strong> ไม่เกิน 2 ออนซ์ (ประมาณ 56 ml)</li>
+                <li>💴 <strong>เงินสด:</strong> ไม่เกิน 1,000,000 เยน (หากเกินต้องสำแดงต่อศุลกากร)</li>
+                <li>🎁 <strong>ของฝาก/ของใช้ส่วนตัวอื่นๆ:</strong> มูลค่ารวมไม่เกิน 200,000 เยน</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="immigration-modal-footer">
+        <button type="button" class="btn" id="immigration-modal-cancel-btn" style="background: #f1f5f9; color: var(--text-main);">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Presentation Card Modal (for showing directly to immigration officer) -->
+  <div class="fullscreen-pass-overlay" id="fullscreen-pass-overlay" style="display: none;">
+    <div class="fullscreen-pass-box">
+      <button type="button" class="fullscreen-pass-close" id="close-fullscreen-pass-btn">✕ ปิดโหมดเต็มจอ</button>
+      
+      <div class="fullscreen-pass-content" id="fullscreen-pass-render-box">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Floating Quick Dock (Bottom Bar for Touch Users) -->
+  <div class="mobile-floating-dock" id="mobile-floating-dock">
+    <button type="button" class="mobile-dock-btn dock-imm-btn" id="mobile-dock-imm-btn">
+      <span>🛂</span> ตม. ญี่ปุ่น
+    </button>
+    <button type="button" class="mobile-dock-btn dock-plan-btn" id="mobile-dock-plan-btn">
+      <span>📋</span> แผนเที่ยว (<span id="mobile-dock-badge">0</span>)
+    </button>
+    <button type="button" class="mobile-dock-btn dock-top-btn" id="mobile-dock-top-btn" title="กลับขึ้นด้านบน">
+      <span>⬆️</span>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <h3>⛩️ Nippon Explorer</h3>
+        <p>เพื่อนคู่คิดสำหรับคนรักการท่องเที่ยวประเทศญี่ปุ่น</p>
+      </div>
+      <div class="footer-copy">
+        <p>© 2026 Nippon Explorer. Built with InwGateway Local Engine.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
