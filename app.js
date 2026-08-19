@@ -2430,6 +2430,137 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ================= 12.1 Real-Time Live Sync & Dynamic Seasonal Pricing Engine =================
+  let GOOGLE_SHEET_ID = localStorage.getItem("nippon_google_sheet_id") || "";
+  let liveSheetData = {};
+
+  function updateLiveStatusBadges(rate) {
+    const liveRateText = document.getElementById("live-rate-status-text");
+    const liveSeasonText = document.getElementById("live-season-status-text");
+
+    if (liveRateText) {
+      const per100 = (rate * 100).toFixed(2);
+      liveRateText.textContent = `⚡ เรตสดวันนี้: 100 JPY ≈ ${per100} THB`;
+    }
+
+    if (liveSeasonText) {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const dayOfWeek = now.getDay();
+
+      let seasonName = "ฤดูหนาว (Winter)";
+      let tierNote = "วันธรรมดา (Regular Tier)";
+
+      if (month >= 3 && month <= 5) {
+        seasonName = "ฤดูใบไม้ผลิ 🌸 (Spring)";
+      } else if (month >= 6 && month <= 8) {
+        seasonName = "ฤดูร้อน ☀️ (Summer)";
+      } else if (month >= 9 && month <= 11) {
+        seasonName = "ใบไม้เปลี่ยนสี 🍁 (Autumn)";
+      }
+
+      const isSakuraPeak = (month === 3 && day >= 20) || (month === 4 && day <= 15);
+      const isGoldenWeek = (month === 4 && day >= 29) || (month === 5 && day <= 6);
+      const isObon = (month === 8 && day >= 10 && day <= 18);
+      const isNewYear = (month === 12 && day >= 28) || (month === 1 && day <= 5);
+
+      if (isSakuraPeak || isGoldenWeek || isObon || isNewYear) {
+        tierNote = "🔥 ช่วงไฮซีซั่นพีค (Peak Holiday Tier)";
+      } else if (dayOfWeek === 0 || dayOfWeek === 6 || dayOfWeek === 5) {
+        tierNote = "🎉 สุดสัปดาห์ (Weekend Tier)";
+      }
+
+      liveSeasonText.textContent = `🗓️ ปฏิทินวันนี้: ${seasonName} • ${tierNote}`;
+    }
+  }
+
+  async function fetchLiveExchangeRate() {
+    try {
+      const res = await fetch("https://open.er-api.com/v6/latest/JPY");
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.rates && data.rates.THB) {
+          const liveRate = parseFloat(data.rates.THB.toFixed(4));
+          setGlobalExchangeRate(liveRate, true);
+          updateLiveStatusBadges(liveRate);
+        }
+      }
+    } catch (e) {
+      updateLiveStatusBadges(currentExchangeRate);
+    }
+  }
+
+  async function fetchGoogleSheetsPrices(sheetId) {
+    const targetId = sheetId || GOOGLE_SHEET_ID;
+    if (!targetId) return;
+
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${targetId}/gviz/tq?tqx=out:json`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const text = await res.text();
+        const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+        if (jsonMatch && jsonMatch[1]) {
+          const parsed = JSON.parse(jsonMatch[1]);
+          const rows = parsed.table.rows;
+
+          rows.forEach(r => {
+            const c = r.c;
+            if (c && c[0] && c[0].v) {
+              const itemId = String(c[0].v).trim();
+              const price = c[3] ? parseFloat(c[3].v) : 0;
+              const discount = c[4] ? parseFloat(c[4].v) : 0;
+              const promoBadge = c[5] ? String(c[5].v) : "";
+              const notes = c[6] ? String(c[6].v) : "";
+
+              liveSheetData[itemId] = {
+                priceJPY: price,
+                discountPercent: discount,
+                promoBadge: promoBadge,
+                notes: notes
+              };
+            }
+          });
+
+          applyLiveSheetPrices();
+        }
+      }
+    } catch (err) {
+      console.warn("Live sheet sync notice:", err);
+    }
+  }
+
+  function applyLiveSheetPrices() {
+    if (liveSheetData["config_exchange_rate"] && liveSheetData["config_exchange_rate"].priceJPY > 0) {
+      setGlobalExchangeRate(liveSheetData["config_exchange_rate"].priceJPY, true);
+    }
+
+    if (typeof HOTELS_DATA !== "undefined") {
+      Object.keys(HOTELS_DATA).forEach(key => {
+        const hotel = HOTELS_DATA[key];
+        if (liveSheetData[key]) {
+          if (liveSheetData[key].priceJPY > 0) {
+            const finalPrice = Math.round(liveSheetData[key].priceJPY * (1 - (liveSheetData[key].discountPercent / 100)));
+            hotel.priceTHB = Math.round(finalPrice * currentExchangeRate);
+          }
+          if (liveSheetData[key].promoBadge) {
+            hotel.badge = liveSheetData[key].promoBadge;
+          }
+        }
+      });
+    }
+
+    if (typeof renderHotelGuide === "function") renderHotelGuide();
+    if (typeof renderThemeParkTickets === "function") renderThemeParkTickets();
+  }
+
+  // Auto trigger live currency fetch on load
+  fetchLiveExchangeRate();
+  if (GOOGLE_SHEET_ID) {
+    fetchGoogleSheetsPrices(GOOGLE_SHEET_ID);
+  }
+
   // ================= 13. Japanese Phrasebook Audio Renderer =================
   const phrasebookGrid = document.getElementById("phrasebook-grid");
 

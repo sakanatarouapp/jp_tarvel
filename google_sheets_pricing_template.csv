@@ -1,0 +1,17 @@
+﻿item_id,item_title,category,price_jpy,discount_percent,promo_badge,notes
+config_exchange_rate,เรตเงินเยน JPY/THB,config,0.235,0,เรตมาตรฐาน,เรตแปลงเงินเยนเป็นบาท (0.235) หรือใส่เรตตามต้องการ
+config_promo_banner,ข้อความแบนเนอร์โปรโมชัน,config,0,0,🔥 โปรเด็ดประจำสัปดาห์,ข้อความแจ้งเตือนโปรโมชันด้านบนของเว็บ
+hotel-gracery-shinjuku,Hotel Gracery Shinjuku (โรงแรมก็อดซิลล่า ชินจูกุ),hotel,18500,0,⭐ ยอดนิยม,ทำเลดีใจกลางคาบูกิโช
+hotel-shinjuku-granbell,Shinjuku Granbell Hotel,hotel,14500,5,🏷️ ลด 5%,ดีไซน์โมเดิร์น ใกล้สถานี
+hotel-sunroute-plaza,Hotel Sunroute Plaza Shinjuku,hotel,19000,0,🚆 ใกล้สถานี JR,เดิน 3 นาทีถึงสถานีชินจูกุ
+hotel-cross-osaka,Cross Hotel Osaka (โดทงโบริ),hotel,16500,0,🦀 ใกล้ป้ายกูลิโกะ,เดิน 1 นาทีถึงโดทงโบริ
+hotel-swissotel-nankai,Swissotel Nankai Osaka,hotel,24000,10,👑 พรีเมียม ลด 10%,ตั้งอยู่บนสถานี Namba เดินทางสะดวกสุดๆ
+hotel-dorms-inn-namba,Dormy Inn Premium Namba,hotel,15000,0,♨️ มีออนเซ็นฟรี,มีราเมงรอบดึกและออนเซ็นบริการฟรี
+hotel-usj-parkfront,The Park Front Hotel at USJ,hotel,22000,0,🎢 หน้าประตู USJ,เดิน 1 นาทีถึงทางเข้า USJ
+hotel-usj-universal-port,Hotel Universal Port,hotel,19500,5,🏷️ ลด 5%,ธีมมินเนี่ยน เหมาะสำหรับครอบครัว
+hotel-usj-keihan-tower,Hotel Keihan Universal Tower,hotel,17800,0,🏙️ วิวเมืองสวย,มีออนเซ็นชั้น 31 ชมวิวเมืองโอซาก้า
+park-usj,Universal Studios Japan (USJ),theme_park,8600,0,⚡ ราคาเริ่มต้น Tier A,ราคาผันแปรตามวันธรรมดา/วันหยุด (Tier A - E)
+park-teamlab,teamLab Planets & Borderless,theme_park,3800,0,✨ ศิลปะดิจิทัล,ราคาตั๋ววันธรรมดา ¥3800 / วันหยุด ¥4200
+park-shibuya-sky,SHIBUYA SKY Observation Deck,theme_park,2200,0,🌅 จองออนไลน์,ราคาหน้าเคาน์เตอร์ ¥2500
+shinkansen-tokyo-osaka,Shinkansen Tokaido (Tokyo <-> Osaka),transit,14720,0,🚅 ตั๋ว Nozomi,ราคามาตรฐานตั๋วระบุที่นั่ง
+shinkansen-tokyo-kyoto,Shinkansen Tokaido (Tokyo <-> Kyoto),transit,14170,0,🚅 ตั๋ว Nozomi,ราคามาตรฐานตั๋วระบุที่นั่ง

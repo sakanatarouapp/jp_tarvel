@@ -313,9 +313,48 @@ body {
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 700;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.65rem;
   border: 1px solid rgba(188, 0, 45, 0.2);
   box-shadow: 0 2px 8px rgba(188, 0, 45, 0.08);
+}
+
+.live-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 0.32rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #047857;
+  margin-bottom: 1.15rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35);
+  animation: live-dot-pulse 1.8s infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.live-divider {
+  color: #a7f3d0;
+  font-weight: bold;
+}
+
+@keyframes live-dot-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 .hero-title {
