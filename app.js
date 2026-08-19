@@ -325,9 +325,57 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let customHotelSearchQuery = "";
+  let selectedHotelSeason = "all";
   const hotelCustomSearchInput = document.getElementById("hotel-custom-search-input");
   const hotelClearSearchBtn = document.getElementById("hotel-clear-search-btn");
   const hotelSearchSubmitBtn = document.getElementById("hotel-search-submit-btn");
+  const hotelSeasonPills = document.getElementById("hotel-season-pills");
+
+  function getSeasonalHotelMultiplier(season) {
+    switch (season) {
+      case "spring":
+        return {
+          multiplier: 1.45,
+          seasonLabel: "🌸 ฤดูใบไม้ผลิ (ช่วงซากุระพีค)",
+          badge: "🌸 ซากุระพีค (+45%)",
+          badgeBg: "#fdf2f8",
+          badgeColor: "#db2777"
+        };
+      case "autumn":
+        return {
+          multiplier: 1.28,
+          seasonLabel: "🍁 ฤดูใบไม้เปลี่ยนสี (ช่วงพีค)",
+          badge: "🍁 ใบไม้เปลี่ยนสี (+28%)",
+          badgeBg: "#fff7ed",
+          badgeColor: "#ea580c"
+        };
+      case "winter":
+        return {
+          multiplier: 1.15,
+          seasonLabel: "❄️ ฤดูหนาว / หิมะ (ช่วงเทศกาล)",
+          badge: "❄️ ฤดูหนาว (+15%)",
+          badgeBg: "#eff6ff",
+          badgeColor: "#2563eb"
+        };
+      case "summer":
+        return {
+          multiplier: 1.0,
+          seasonLabel: "☀️ ฤดูร้อน (โลว์ซีซั่นโปรโมชัน)",
+          badge: "☀️ โลว์ซีซั่นโปร (ราคาต่ำสุด)",
+          badgeBg: "#ecfdf5",
+          badgeColor: "#059669"
+        };
+      case "all":
+      default:
+        return {
+          multiplier: 1.0,
+          seasonLabel: "🍂 ทุกช่วงเวลา (ราคาเริ่มต้นโปรโมชัน)",
+          badge: "",
+          badgeBg: "#f8fafc",
+          badgeColor: "#475569"
+        };
+    }
+  }
 
   function renderHotelGuide() {
     if (!hotelAttractionDisplay) return;
@@ -429,6 +477,28 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
+    // 4.5. Update Hotel Season Pills State
+    if (hotelSeasonPills) {
+      hotelSeasonPills.querySelectorAll(".hotel-season-pill").forEach(btn => {
+        const s = btn.getAttribute("data-hotel-season");
+        btn.classList.toggle("active", s === selectedHotelSeason);
+        btn.onclick = () => {
+          selectedHotelSeason = s;
+          currentSeason = s;
+          if (typeof seasonPills !== 'undefined' && seasonPills) {
+            seasonPills.querySelectorAll(".pill").forEach(p => {
+              p.classList.toggle("active", p.getAttribute("data-season") === s);
+            });
+          }
+          currentCardPage = 1;
+          renderCards();
+          renderHotelGuide();
+        };
+      });
+    }
+
+    const seasonInfo = getSeasonalHotelMultiplier(selectedHotelSeason);
+
     // 5. If Custom Hotel Search Query is Active
     if (customHotelSearchQuery.trim() !== "") {
       const q = customHotelSearchQuery.trim().toLowerCase();
@@ -453,7 +523,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let customHotelCardHtml = "";
       if (matchedHotels.length === 0) {
-        const estJpy = 16500;
+        const baseJpy = 8500;
+        const estJpy = Math.round(baseJpy * seasonInfo.multiplier);
         const estThb = Math.round(estJpy * currentExchangeRate);
         customHotelCardHtml = `
           <div class="hotel-showcase-card" style="border: 2px dashed #059669; background: #f0fdf4;">
@@ -473,8 +544,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <div class="hotel-showcase-pricing">
               <div class="hotel-price-box">
-                <span class="hotel-price-range">ราคาเฉลี่ยมาตรฐาน</span>
-                <strong class="hotel-price-thb">~${estThb.toLocaleString()} บาท/คืน</strong>
+                <span class="hotel-price-range">${selectedHotelSeason === "all" ? '¥8,500 - ¥22,000 / คืน' : `คาดการณ์: ¥${estJpy.toLocaleString()} เยน`}</span>
+                <strong class="hotel-price-thb">${selectedHotelSeason === "all" ? 'เริ่มต้น ' : ''}~${estThb.toLocaleString()} บาท/คืน</strong>
+                ${selectedHotelSeason !== "all" ? `<small style="font-size: 0.72rem; color: ${seasonInfo.badgeColor}; font-weight: 700; margin-top: 2px;">${seasonInfo.seasonLabel}</small>` : ''}
               </div>
               <div style="display: flex; gap: 0.4rem; flex-direction: column; width: 100%;">
                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customHotelSearchQuery + ' hotel japan')}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
@@ -493,6 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hotel-search-results-banner">
           <div>
             <strong>🔍 ผลการค้นหาโรงแรม:</strong> พบ ${matchedHotels.length > 0 ? matchedHotels.length : 1} รายการ สำหรับ <em>"${customHotelSearchQuery}"</em>
+            ${selectedHotelSeason !== "all" ? `<span style="margin-left: 0.5rem; color: ${seasonInfo.badgeColor}; font-weight: 700;">(${seasonInfo.seasonLabel})</span>` : ''}
           </div>
           <button type="button" class="hotel-reset-search-btn" id="hotel-reset-search-btn">
             🔄 ล้างการค้นหา & กลับไปดูตามย่าน
@@ -502,11 +575,22 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hotel-showcase-grid">
           ${customHotelCardHtml}
           ${matchedHotels.map((h, idx) => {
-            const estTHB = Math.round(h.priceJPY * currentExchangeRate);
+            const estJPY = Math.round(h.priceJPY * seasonInfo.multiplier);
+            const estTHB = Math.round(estJPY * currentExchangeRate);
+
+            let badgeHtml = "";
+            if (h.promoBadge) {
+              badgeHtml = `<span class="hotel-rank-badge" style="background: #dc2626; color: white;">${h.promoBadge}</span>`;
+            } else if (seasonInfo.badge) {
+              badgeHtml = `<span class="hotel-rank-badge" style="background: ${seasonInfo.badgeBg}; color: ${seasonInfo.badgeColor}; border: 1px solid ${seasonInfo.badgeColor}; font-weight: 800;">${seasonInfo.badge}</span>`;
+            } else {
+              badgeHtml = `<span class="hotel-rank-badge">#${idx + 1} ตรงกับคำค้นหา</span>`;
+            }
+
             return `
               <div class="hotel-showcase-card">
                 <div class="hotel-card-badge-row">
-                  <span class="hotel-rank-badge">#${idx + 1} ตรงกับคำค้นหา</span>
+                  ${badgeHtml}
                   <span class="hotel-rating-badge">⭐ ${h.rating} / 5.0</span>
                 </div>
                 <h4 class="hotel-showcase-name">${h.name}</h4>
@@ -521,8 +605,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <div class="hotel-showcase-pricing">
                   <div class="hotel-price-box">
-                    <span class="hotel-price-range">${h.priceRange}</span>
-                    <strong class="hotel-price-thb">เริ่มต้น ~${estTHB.toLocaleString()} บาท/คืน</strong>
+                    <span class="hotel-price-range">${selectedHotelSeason === "all" ? h.priceRange : `¥${estJPY.toLocaleString()} เยน / คืน`}</span>
+                    <strong class="hotel-price-thb">${selectedHotelSeason === "all" ? 'เริ่มต้น ' : ''}~${estTHB.toLocaleString()} บาท/คืน</strong>
+                    ${selectedHotelSeason !== "all" ? `<small style="font-size: 0.72rem; color: ${seasonInfo.badgeColor}; font-weight: 700; margin-top: 2px;">${seasonInfo.seasonLabel}</small>` : ''}
                   </div>
                   <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
                     🗺️ ดูแผนที่ & เช็กห้องว่าง
@@ -553,7 +638,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hotel-showcase-title-wrap">
           <div class="hotel-showcase-location-badge">📍 ${currentItem.title} (${currentItem.japanese})</div>
           <h3>🏨 3 โรงแรม & ที่พักแนะนำยอดนิยมประจำย่าน</h3>
-          <p>คัดสรรทำเลที่ดีที่สุด ใกล้ ${currentItem.title.split('(')[0].trim()} เดินทางสะดวก พร้อมอัปเดตราคาเงินบาทสด</p>
+          <p>คัดสรรทำเลที่ดีที่สุด ใกล้ ${currentItem.title.split('(')[0].trim()} เดินทางสะดวก พร้อมคาดการณ์ราคาเงินบาทสดตามฤดูกาล</p>
         </div>
         <button class="btn primary view-landmark-detail-btn" data-id="${currentItem.id}">
           📖 ดูข้อมูลที่เที่ยวนี้
@@ -562,10 +647,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <div class="hotel-showcase-grid">
         ${currentItem.nearbyHotels.map((h, idx) => {
-          const estTHB = Math.round(h.priceJPY * currentExchangeRate);
-          const badgeHtml = h.promoBadge 
-            ? `<span class="hotel-rank-badge" style="background: #dc2626; color: white;">${h.promoBadge}</span>`
-            : `<span class="hotel-rank-badge">#${idx + 1} ยอดนิยม</span>`;
+          const estJPY = Math.round(h.priceJPY * seasonInfo.multiplier);
+          const estTHB = Math.round(estJPY * currentExchangeRate);
+
+          let badgeHtml = "";
+          if (h.promoBadge) {
+            badgeHtml = `<span class="hotel-rank-badge" style="background: #dc2626; color: white;">${h.promoBadge}</span>`;
+          } else if (seasonInfo.badge) {
+            badgeHtml = `<span class="hotel-rank-badge" style="background: ${seasonInfo.badgeBg}; color: ${seasonInfo.badgeColor}; border: 1px solid ${seasonInfo.badgeColor}; font-weight: 800;">${seasonInfo.badge}</span>`;
+          } else {
+            badgeHtml = `<span class="hotel-rank-badge">#${idx + 1} ยอดนิยม</span>`;
+          }
+
           return `
             <div class="hotel-showcase-card">
               <div class="hotel-card-badge-row">
@@ -584,8 +677,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
               <div class="hotel-showcase-pricing">
                 <div class="hotel-price-box">
-                  <span class="hotel-price-range">${h.priceRange}</span>
-                  <strong class="hotel-price-thb">เริ่มต้น ~${estTHB.toLocaleString()} บาท/คืน</strong>
+                  <span class="hotel-price-range">${selectedHotelSeason === "all" ? h.priceRange : `¥${estJPY.toLocaleString()} เยน / คืน`}</span>
+                  <strong class="hotel-price-thb">${selectedHotelSeason === "all" ? 'เริ่มต้น ' : ''}~${estTHB.toLocaleString()} บาท/คืน</strong>
+                  ${selectedHotelSeason !== "all" ? `<small style="font-size: 0.72rem; color: ${seasonInfo.badgeColor}; font-weight: 700; margin-top: 2px;">${seasonInfo.seasonLabel}</small>` : ''}
                 </div>
                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
                   🗺️ ดูแผนที่ & เช็กห้องว่าง
@@ -2343,8 +2437,10 @@ document.addEventListener("DOMContentLoaded", () => {
       seasonPills.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
       e.currentTarget.classList.add("active");
       currentSeason = e.currentTarget.getAttribute("data-season");
+      selectedHotelSeason = currentSeason;
       currentCardPage = 1;
       renderCards();
+      renderHotelGuide();
     });
   });
 

@@ -1040,6 +1040,49 @@ body {
   background: #dcfce7;
 }
 
+.hotel-season-forecast-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.hotel-season-pills {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.hotel-season-pill {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  padding: 0.42rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hotel-season-pill:hover {
+  border-color: #f59e0b;
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.hotel-season-pill.active {
+  background: #b45309;
+  border-color: #b45309;
+  color: white;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.28);
+}
+
 .hotel-attraction-display {
   background: white;
   border-radius: var(--radius-xl);
