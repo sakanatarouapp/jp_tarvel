@@ -324,6 +324,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return titles[item.id] || `📍 ${item.title.split('(')[0].split('&')[0].trim()}`;
   }
 
+  let customHotelSearchQuery = "";
+  const hotelCustomSearchInput = document.getElementById("hotel-custom-search-input");
+  const hotelClearSearchBtn = document.getElementById("hotel-clear-search-btn");
+  const hotelSearchSubmitBtn = document.getElementById("hotel-search-submit-btn");
+
   function renderHotelGuide() {
     if (!hotelAttractionDisplay) return;
 
@@ -348,6 +353,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       hotelRegionPills.querySelectorAll(".hotel-region-pill").forEach(btn => {
         btn.addEventListener("click", (e) => {
+          customHotelSearchQuery = "";
+          if (hotelCustomSearchInput) hotelCustomSearchInput.value = "";
+          if (hotelClearSearchBtn) hotelClearSearchBtn.style.display = "none";
           selectedHotelRegion = e.currentTarget.getAttribute("data-region-id");
           // Automatically select the first landmark in this region
           const regionItems = attractionsWithHotels.filter(i => {
@@ -380,6 +388,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       hotelLandmarkPills.querySelectorAll(".hotel-landmark-pill").forEach(btn => {
         btn.addEventListener("click", (e) => {
+          customHotelSearchQuery = "";
+          if (hotelCustomSearchInput) hotelCustomSearchInput.value = "";
+          if (hotelClearSearchBtn) hotelClearSearchBtn.style.display = "none";
           selectedHotelAttractionId = e.currentTarget.getAttribute("data-id");
           renderHotelGuide();
         });
@@ -405,6 +416,9 @@ document.addEventListener("DOMContentLoaded", () => {
       hotelDirectSelect.innerHTML = optHtml;
 
       hotelDirectSelect.onchange = (e) => {
+        customHotelSearchQuery = "";
+        if (hotelCustomSearchInput) hotelCustomSearchInput.value = "";
+        if (hotelClearSearchBtn) hotelClearSearchBtn.style.display = "none";
         const targetId = e.target.value;
         const targetItem = JAPAN_DATA.find(i => i.id === targetId);
         if (targetItem) {
@@ -415,7 +429,122 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
-    // 5. Render Current Item Hotel Cards
+    // 5. If Custom Hotel Search Query is Active
+    if (customHotelSearchQuery.trim() !== "") {
+      const q = customHotelSearchQuery.trim().toLowerCase();
+      
+      let matchedHotels = [];
+      attractionsWithHotels.forEach(att => {
+        att.nearbyHotels.forEach(h => {
+          const matchName = h.name.toLowerCase().includes(q);
+          const matchJp = h.japanese ? h.japanese.toLowerCase().includes(q) : false;
+          const matchQuery = h.searchQuery ? h.searchQuery.toLowerCase().includes(q) : false;
+          const matchHighlight = h.highlight ? h.highlight.toLowerCase().includes(q) : false;
+          const matchType = h.type ? h.type.toLowerCase().includes(q) : false;
+          const matchAtt = att.title.toLowerCase().includes(q);
+
+          if (matchName || matchJp || matchQuery || matchHighlight || matchType || matchAtt) {
+            if (!matchedHotels.some(existing => existing.name === h.name)) {
+              matchedHotels.push({ ...h, parentLandmark: att.title });
+            }
+          }
+        });
+      });
+
+      let customHotelCardHtml = "";
+      if (matchedHotels.length === 0) {
+        const estJpy = 16500;
+        const estThb = Math.round(estJpy * currentExchangeRate);
+        customHotelCardHtml = `
+          <div class="hotel-showcase-card" style="border: 2px dashed #059669; background: #f0fdf4;">
+            <div class="hotel-card-badge-row">
+              <span class="hotel-rank-badge" style="background: #059669; color: white;">🔍 โรงแรมค้นหาอิสระ</span>
+              <span class="hotel-rating-badge">⭐ 4.5+ (ประเมิน)</span>
+            </div>
+            <h4 class="hotel-showcase-name">${customHotelSearchQuery}</h4>
+            <div class="hotel-showcase-jp">日本ホテル検索 (Live Hotel Search)</div>
+            
+            <div class="hotel-tags-row">
+              <span class="hotel-tag type">โรงแรม / ที่พักในญี่ปุ่น</span>
+              <span class="hotel-tag distance">🚶 ใจกลางเมือง / ใกล้สถานี</span>
+            </div>
+
+            <p class="hotel-showcase-highlight">ค้นหาข้อมูลห้องพัก พิกัดแผนที่จริง และเช็กราคาเรียลไทม์จากระบบจองโรงแรม</p>
+
+            <div class="hotel-showcase-pricing">
+              <div class="hotel-price-box">
+                <span class="hotel-price-range">ราคาเฉลี่ยมาตรฐาน</span>
+                <strong class="hotel-price-thb">~${estThb.toLocaleString()} บาท/คืน</strong>
+              </div>
+              <div style="display: flex; gap: 0.4rem; flex-direction: column; width: 100%;">
+                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customHotelSearchQuery + ' hotel japan')}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
+                  🗺️ ดูพิกัดบน Google Maps
+                </a>
+                <a href="https://www.agoda.com/search?text=${encodeURIComponent(customHotelSearchQuery + ' japan')}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn" style="background: #0284c7;">
+                  🏨 เช็กราคาห้องว่างบน Agoda
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      hotelAttractionDisplay.innerHTML = `
+        <div class="hotel-search-results-banner">
+          <div>
+            <strong>🔍 ผลการค้นหาโรงแรม:</strong> พบ ${matchedHotels.length > 0 ? matchedHotels.length : 1} รายการ สำหรับ <em>"${customHotelSearchQuery}"</em>
+          </div>
+          <button type="button" class="hotel-reset-search-btn" id="hotel-reset-search-btn">
+            🔄 ล้างการค้นหา & กลับไปดูตามย่าน
+          </button>
+        </div>
+
+        <div class="hotel-showcase-grid">
+          ${customHotelCardHtml}
+          ${matchedHotels.map((h, idx) => {
+            const estTHB = Math.round(h.priceJPY * currentExchangeRate);
+            return `
+              <div class="hotel-showcase-card">
+                <div class="hotel-card-badge-row">
+                  <span class="hotel-rank-badge">#${idx + 1} ตรงกับคำค้นหา</span>
+                  <span class="hotel-rating-badge">⭐ ${h.rating} / 5.0</span>
+                </div>
+                <h4 class="hotel-showcase-name">${h.name}</h4>
+                <div class="hotel-showcase-jp">${h.japanese} (ย่าน: ${h.parentLandmark ? h.parentLandmark.split('(')[0].trim() : 'ญี่ปุ่น'})</div>
+                
+                <div class="hotel-tags-row">
+                  <span class="hotel-tag type">${h.type}</span>
+                  <span class="hotel-tag distance">🚶 ${h.distance}</span>
+                </div>
+
+                <p class="hotel-showcase-highlight">${h.highlight}</p>
+
+                <div class="hotel-showcase-pricing">
+                  <div class="hotel-price-box">
+                    <span class="hotel-price-range">${h.priceRange}</span>
+                    <strong class="hotel-price-thb">~${estTHB.toLocaleString()} บาท/คืน</strong>
+                  </div>
+                  <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
+                    🗺️ ดูแผนที่ & เช็กห้องว่าง
+                  </a>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      hotelAttractionDisplay.querySelector("#hotel-reset-search-btn")?.addEventListener("click", () => {
+        customHotelSearchQuery = "";
+        if (hotelCustomSearchInput) hotelCustomSearchInput.value = "";
+        if (hotelClearSearchBtn) hotelClearSearchBtn.style.display = "none";
+        renderHotelGuide();
+      });
+
+      return;
+    }
+
+    // 6. Render Current Item Hotel Cards (Default Landmark View)
     const currentItem = JAPAN_DATA.find(i => i.id === selectedHotelAttractionId) || attractionsWithHotels[0];
     if (!currentItem) return;
 
@@ -467,6 +596,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     hotelAttractionDisplay.querySelector(".view-landmark-detail-btn")?.addEventListener("click", (e) => {
       openDetailModal(currentItem.id);
+    });
+  }
+
+  // Bind Hotel Search Input Event Listeners
+  if (hotelCustomSearchInput) {
+    hotelCustomSearchInput.addEventListener("input", (e) => {
+      const val = e.target.value;
+      if (hotelClearSearchBtn) {
+        hotelClearSearchBtn.style.display = val.length > 0 ? "inline-flex" : "none";
+      }
+      if (val.trim() === "") {
+        customHotelSearchQuery = "";
+        renderHotelGuide();
+      }
+    });
+
+    hotelCustomSearchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        customHotelSearchQuery = hotelCustomSearchInput.value;
+        renderHotelGuide();
+      }
+    });
+  }
+
+  if (hotelSearchSubmitBtn) {
+    hotelSearchSubmitBtn.addEventListener("click", () => {
+      if (hotelCustomSearchInput) {
+        customHotelSearchQuery = hotelCustomSearchInput.value;
+        renderHotelGuide();
+      }
+    });
+  }
+
+  if (hotelClearSearchBtn) {
+    hotelClearSearchBtn.addEventListener("click", () => {
+      if (hotelCustomSearchInput) {
+        hotelCustomSearchInput.value = "";
+        hotelClearSearchBtn.style.display = "none";
+      }
+      customHotelSearchQuery = "";
+      renderHotelGuide();
     });
   }
 
@@ -2431,8 +2601,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ================= 12.1 Real-Time Live Sync & Dynamic Seasonal Pricing Engine =================
-  let GOOGLE_SHEET_ID = localStorage.getItem("nippon_google_sheet_id") || "";
+  const DEFAULT_GOOGLE_SHEET_ID = "1TORgRDsPN0DH3ZAaSBibtZPw7FRzIg8r9fnYZlsxQhw";
+  let GOOGLE_SHEET_ID = localStorage.getItem("nippon_google_sheet_id") || DEFAULT_GOOGLE_SHEET_ID;
   let liveSheetData = {};
+  let isGoogleSheetConnected = false;
 
   function updateLiveStatusBadges(rate) {
     const liveRateText = document.getElementById("live-rate-status-text");
@@ -2444,38 +2616,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (liveSeasonText) {
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      const dayOfWeek = now.getDay();
+      if (isGoogleSheetConnected) {
+        liveSeasonText.textContent = `🟢 เชื่อมต่อ Google Sheets สด (Auto-Synced)`;
+        liveSeasonText.style.color = "#047857";
+      } else {
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        const dayOfWeek = now.getDay();
 
-      let seasonName = "ฤดูหนาว (Winter)";
-      let tierNote = "วันธรรมดา (Regular Tier)";
+        let seasonName = "ฤดูหนาว (Winter)";
+        let tierNote = "วันธรรมดา (Regular)";
 
-      if (month >= 3 && month <= 5) {
-        seasonName = "ฤดูใบไม้ผลิ 🌸 (Spring)";
-      } else if (month >= 6 && month <= 8) {
-        seasonName = "ฤดูร้อน ☀️ (Summer)";
-      } else if (month >= 9 && month <= 11) {
-        seasonName = "ใบไม้เปลี่ยนสี 🍁 (Autumn)";
+        if (month >= 3 && month <= 5) {
+          seasonName = "ฤดูใบไม้ผลิ 🌸 (Spring)";
+        } else if (month >= 6 && month <= 8) {
+          seasonName = "ฤดูร้อน ☀️ (Summer)";
+        } else if (month >= 9 && month <= 11) {
+          seasonName = "ใบไม้เปลี่ยนสี 🍁 (Autumn)";
+        }
+
+        const isSakuraPeak = (month === 3 && day >= 20) || (month === 4 && day <= 15);
+        const isGoldenWeek = (month === 4 && day >= 29) || (month === 5 && day <= 6);
+        const isObon = (month === 8 && day >= 10 && day <= 18);
+        const isNewYear = (month === 12 && day >= 28) || (month === 1 && day <= 5);
+
+        if (isSakuraPeak || isGoldenWeek || isObon || isNewYear) {
+          tierNote = "🔥 ช่วงไฮซีซั่นพีค (Peak Holiday)";
+        } else if (dayOfWeek === 0 || dayOfWeek === 6 || dayOfWeek === 5) {
+          tierNote = "🎉 สุดสัปดาห์ (Weekend)";
+        }
+
+        liveSeasonText.textContent = `🗓️ ปฏิทิน: ${seasonName} • ${tierNote}`;
       }
-
-      const isSakuraPeak = (month === 3 && day >= 20) || (month === 4 && day <= 15);
-      const isGoldenWeek = (month === 4 && day >= 29) || (month === 5 && day <= 6);
-      const isObon = (month === 8 && day >= 10 && day <= 18);
-      const isNewYear = (month === 12 && day >= 28) || (month === 1 && day <= 5);
-
-      if (isSakuraPeak || isGoldenWeek || isObon || isNewYear) {
-        tierNote = "🔥 ช่วงไฮซีซั่นพีค (Peak Holiday Tier)";
-      } else if (dayOfWeek === 0 || dayOfWeek === 6 || dayOfWeek === 5) {
-        tierNote = "🎉 สุดสัปดาห์ (Weekend Tier)";
-      }
-
-      liveSeasonText.textContent = `🗓️ ปฏิทินวันนี้: ${seasonName} • ${tierNote}`;
     }
   }
 
   async function fetchLiveExchangeRate() {
+    if (typeof fetch === "undefined") return;
     try {
       const res = await fetch("https://open.er-api.com/v6/latest/JPY");
       if (res.ok) {
@@ -2492,6 +2670,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function fetchGoogleSheetsPrices(sheetId) {
+    if (typeof fetch === "undefined") return;
     const targetId = sheetId || GOOGLE_SHEET_ID;
     if (!targetId) return;
 
@@ -2523,6 +2702,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
 
+          isGoogleSheetConnected = true;
+          updateLiveStatusBadges(currentExchangeRate);
           applyLiveSheetPrices();
         }
       }

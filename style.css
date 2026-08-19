@@ -925,6 +925,121 @@ body {
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
+.hotel-custom-search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.hotel-search-controls-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.hotel-search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+}
+
+.hotel-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+#hotel-custom-search-input {
+  width: 100%;
+  padding: 0.55rem 2.2rem 0.55rem 2.4rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--primary-navy);
+  background: white;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+#hotel-custom-search-input:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+.hotel-clear-btn {
+  position: absolute;
+  right: 0.65rem;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.hotel-search-submit-btn {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 0.55rem 1.15rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+
+.hotel-search-submit-btn:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.hotel-search-results-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 0.75rem 1.15rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hotel-reset-search-btn {
+  background: white;
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hotel-reset-search-btn:hover {
+  background: #dcfce7;
+}
+
 .hotel-attraction-display {
   background: white;
   border-radius: var(--radius-xl);

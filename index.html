@@ -170,10 +170,25 @@
             </div>
           </div>
           <div class="hotel-direct-select-wrap">
-            <label for="hotel-direct-select" class="hotel-select-label">🔍 หรือค้นหาจุดหมายทั้งหมด:</label>
+            <label for="hotel-direct-select" class="hotel-select-label">📌 หรือเลือกจุดหมายทั้งหมด:</label>
             <select id="hotel-direct-select" class="hotel-direct-select">
               <!-- Injected via JavaScript -->
             </select>
+          </div>
+        </div>
+
+        <!-- Tier 3: Free-Text Custom Hotel Search Box -->
+        <div class="hotel-custom-search-bar">
+          <span class="hotel-step-label">3️⃣ 🔍 พิมพ์ค้นหาโรงแรมอิสระ:</span>
+          <div class="hotel-search-controls-row">
+            <div class="hotel-search-input-wrap">
+              <span class="hotel-search-icon">🏨</span>
+              <input type="text" id="hotel-custom-search-input" placeholder="พิมพ์ชื่อโรงแรม เช่น 'APA Hotel', 'Hilton', 'Dormy Inn', 'Granbell', 'Prince', 'เรียวกัง'..." autocomplete="off">
+              <button type="button" id="hotel-clear-search-btn" class="hotel-clear-btn" style="display: none;">✕</button>
+            </div>
+            <button type="button" id="hotel-search-submit-btn" class="hotel-search-submit-btn">
+              🔍 ค้นหาราคา & ห้องพัก
+            </button>
           </div>
         </div>
       </div>
