@@ -6513,6 +6513,58 @@ body {
   padding: 0.55rem 0.75rem;
 }
 
+.pocket-place-content-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.pocket-card-day-ctrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.pocket-card-day-ctrl:hover,
+.pocket-card-day-ctrl:focus-within {
+  background: #e0f2fe;
+  border-color: #0284c7;
+}
+
+.pocket-day-pill-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.pocket-item-day-select {
+  border: 1px solid #94a3b8;
+  background: white;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.pocket-item-day-select:focus,
+.pocket-item-day-select:hover {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
 .pocket-place-name {
   font-size: 0.88rem;
   font-weight: 700;
@@ -6605,7 +6657,8 @@ body {
   .pocket-export-header,
   .pocket-export-footer,
   .pocket-modal-close-btn,
-  .pocket-export-toolbar {
+  .pocket-export-toolbar,
+  .pocket-card-day-ctrl {
     display: none !important;
   }
 

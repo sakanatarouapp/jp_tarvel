@@ -4262,6 +4262,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const dayNumbers = Object.keys(dayMap).map(Number).sort((a, b) => a - b);
     const totalDays = dayNumbers.length || 1;
+    const maxDayInList = Math.max(3, ...dayNumbers, (selectedStayNights || 2));
+    const availableDays = Array.from({ length: Math.max(maxDayInList + 1, 5) }, (_, i) => i + 1);
     const dayTimes = ["09:00", "12:30", "15:30", "18:30", "20:30"];
     const transitSteps = [
       "🚇 Tokyo Metro / JR Line (~15 นาที)",
@@ -4291,9 +4293,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="pocket-timeline-row">
                   <div class="pocket-time-col">⏰ ${tTime}</div>
                   <div class="pocket-info-col">
-                    <div class="pocket-place-name">${num}. ${item.title}</div>
-                    <div class="pocket-place-sub">
-                      📍 สถานี/พิกัด: <strong>${station}</strong> • 🇯🇵 ${item.japanese || item.title}
+                    <div class="pocket-place-content-row">
+                      <div style="flex: 1; min-width: 0;">
+                        <div class="pocket-place-name">${num}. ${item.title}</div>
+                        <div class="pocket-place-sub">
+                          📍 สถานี/พิกัด: <strong>${station}</strong> • 🇯🇵 ${item.japanese || item.title}
+                        </div>
+                      </div>
+                      <div class="pocket-card-day-ctrl">
+                        <span class="pocket-day-pill-label">ย้ายวัน:</span>
+                        <select class="pocket-item-day-select" data-id="${item.id}" title="ย้ายสถานที่นี้ไปวันที่...">
+                          ${availableDays.map(d => `
+                            <option value="${d}" ${d === (item.day || day) ? 'selected' : ''}>DAY ${d}</option>
+                          `).join("")}
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -4418,6 +4432,22 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    // Attach Day change listener inside the pocket sheet cards
+    pocketSheetRenderTarget.querySelectorAll(".pocket-item-day-select").forEach(select => {
+      select.addEventListener("change", (e) => {
+        const id = e.target.getAttribute("data-id");
+        const newDay = parseInt(e.target.value, 10);
+        const item = itineraryList.find(i => i.id === id);
+        if (item) {
+          item.day = newDay;
+          localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+          openPocketExportModal();
+          updateItineraryUI();
+          renderRouteSimulator();
+        }
+      });
+    });
+
     if (pocketExportModal) pocketExportModal.style.display = "flex";
   }
 
@@ -4437,12 +4467,17 @@ document.addEventListener("DOMContentLoaded", () => {
       exportActionImgBtn.disabled = true;
     }
 
+    // Temporarily hide interactive day controls for clean picture capture
+    const dayCtrls = target.querySelectorAll(".pocket-card-day-ctrl");
+    dayCtrls.forEach(el => el.style.display = "none");
+
     html2canvas(target, {
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false
     }).then(canvas => {
+      dayCtrls.forEach(el => el.style.display = "");
       const link = document.createElement("a");
       link.download = `nippon_trip_plan_${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -4453,6 +4488,7 @@ document.addEventListener("DOMContentLoaded", () => {
         exportActionImgBtn.disabled = false;
       }
     }).catch(err => {
+      dayCtrls.forEach(el => el.style.display = "");
       console.error("Error generating image:", err);
       alert("เกิดข้อผิดพลาดในการสร้างรูปภาพ กรุณาลองใหม่อีกครั้งหรือใช้ปุ่มพิมพ์ PDF ครับ");
       if (exportActionImgBtn) {
