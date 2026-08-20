@@ -160,6 +160,14 @@ body {
   gap: 0.75rem;
 }
 
+.btn-text-full {
+  display: inline;
+}
+
+.btn-text-short {
+  display: none;
+}
+
 .plan-link {
   background-color: var(--primary-navy) !important;
   color: white !important;
