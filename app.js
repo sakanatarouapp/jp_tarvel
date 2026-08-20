@@ -4291,7 +4291,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const num = sheetGlobalCounter++;
               return `
                 <div class="pocket-timeline-row">
-                  <div class="pocket-time-col">⏰ ${tTime}</div>
+                  <div class="pocket-time-col"><span>⏰</span> <span>${tTime}</span></div>
                   <div class="pocket-info-col">
                     <div class="pocket-place-content-row">
                       <div style="flex: 1; min-width: 0;">
