@@ -4112,7 +4112,310 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================= 20. One-Click Pocket Itinerary Export Hub =================
+  const pocketExportModal = document.getElementById("pocket-export-modal");
+  const closePocketExportModalBtn = document.getElementById("close-pocket-export-modal-btn");
+  const pocketModalCancelBtn = document.getElementById("pocket-modal-cancel-btn");
+  const drawerExportPocketBtn = document.getElementById("drawer-export-pocket-btn");
+  const openExportModalBtnRoute = document.getElementById("open-export-modal-btn-route");
+  const exportActionPdfBtn = document.getElementById("export-action-pdf-btn");
+  const exportActionImgBtn = document.getElementById("export-action-img-btn");
+  const exportActionLinkBtn = document.getElementById("export-action-link-btn");
+  const exportActionLineBtn = document.getElementById("export-action-line-btn");
+  const pocketSheetRenderTarget = document.getElementById("pocket-sheet-render-target");
+
+  function openPocketExportModal() {
+    if (!pocketSheetRenderTarget) return;
+
+    // Use current itinerary or fallback to sample items if empty
+    let planItems = itineraryList;
+    let isFallback = false;
+    if (!planItems || planItems.length === 0) {
+      isFallback = true;
+      planItems = [
+        { id: "sensoji", title: "วัดเซ็นโซจิ (Sensoji Temple)", japanese: "浅草寺", tag: "วัด & วัฒนธรรม", cost: "ฟรี" },
+        { id: "skytree", title: "โตเกียวสกายทรี (Tokyo Skytree)", japanese: "東京スカイツリー", tag: "แลนด์มาร์ก & ชมวิว", cost: "¥2,100" },
+        { id: "shibuya", title: "ห้าแยกชิบูย่า & ฮาจิโกะ", japanese: "渋谷スクランブル交差点", tag: "ช้อปปิ้ง & ไลฟ์สไตล์", cost: "ฟรี" },
+        { id: "usj", title: "ยูนิเวอร์แซล สตูดิโอส์ เจแปน (USJ)", japanese: "ユニバーサル・スタジオ・ジャパン", tag: "สวนสนุกระดับโลก", cost: "¥8,600" }
+      ];
+    }
+
+    // Build Day by Day
+    const itemsPerDay = 3;
+    const totalDays = Math.ceil(planItems.length / itemsPerDay);
+    const dayTimes = ["09:00", "12:30", "15:30", "18:30"];
+    const transitSteps = [
+      "🚇 Tokyo Metro / JR Line (~15 นาที)",
+      "🚶 เดินชมเมือง (~8 นาที) / ต่อรถไฟใต้ดิน (~12 นาที)",
+      "🚇 รถไฟสายหลัก (~20 นาที)"
+    ];
+
+    let daysHtml = "";
+    for (let day = 1; day <= totalDays; day++) {
+      const startIndex = (day - 1) * itemsPerDay;
+      const dayList = planItems.slice(startIndex, startIndex + itemsPerDay);
+
+      daysHtml += `
+        <div class="pocket-day-section">
+          <div class="pocket-day-header">
+            <span>🗓️ DAY ${day}: กิจกรรมท่องเที่ยววันที่ ${day}</span>
+            <span style="font-size: 0.78rem; font-weight: 700; color: #475569;">${dayList.length} จุดหมาย</span>
+          </div>
+          <div class="pocket-timeline-items">
+            ${dayList.map((item, idx) => {
+              const fullData = JAPAN_DATA.find(d => d.id === item.id) || {};
+              const station = fullData.transport ? fullData.transport.split('(')[0].replace('สถานี', '').trim() : (item.tag || 'ใจกลางเมือง');
+              const tTime = dayTimes[idx] || `${9 + idx * 3}:00`;
+              return `
+                <div class="pocket-timeline-row">
+                  <div class="pocket-time-col">⏰ ${tTime}</div>
+                  <div class="pocket-info-col">
+                    <div class="pocket-place-name">${startIndex + idx + 1}. ${item.title}</div>
+                    <div class="pocket-place-sub">
+                      📍 สถานี/พิกัด: <strong>${station}</strong> • 🇯🇵 ${item.japanese || item.title}
+                    </div>
+                  </div>
+                </div>
+                ${idx < dayList.length - 1 ? `<div class="pocket-transit-connector">↓ ${transitSteps[idx % transitSteps.length]}</div>` : ''}
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    // Selected Hotel Data
+    const sampleHotel = JAPAN_DATA.find(i => i.nearbyHotels && i.nearbyHotels.length > 0)?.nearbyHotels[0] || {
+      name: "Hotel Universal Port Vita",
+      japanese: "ホテル ユニバーサル ポート ヴィータ",
+      priceJPY: 6550,
+      distance: "เดิน 3 นาทีถึงสถานี Universal City",
+      type: "โรงแรมทำเลทอง"
+    };
+
+    const hotelPricing = calculateDateAwareHotelPricing(sampleHotel, selectedCheckinDate, selectedStayNights, selectedGuestCount);
+
+    // Budget Calculation
+    const estTransitJPY = planItems.length * 2800;
+    const estFoodJPY = totalDays * 4500 * (selectedGuestCount || 2);
+    const estHotelJPY = hotelPricing.totalJPY;
+    const grandTotalJPY = estTransitJPY + estFoodJPY + estHotelJPY;
+    const grandTotalTHB = Math.round(grandTotalJPY * currentExchangeRate);
+
+    // Calculate checkout date
+    const checkinParts = (selectedCheckinDate || "2026-09-01").split('-');
+    const inDate = new Date(parseInt(checkinParts[0]), parseInt(checkinParts[1]) - 1, parseInt(checkinParts[2]));
+    const outDate = new Date(inDate);
+    outDate.setDate(outDate.getDate() + (selectedStayNights || 2));
+    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    const formattedCheckin = `${inDate.getDate()} ${thaiMonths[inDate.getMonth()]} ${inDate.getFullYear()}`;
+    const formattedCheckout = `${outDate.getDate()} ${thaiMonths[outDate.getMonth()]} ${outDate.getFullYear()}`;
+
+    pocketSheetRenderTarget.innerHTML = `
+      <div class="pocket-itinerary-card" id="pocket-itinerary-sheet">
+        <!-- Header Banner -->
+        <div class="pocket-header-banner">
+          <div>
+            <div class="pocket-brand-title">
+              <span>⛩️</span> NIPPON TRAVEL POCKET ITINERARY
+            </div>
+            <div class="pocket-brand-sub">สรุปแผนการเดินทาง & ข้อมูลสำคัญท่องเที่ยวญี่ปุ่น 2026</div>
+          </div>
+          <div class="pocket-meta-pill-group">
+            <span class="pocket-meta-pill highlight">🗓️ ${formattedCheckin} - ${formattedCheckout}</span>
+            <span class="pocket-meta-pill">🌙 ${selectedStayNights || 2} คืน</span>
+            <span class="pocket-meta-pill">👥 ${selectedGuestCount || 2} ท่าน</span>
+            <span class="pocket-meta-pill">💱 1 JPY = ${currentExchangeRate.toFixed(4)} THB</span>
+          </div>
+        </div>
+
+        ${isFallback ? `
+          <div style="background: #fffbeb; border: 1px dashed #f59e0b; padding: 6px 12px; border-radius: 8px; font-size: 0.76rem; color: #b45309;">
+            💡 <em>หมายเหตุ: ตัวอย่างแผนเที่ยวจำลอง (เนื่องจากยังไม่มีรายการในแผน) คุณสามารถเพิ่มสถานที่ที่ชอบได้ทุกเมื่อครับ</em>
+          </div>
+        ` : ''}
+
+        <!-- Day by Day Section -->
+        ${daysHtml}
+
+        <!-- Two Column Grid: Hotel & Budget/Emergency -->
+        <div class="pocket-two-col-grid">
+          <!-- Hotel Summary Box -->
+          <div class="pocket-card-box">
+            <div class="pocket-box-title">
+              <span>🏨</span> ข้อมูลที่พักแนะนำ (Accommodation)
+            </div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; line-height: 1.3;">
+              ${sampleHotel.name}
+            </div>
+            <div style="font-size: 0.75rem; color: #16a34a; font-family: var(--font-jp); margin-bottom: 0.4rem;">
+              ${sampleHotel.japanese || ''}
+            </div>
+            <div style="font-size: 0.78rem; color: #475569; margin-bottom: 0.35rem;">
+              📍 ทำเล: ${sampleHotel.distance || 'ใกล้สถานีรถไฟหลัก'}
+            </div>
+            <div style="font-size: 0.78rem; color: #475569; margin-bottom: 0.35rem;">
+              🗓️ เข้าพัก: <strong>${formattedCheckin}</strong> - <strong>${formattedCheckout}</strong> (${hotelPricing.nights} คืน)
+            </div>
+            <div style="font-size: 0.82rem; font-weight: 800; color: #dc2626; margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px dashed #cbd5e1;">
+              💳 ค่าที่พักประเมิน: ~¥${hotelPricing.totalJPY.toLocaleString()} เยน (~${hotelPricing.totalTHB.toLocaleString()} บาท)
+            </div>
+          </div>
+
+          <!-- Budget & Fast Pass Box -->
+          <div class="pocket-card-box">
+            <div class="pocket-box-title">
+              <span>💰</span> สรุปงบประมาณ & เบอร์ฉุกเฉิน
+            </div>
+            <div style="font-size: 0.78rem; color: #334155; line-height: 1.5; margin-bottom: 0.5rem;">
+              • ค่าเดินทาง/ตั๋ว: ~¥${estTransitJPY.toLocaleString()} เยน (~${Math.round(estTransitJPY * currentExchangeRate).toLocaleString()} บ.)<br>
+              • ค่าอาหาร & กินดื่ม: ~¥${estFoodJPY.toLocaleString()} เยน (~${Math.round(estFoodJPY * currentExchangeRate).toLocaleString()} บ.)<br>
+              • ค่าที่พัก (${hotelPricing.nights} คืน): ~¥${estHotelJPY.toLocaleString()} เยน (~${Math.round(estHotelJPY * currentExchangeRate).toLocaleString()} บ.)<br>
+              <strong style="color: #047857; font-size: 0.84rem;">🏷️ รวมงบประมาณทริป: ~¥${grandTotalJPY.toLocaleString()} เยน (~${grandTotalTHB.toLocaleString()} บาท)</strong>
+            </div>
+            <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700; border-top: 1px dashed #cbd5e1; padding-top: 0.4rem;">
+              🚨 เบอร์ฉุกเฉิน: 🚓 ตำรวจ 110 | 🚑 รถพยาบาล 119<br>
+              🇹🇭 สถานทูตไทยโตเกียว: +81-3-5789-2525<br>
+              🛂 วัตถุประสงค์ยื่น ตม.: ท่องเที่ยว (Sightseeing / Holiday)
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (pocketExportModal) pocketExportModal.style.display = "flex";
+  }
+
+  function closePocketExportModal() {
+    if (pocketExportModal) pocketExportModal.style.display = "none";
+  }
+
+  function exportPocketAsImage() {
+    const target = document.getElementById("pocket-itinerary-sheet");
+    if (!target || typeof html2canvas === "undefined") {
+      alert("ขออภัย ไม่พบไลบรารีสร้างรูปภาพ กรุณาใช้ปุ่มพิมพ์/บันทึก PDF แทนครับ");
+      return;
+    }
+
+    if (exportActionImgBtn) {
+      exportActionImgBtn.textContent = "⏳ กำลังสร้างรูปภาพ...";
+      exportActionImgBtn.disabled = true;
+    }
+
+    html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false
+    }).then(canvas => {
+      const link = document.createElement("a");
+      link.download = `nippon_trip_plan_${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+
+      if (exportActionImgBtn) {
+        exportActionImgBtn.innerHTML = "<span>📱</span> บันทึกเป็นการ์ดรูปภาพ (PNG)";
+        exportActionImgBtn.disabled = false;
+      }
+    }).catch(err => {
+      console.error("Error generating image:", err);
+      alert("เกิดข้อผิดพลาดในการสร้างรูปภาพ กรุณาลองใหม่อีกครั้งหรือใช้ปุ่มพิมพ์ PDF ครับ");
+      if (exportActionImgBtn) {
+        exportActionImgBtn.innerHTML = "<span>📱</span> บันทึกเป็นการ์ดรูปภาพ (PNG)";
+        exportActionImgBtn.disabled = false;
+      }
+    });
+  }
+
+  function shareItineraryLink() {
+    const ids = itineraryList.map(i => i.id).join(',');
+    const url = new URL(window.location.href);
+    if (ids) {
+      url.searchParams.set("plan", ids);
+    }
+    url.searchParams.set("checkin", selectedCheckinDate || "");
+    url.searchParams.set("nights", selectedStayNights || 2);
+    url.searchParams.set("guests", selectedGuestCount || 2);
+
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      if (exportActionLinkBtn) {
+        const orig = exportActionLinkBtn.innerHTML;
+        exportActionLinkBtn.innerHTML = "<span>✓</span> คัดลอกลิงก์แล้ว!";
+        setTimeout(() => { exportActionLinkBtn.innerHTML = orig; }, 2500);
+      }
+    }).catch(() => {
+      prompt("คัดลอกลิงก์แผนเที่ยวนี้ส่งให้เพื่อนได้เลยครับ:", url.toString());
+    });
+  }
+
+  function shareItineraryToLine() {
+    const titles = itineraryList.map((item, idx) => `${idx + 1}. ${item.title}`).join('\n');
+    const msg = `🇯🇵 แผนเที่ยวญี่ปุ่นของฉัน (${selectedCheckinDate || 'เร็วๆ นี้'}):\n${titles}\n\nดูรายละเอียดแผนเที่ยวทั้งหมดได้ที่:\n${window.location.href}`;
+    const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(msg)}`;
+    window.open(lineUrl, "_blank");
+  }
+
+  // Event Listeners for Pocket Export Hub
+  if (drawerExportPocketBtn) {
+    drawerExportPocketBtn.addEventListener("click", () => {
+      if (itineraryDrawer) itineraryDrawer.classList.remove("open");
+      openPocketExportModal();
+    });
+  }
+  if (openExportModalBtnRoute) {
+    openExportModalBtnRoute.addEventListener("click", openPocketExportModal);
+  }
+  if (closePocketExportModalBtn) {
+    closePocketExportModalBtn.addEventListener("click", closePocketExportModal);
+  }
+  if (pocketModalCancelBtn) {
+    pocketModalCancelBtn.addEventListener("click", closePocketExportModal);
+  }
+  if (exportActionPdfBtn) {
+    exportActionPdfBtn.addEventListener("click", () => {
+      window.print();
+    });
+  }
+  if (exportActionImgBtn) {
+    exportActionImgBtn.addEventListener("click", exportPocketAsImage);
+  }
+  if (exportActionLinkBtn) {
+    exportActionLinkBtn.addEventListener("click", shareItineraryLink);
+  }
+  if (exportActionLineBtn) {
+    exportActionLineBtn.addEventListener("click", shareItineraryToLine);
+  }
+
+  function checkUrlShareParams() {
+    try {
+      if (typeof window !== "undefined" && window.location && window.location.search && typeof URLSearchParams !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const planParam = params.get('plan');
+        if (planParam) {
+          const ids = planParam.split(',');
+          ids.forEach(id => {
+            const item = JAPAN_DATA.find(i => i.id === id);
+            if (item && !itineraryList.some(ex => ex.id === item.id)) {
+              itineraryList.push({
+                id: item.id,
+                title: item.title,
+                tag: item.tag,
+                cost: item.estimatedCost,
+                region: item.region,
+                japanese: item.japanese
+              });
+            }
+          });
+          localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+        }
+      }
+    } catch (e) {
+      console.warn("Could not parse URL params", e);
+    }
+  }
+
   // Initial Render
+  checkUrlShareParams();
   updateCounts();
   renderTransitTips();
   renderHotelGuide();

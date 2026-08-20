@@ -344,9 +344,14 @@
                 <h4>📋 รายละเอียดเส้นทาง & ลำดับการต่อรถ (Step-by-Step)</h4>
                 <span style="font-size: 0.8rem; color: var(--text-muted);">สามารถลากสลับหรือกด ⬆️ ⬇️ เพื่อปรับลำดับ</span>
               </div>
-              <button class="btn" id="open-custom-place-btn-route" style="background: #059669; color: white; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
-                ✨ + เพิ่มจุดหมาย / โรงแรมของฉัน
-              </button>
+              <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                <button class="btn" id="open-export-modal-btn-route" style="background: #1e3a8a; color: white; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
+                  📥 บันทึกแผนเที่ยว (PDF/รูป)
+                </button>
+                <button class="btn" id="open-custom-place-btn-route" style="background: #059669; color: white; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
+                  ✨ + เพิ่มจุดหมายของฉัน
+                </button>
+              </div>
             </div>
           </div>
 
@@ -746,15 +751,17 @@
         <strong id="estimated-budget-total">¥0 เยน</strong>
       </div>
       <div class="drawer-actions" style="flex-direction: column; gap: 0.5rem;">
-        <button class="btn primary" id="drawer-simulate-btn" style="background: #0284c7; width: 100%; padding: 0.75rem; font-weight: 700;">
+        <button class="btn primary" id="drawer-export-pocket-btn" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; width: 100%; padding: 0.75rem; font-weight: 800; border-radius: 8px; box-shadow: 0 3px 10px rgba(5, 150, 105, 0.3); display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          📥 บันทึกแผนเที่ยว (PDF / รูปภาพ / แชร์)
+        </button>
+        <button class="btn" id="drawer-simulate-btn" style="background: #0284c7; color: white; width: 100%; padding: 0.65rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
           🗺️ เปิดระบบจำลองเส้นทาง (Simulate Route)
         </button>
         <button class="btn" id="drawer-immigration-btn" style="background: #dc2626; color: white; width: 100%; padding: 0.65rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
           🛂 การ์ดสรุปยื่น ตม. (Immigration Fast Pass) 🔊
         </button>
         <div style="display: flex; gap: 0.5rem; width: 100%;">
-          <button class="btn clear-btn" id="clear-itinerary-btn" style="flex: 1;">ล้างแผน</button>
-          <button class="btn print-btn" onclick="window.print()" style="flex: 1;">🖨️ เซฟ PDF</button>
+          <button class="btn clear-btn" id="clear-itinerary-btn" style="flex: 1;">🗑️ ล้างแผน</button>
         </div>
       </div>
     </div>
@@ -1091,6 +1098,52 @@
     </div>
   </div>
 
+  <!-- One-Click Pocket Itinerary Export Modal Hub -->
+  <div class="modal-backdrop" id="pocket-export-modal" style="display: none;">
+    <div class="modal-container pocket-export-modal-box">
+      <div class="pocket-export-header">
+        <div class="pocket-export-title-wrap">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.6rem;">🇯🇵</span>
+            <div>
+              <h3 style="margin: 0; font-size: 1.15rem; color: #1e3a8a; font-weight: 800;">สรุปแผนการเดินทางฉบับพกพา (Nippon Pocket Itinerary)</h3>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">สรุปตารางเที่ยวรายวัน, ข้อมูลโรงแรม, งบประมาณ และข้อมูลฉุกเฉิน พร้อมใช้งานแบบออฟไลน์</p>
+            </div>
+          </div>
+          <button type="button" class="pocket-modal-close-btn" id="close-pocket-export-modal-btn">&times;</button>
+        </div>
+
+        <!-- Export Toolbar Action Bar -->
+        <div class="pocket-export-toolbar">
+          <button type="button" class="export-tool-btn print-pdf-btn" id="export-action-pdf-btn">
+            <span>🖨️</span> พิมพ์ / บันทึก PDF (A4)
+          </button>
+          <button type="button" class="export-tool-btn save-img-btn" id="export-action-img-btn">
+            <span>📱</span> บันทึกเป็นการ์ดรูปภาพ (PNG)
+          </button>
+          <button type="button" class="export-tool-btn share-link-btn" id="export-action-link-btn">
+            <span>🔗</span> คัดลอกลิงก์แชร์แผน
+          </button>
+          <button type="button" class="export-tool-btn share-line-btn" id="export-action-line-btn">
+            <span>💬</span> ส่งเข้า LINE
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Sheet Scroll Area -->
+      <div class="pocket-sheet-scroll-container">
+        <div class="pocket-sheet-wrapper" id="pocket-sheet-render-target">
+          <!-- Dynamically Injected Itinerary Sheet via JavaScript -->
+        </div>
+      </div>
+
+      <div class="pocket-export-footer">
+        <span style="font-size: 0.78rem; color: #047857;">💡 <strong>เคล็ดลับ:</strong> คุณสามารถกด <em>"บันทึกเป็นการ์ดรูปภาพ"</em> เพื่อเซฟเก็บไว้ในอัลบั้มรูปมือถือ หรือ <em>"พิมพ์ / บันทึก PDF"</em> เพื่อพกพาดูตอนไม่มีเน็ต</span>
+        <button type="button" class="btn" id="pocket-modal-cancel-btn" style="background: #e2e8f0; color: var(--text-main); font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 8px;">ปิด</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Mobile Floating Quick Dock (Bottom Bar for Touch Users) -->
   <div class="mobile-floating-dock" id="mobile-floating-dock">
     <button type="button" class="mobile-dock-btn dock-imm-btn" id="mobile-dock-imm-btn">
@@ -1117,6 +1170,7 @@
     </div>
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
