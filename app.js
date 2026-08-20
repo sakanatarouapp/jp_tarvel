@@ -420,22 +420,96 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let isHoliday = false;
     let holidayLabel = "";
-    if ((month === 4 && day >= 29) || (month === 5 && day <= 6)) {
+
+    // 1. Christmas & Year-End Peak (23 ธ.ค. - 5 ม.ค.)
+    if ((month === 12 && day >= 23) || (month === 1 && day <= 5)) {
       isHoliday = true;
-      holidayLabel = "🎌 Golden Week ญี่ปุ่น (+40%)";
-      seasonMult = 1.40;
-    } else if (month === 8 && day >= 10 && day <= 18) {
+      if (month === 12 && (day === 24 || day === 25)) {
+        holidayLabel = "🎄 เทศกาลคริสต์มาส Christmas Peak (+45%)";
+        badgeText = "🎄 คริสต์มาสพีค (+45%)";
+      } else if ((month === 12 && day >= 29) || (month === 1 && day <= 3)) {
+        holidayLabel = "🎌 ช่วงปีใหม่ New Year Peak (+50%)";
+        badgeText = "🎌 ปีใหม่พีค (+50%)";
+      } else {
+        holidayLabel = "❄️ สัปดาห์ส่งท้ายปีเก่า & คริสต์มาส (+40%)";
+        badgeText = "❄️ วันหยุดปลายปี (+40%)";
+      }
+      seasonMult = 1.45;
+      badgeColor = "#dc2626";
+      badgeBg = "#fef2f2";
+    }
+    // 2. Sapporo Snow Festival & Valentine (4 - 15 ก.พ.)
+    else if (month === 2 && day >= 4 && day <= 15) {
       isHoliday = true;
-      holidayLabel = "🎌 Obon Festival (+30%)";
+      if (day === 14) {
+        holidayLabel = "💖 วันวาเลนไทน์ Valentine's Day (+25%)";
+        badgeText = "💖 วาเลนไทน์ (+25%)";
+      } else {
+        holidayLabel = "❄️ เทศกาลหิมะซัปโปโร & เทศกาลฤดูหนาว (+35%)";
+        badgeText = "❄️ เทศกาลหิมะ (+35%)";
+      }
+      seasonMult = 1.35;
+      badgeColor = "#2563eb";
+      badgeBg = "#eff6ff";
+    }
+    // 3. Sakura Peak & Songkran (20 มี.ค. - 18 เม.ย.)
+    else if ((month === 3 && day >= 20) || (month === 4 && day <= 18)) {
+      isHoliday = true;
+      if (month === 4 && day >= 11 && day <= 16) {
+        holidayLabel = "💦 ช่วงสงกรานต์ & ซากุระพีค (+48%)";
+        badgeText = "💦 สงกรานต์พีค (+48%)";
+      } else {
+        holidayLabel = "🌸 ช่วงซากุระบานสะพรั่ง Peak (+45%)";
+        badgeText = "🌸 ซากุระพีค (+45%)";
+      }
+      seasonMult = 1.45;
+      badgeColor = "#db2777";
+      badgeBg = "#fdf2f8";
+    }
+    // 4. Golden Week (28 เม.ย. - 6 พ.ค.)
+    else if ((month === 4 && day >= 28) || (month === 5 && day <= 6)) {
+      isHoliday = true;
+      holidayLabel = "🎌 Golden Week วันหยุดยาวญี่ปุ่น (+45%)";
+      badgeText = "🎌 Golden Week (+45%)";
+      seasonMult = 1.45;
+      badgeColor = "#dc2626";
+      badgeBg = "#fef2f2";
+    }
+    // 5. Obon Festival (8 - 18 ส.ค.)
+    else if (month === 8 && day >= 8 && day <= 18) {
+      isHoliday = true;
+      holidayLabel = "🎌 เทศกาลโอบ้ง Obon Holiday (+35%)";
+      badgeText = "🎌 เทศกาลโอบ้ง (+35%)";
+      seasonMult = 1.35;
+      badgeColor = "#ea580c";
+      badgeBg = "#fff7ed";
+    }
+    // 6. Silver Week & Halloween (18-26 ก.ย., 28-31 ต.ค.)
+    else if (month === 9 && day >= 18 && day <= 26) {
+      isHoliday = true;
+      holidayLabel = "🎌 Silver Week วันหยุดยาวญี่ปุ่น (+30%)";
+      badgeText = "🎌 Silver Week (+30%)";
       seasonMult = 1.30;
-    } else if ((month === 12 && day >= 28) || (month === 1 && day <= 5)) {
+      badgeColor = "#ea580c";
+      badgeBg = "#fff7ed";
+    } else if (month === 10 && day >= 28 && day <= 31) {
       isHoliday = true;
-      holidayLabel = "🎌 ช่วงปีใหม่ New Year (+45%)";
-      seasonMult = 1.45;
-    } else if ((month === 3 && day >= 20) || (month === 4 && day <= 15)) {
+      holidayLabel = "🎃 เทศกาลฮาโลวีน Shibuya & USJ (+30%)";
+      badgeText = "🎃 ฮาโลวีน (+30%)";
+      seasonMult = 1.30;
+      badgeColor = "#ea580c";
+      badgeBg = "#fff7ed";
+    } else if (month === 11 && day >= 10 && day <= 25) {
       isHoliday = true;
-      holidayLabel = "🌸 ช่วงซากุระบานสะพรั่ง Peak (+45%)";
-      seasonMult = 1.45;
+      holidayLabel = "🍁 ช่วงใบไม้แดงพีคสุดขีด Koyo Peak (+35%)";
+      badgeText = "🍁 ใบไม้แดงพีค (+35%)";
+      seasonMult = 1.35;
+      badgeColor = "#ea580c";
+      badgeBg = "#fff7ed";
+    }
+
+    if (isHoliday) {
+      dayLabel = holidayLabel;
     }
 
     const combinedMultiplier = seasonMult * dayMult;
@@ -545,16 +619,30 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update Date Bar Insights & Badge
     const samplePricing = calculateDateAwareHotelPricing({ priceJPY: 6550 }, selectedCheckinDate, selectedStayNights, selectedGuestCount);
     if (dateLiveMatchBadge) {
-      dateLiveMatchBadge.textContent = `⚡ เรตสด ${samplePricing.formattedCheckin} (${samplePricing.dayLabel})`;
-      dateLiveMatchBadge.style.backgroundColor = samplePricing.badgeBg;
-      dateLiveMatchBadge.style.color = samplePricing.badgeColor;
-      dateLiveMatchBadge.style.borderColor = samplePricing.badgeColor;
+      if (samplePricing.isHoliday) {
+        dateLiveMatchBadge.textContent = `🔥 ${samplePricing.holidayLabel}`;
+        dateLiveMatchBadge.style.backgroundColor = samplePricing.badgeColor;
+        dateLiveMatchBadge.style.color = "white";
+        dateLiveMatchBadge.style.borderColor = samplePricing.badgeColor;
+      } else {
+        dateLiveMatchBadge.textContent = `⚡ เรตสด ${samplePricing.formattedCheckin} (${samplePricing.dayLabel})`;
+        dateLiveMatchBadge.style.backgroundColor = samplePricing.badgeBg;
+        dateLiveMatchBadge.style.color = samplePricing.badgeColor;
+        dateLiveMatchBadge.style.borderColor = samplePricing.badgeColor;
+      }
     }
     if (dateInsightHint) {
-      dateInsightHint.innerHTML = `
-        💡 <strong>คำแนะนำราคา:</strong> วันที่เลือกคือ <strong>${samplePricing.formattedCheckin}</strong> เป็น <em>${samplePricing.dayLabel}</em> ในช่วง <em>${samplePricing.seasonName}</em> — 
-        ${samplePricing.isHoliday ? `<span style="color: #ea580c; font-weight: 800;">${samplePricing.holidayLabel}</span>` : 'ราคาห้องพักตรงตามช่วงโปรโมชันบน Google Hotels และ Trip.com'}
-      `;
+      if (samplePricing.isHoliday) {
+        dateInsightHint.innerHTML = `
+          💡 <strong>คำแนะนำราคา:</strong> วันที่เลือกคือ <strong>${samplePricing.formattedCheckin}</strong> ตรงกับ <strong style="color: #dc2626;">${samplePricing.holidayLabel}</strong> — 
+          เป็นช่วงเทศกาลเฉลิมฉลองยอดนิยมที่มีความต้องการห้องพักสูงมาก ราคาโรงแรมบน Google Hotels / Agoda จะขยับขึ้นสู่ช่วงพีคตามอัตราดีมานด์จริงครับ
+        `;
+      } else {
+        dateInsightHint.innerHTML = `
+          💡 <strong>คำแนะนำราคา:</strong> วันที่เลือกคือ <strong>${samplePricing.formattedCheckin}</strong> เป็น <em>${samplePricing.dayLabel}</em> ในช่วง <em>${samplePricing.seasonName}</em> — 
+          ราคาห้องพักตรงตามช่วงโปรโมชันบน Google Hotels และ Trip.com
+        `;
+      }
     }
 
     // 1. Render City/Region Pills
