@@ -2085,44 +2085,75 @@ document.addEventListener("DOMContentLoaded", () => {
           </ul>
         </div>
 
-        ${item.nearbyHotels && item.nearbyHotels.length > 0 ? `
-          <div class="modal-section modal-hotels-section">
-            <h4 style="display: flex; align-items: center; gap: 0.45rem; color: #1e3a8a; font-size: 1.05rem;">
-              <span>🏨</span> โรงแรม & ที่พักแนะนำบริเวณใกล้เคียง (${item.title.split('(')[0].trim()})
-            </h4>
-            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.85rem;">คัดสรรที่พักทำเลเด่น เดินทางสะดวก ใกล้แหล่งท่องเที่ยว</p>
-            <div class="modal-hotels-grid">
-              ${item.nearbyHotels.map(h => {
-                const estTHB = Math.round(h.priceJPY * currentExchangeRate);
-                return `
-                  <div class="modal-hotel-card">
-                    <div class="modal-hotel-header">
-                      <div>
-                        <div class="modal-hotel-name">${h.name}</div>
-                        <div class="modal-hotel-jp">${h.japanese}</div>
+        ${item.nearbyHotels && item.nearbyHotels.length > 0 ? (() => {
+          const modalSamplePricing = calculateDateAwareHotelPricing({ priceJPY: 6550 }, selectedCheckinDate, selectedStayNights, selectedGuestCount);
+          return `
+            <div class="modal-section modal-hotels-section">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.35rem;">
+                <h4 style="display: flex; align-items: center; gap: 0.45rem; color: #1e3a8a; font-size: 1.05rem; margin: 0;">
+                  <span>🏨</span> โรงแรม & ที่พักแนะนำบริเวณใกล้เคียง (${item.title.split('(')[0].trim()})
+                </h4>
+                <span style="background: ${modalSamplePricing.isHoliday ? '#fef2f2' : modalSamplePricing.badgeBg}; color: ${modalSamplePricing.badgeColor}; font-size: 0.75rem; font-weight: 800; padding: 3px 9px; border-radius: 12px; border: 1px solid ${modalSamplePricing.badgeColor};">
+                  ${modalSamplePricing.isHoliday ? modalSamplePricing.holidayLabel : `⚡ เรตสด ${modalSamplePricing.formattedCheckin} (${modalSamplePricing.dayLabel})`}
+                </span>
+              </div>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+                คัดสรรที่พักทำเลเด่น เดินทางสะดวก ใกล้แหล่งท่องเที่ยว • คำนวณราคาตามวันเช็คอินจริง (${modalSamplePricing.formattedCheckin})
+              </p>
+              <div class="modal-hotels-grid">
+                ${item.nearbyHotels.map(h => {
+                  const pricing = calculateDateAwareHotelPricing(h, selectedCheckinDate, selectedStayNights, selectedGuestCount);
+                  
+                  let badgeHtml = "";
+                  if (h.promoBadge) {
+                    badgeHtml = `<span class="hotel-rank-badge" style="background: #dc2626; color: white;">${h.promoBadge}</span>`;
+                  } else if (pricing.isHoliday) {
+                    badgeHtml = `<span class="hotel-rank-badge" style="background: #fff7ed; color: #ea580c; border: 1px solid #ea580c; font-weight: 800;">${pricing.holidayLabel}</span>`;
+                  } else {
+                    badgeHtml = `<span class="hotel-rank-badge" style="background: ${pricing.badgeBg}; color: ${pricing.badgeColor}; border: 1px solid ${pricing.badgeColor}; font-weight: 800;">${pricing.badgeText}</span>`;
+                  }
+
+                  return `
+                    <div class="modal-hotel-card">
+                      <div class="modal-hotel-header">
+                        <div>
+                          <div class="modal-hotel-name">${h.name}</div>
+                          <div class="modal-hotel-jp">${h.japanese}</div>
+                        </div>
+                        <div style="display: flex; gap: 0.35rem; align-items: center;">
+                          ${badgeHtml}
+                          <span class="hotel-rating-badge">⭐ ${h.rating}</span>
+                        </div>
                       </div>
-                      <span class="hotel-rating-badge">⭐ ${h.rating}</span>
-                    </div>
-                    <div class="modal-hotel-tags">
-                      <span class="hotel-tag type">${h.type}</span>
-                      <span class="hotel-tag distance">📍 ${h.distance}</span>
-                    </div>
-                    <p class="modal-hotel-highlight">${h.highlight}</p>
-                    <div class="modal-hotel-footer">
-                      <div class="modal-hotel-price">
-                        <span class="price-range">${h.priceRange}</span>
-                        <strong class="price-thb">~${estTHB.toLocaleString()} บาท/คืน</strong>
+                      <div class="modal-hotel-tags">
+                        <span class="hotel-tag type">${h.type}</span>
+                        <span class="hotel-tag distance">📍 ${h.distance}</span>
                       </div>
-                      <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-map-link">
-                        🗺️ แผนที่ & เช็กราคา
-                      </a>
+                      <p class="modal-hotel-highlight">${h.highlight}</p>
+                      <div class="modal-hotel-footer">
+                        <div class="modal-hotel-price">
+                          <span class="price-range">คืนละ ¥${pricing.nightlyJPY.toLocaleString()} เยน (~${pricing.nightlyTHB.toLocaleString()} บ.)</span>
+                          <strong class="price-thb">เริ่มต้น ~${pricing.nightlyTHB.toLocaleString()} บาท/คืน</strong>
+                          <small style="font-size: 0.72rem; color: #047857; font-weight: 700; margin-top: 1px;">
+                            🌙 รวม ${pricing.nights} คืน: ~${pricing.totalTHB.toLocaleString()} บาท (${pricing.guests} ท่าน)
+                          </small>
+                        </div>
+                        <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                          <a href="${pricing.googleHotelsUrl}" target="_blank" rel="noopener noreferrer" class="hotel-google-btn" style="padding: 0.4rem 0.75rem; font-size: 0.75rem;">
+                            🗺️ Google Hotels (${pricing.formattedCheckin})
+                          </a>
+                          <a href="${pricing.agodaUrl}" target="_blank" rel="noopener noreferrer" class="hotel-agoda-btn" style="padding: 0.4rem 0.75rem; font-size: 0.75rem;">
+                            🏨 Agoda (${pricing.nights} คืน)
+                          </a>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                `;
-              }).join("")}
+                  `;
+                }).join("")}
+              </div>
             </div>
-          </div>
-        ` : ''}
+          `;
+        })() : ''}
 
         <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
           <button class="btn primary" id="modal-plan-toggle" style="padding: 0.75rem;">
