@@ -192,24 +192,27 @@
           </div>
         </div>
 
-        <!-- Tier 4: Seasonal Price Forecast Switcher -->
-        <div class="hotel-season-forecast-bar">
-          <span class="hotel-step-label">4️⃣ 🍂 คาดการณ์ราคาตามฤดูกาล:</span>
-          <div class="hotel-season-pills" id="hotel-season-pills">
-            <button type="button" class="hotel-season-pill active" data-hotel-season="all">🍁 ทุกช่วงเวลา (ราคาเริ่มต้น)</button>
-            <button type="button" class="hotel-season-pill" data-hotel-season="spring">🌸 ฤดูใบไม้ผลิ (ช่วงซากุระพีค)</button>
-            <button type="button" class="hotel-season-pill" data-hotel-season="summer">☀️ ฤดูร้อน (โลว์ซีซั่นโปรโมชัน)</button>
-            <button type="button" class="hotel-season-pill" data-hotel-season="autumn">🍁 ฤดูใบไม้เปลี่ยนสี (พีค)</button>
-            <button type="button" class="hotel-season-pill" data-hotel-season="winter">❄️ ฤดูหนาว / หิมะ</button>
+        <!-- Tier 4: Unified Smart Travel Date & Season Pricing Hub -->
+        <div class="hotel-unified-date-hub">
+          <div class="date-hub-header-row">
+            <span class="hotel-step-label">4️⃣ 📅 วางแผนวันเข้าพักจริง & ฤดูกาล (คำนวณราคาตรงกับ Google Hotels & Agoda):</span>
+            <span class="date-live-match-badge" id="date-live-match-badge">⚡ เรตสดวันเดินทาง</span>
           </div>
-        </div>
 
-        <!-- Tier 5: Real-World Check-in Date Picker & Google Hotels Matcher -->
-        <div class="hotel-datepicker-bar">
-          <div class="datepicker-header-row">
-            <span class="hotel-step-label">5️⃣ 📅 ระบุวันเข้าพักจริง (ประเมินราคาตรงกับ Google Maps & Agoda):</span>
-            <span class="date-live-match-badge" id="date-live-match-badge">⚡ เรตโปรวันธรรมดา Low-Season</span>
+          <!-- Quick Season & Festival Shortcuts -->
+          <div class="season-shortcuts-bar">
+            <span class="shortcut-lead-text">⚡ ทางลัดเลือกช่วงฤดู & เทศกาลยอดนิยม (กดแล้วปฏิทินจะกระโดดไปวันนั้นทันที):</span>
+            <div class="season-shortcuts-row" id="hotel-season-shortcuts">
+              <button type="button" class="season-shortcut-btn" data-target-season="spring" data-target-date="2027-04-10" title="10 เมษายน - ช่วงซากุระบานสะพรั่งพีค">🌸 ซากุระพีค (เม.ย.)</button>
+              <button type="button" class="season-shortcut-btn" data-target-season="summer" data-target-date="2026-08-20" title="20 สิงหาคม - ช่วงโปรโมชั่นฤดูร้อนราคาต่ำสุด">☀️ โปรหน้าร้อน (ส.ค.)</button>
+              <button type="button" class="season-shortcut-btn" data-target-season="autumn" data-target-date="2026-11-15" title="15 พฤศจิกายน - ช่วงใบไม้เปลี่ยนสีพีค">🍁 ใบไม้แดง (พ.ย.)</button>
+              <button type="button" class="season-shortcut-btn" data-target-season="winter" data-target-date="2027-01-15" title="15 มกราคม - ฤดูหนาว & หิมะ">❄️ หิมะ/หนาว (ม.ค.)</button>
+              <button type="button" class="season-shortcut-btn" data-target-season="christmas" data-target-date="2026-12-24" title="24 ธันวาคม - คืนคริสต์มาสอีฟ & ส่งท้ายปีเก่า">🎄 คริสต์มาส (24 ธ.ค.)</button>
+              <button type="button" class="season-shortcut-btn" data-target-season="all" data-target-date="today" title="กลับไปใช้วันที่ปัจจุบัน">🗓️ วันนี้ (Today)</button>
+            </div>
           </div>
+
+          <!-- Exact Date & Stay Duration Controls -->
           <div class="datepicker-controls-row">
             <div class="date-input-group">
               <label for="hotel-checkin-date"><span class="input-icon">🗓️</span> วันเช็คอิน (Check-in):</label>
@@ -239,8 +242,10 @@
               ⚡ ซิงค์ราคาตามวัน
             </button>
           </div>
+
+          <!-- Date Insight Hint -->
           <div class="date-insight-hint" id="date-insight-hint">
-            💡 <strong>คำแนะนำราคา:</strong> วันที่เลือกเป็น <em>วันธรรมดา (Weekday)</em> ในช่วง <em>ฤดูร้อน</em> ราคาโรงแรมบน Google Hotels จะเป็น <strong>ช่วงโปรโมชันลดสูงสุด (เริ่มต้น ~1,350 - 1,598 บาท/คืน)</strong>
+            <!-- Injected via JavaScript -->
           </div>
         </div>
       </div>

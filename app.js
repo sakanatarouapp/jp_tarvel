@@ -333,13 +333,81 @@ document.addEventListener("DOMContentLoaded", () => {
   const hotelCustomSearchInput = document.getElementById("hotel-custom-search-input");
   const hotelClearSearchBtn = document.getElementById("hotel-clear-search-btn");
   const hotelSearchSubmitBtn = document.getElementById("hotel-search-submit-btn");
-  const hotelSeasonPills = document.getElementById("hotel-season-pills");
+  const hotelSeasonShortcuts = document.getElementById("hotel-season-shortcuts");
   const hotelCheckinDateInput = document.getElementById("hotel-checkin-date");
   const hotelStayNightsSelect = document.getElementById("hotel-stay-nights");
   const hotelGuestCountSelect = document.getElementById("hotel-guest-count");
   const hotelDateSyncBtn = document.getElementById("hotel-date-sync-btn");
   const dateLiveMatchBadge = document.getElementById("date-live-match-badge");
   const dateInsightHint = document.getElementById("date-insight-hint");
+
+  function syncDateToSeasonShortcuts(checkinDateStr) {
+    if (!checkinDateStr) return;
+    const parts = checkinDateStr.split('-');
+    if (parts.length < 3) return;
+    const month = parseInt(parts[1], 10);
+    const day = parseInt(parts[2], 10);
+
+    let detectedShortcut = "all";
+    if (month === 12 && (day === 24 || day === 25)) {
+      detectedShortcut = "christmas";
+    } else if (month >= 3 && month <= 5) {
+      detectedShortcut = "spring";
+    } else if (month >= 6 && month <= 8) {
+      detectedShortcut = "summer";
+    } else if (month >= 9 && month <= 11) {
+      detectedShortcut = "autumn";
+    } else if (month === 12 || month <= 2) {
+      detectedShortcut = "winter";
+    }
+
+    if (hotelSeasonShortcuts) {
+      hotelSeasonShortcuts.querySelectorAll(".season-shortcut-btn").forEach(btn => {
+        const target = btn.getAttribute("data-target-season");
+        btn.classList.toggle("active", target === detectedShortcut);
+      });
+    }
+
+    // Also sync with top Hero season pills
+    if (typeof seasonPills !== 'undefined' && seasonPills) {
+      const heroSeasonKey = (detectedShortcut === "christmas") ? "winter" : (detectedShortcut === "all" ? "all" : detectedShortcut);
+      seasonPills.querySelectorAll(".pill").forEach(p => {
+        p.classList.toggle("active", p.getAttribute("data-season") === heroSeasonKey);
+      });
+    }
+  }
+
+  function setDateFromShortcut(targetSeason, targetDate) {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+
+    let resolvedDate = "";
+    if (targetDate === "today" || !targetDate) {
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      resolvedDate = `${yyyy}-${mm}-${dd}`;
+    } else {
+      const parts = targetDate.split('-');
+      const m = parseInt(parts[1], 10);
+      const d = parseInt(parts[2], 10);
+      
+      let yr = currentYear;
+      const targetThisYear = new Date(currentYear, m - 1, d);
+      if (targetThisYear < today) {
+        yr = currentYear + 1;
+      }
+      resolvedDate = `${yr}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+
+    selectedCheckinDate = resolvedDate;
+    if (hotelCheckinDateInput) {
+      hotelCheckinDateInput.value = selectedCheckinDate;
+    }
+
+    syncDateToSeasonShortcuts(selectedCheckinDate);
+    renderHotelGuide();
+  }
 
   function initHotelDatePicker() {
     if (hotelCheckinDateInput && !hotelCheckinDateInput.value) {
@@ -360,6 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (hotelGuestCountSelect) {
       selectedGuestCount = parseInt(hotelGuestCountSelect.value, 10) || 2;
     }
+    syncDateToSeasonShortcuts(selectedCheckinDate);
   }
   initHotelDatePicker();
 
@@ -736,25 +805,8 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
-    // 4.5. Update Hotel Season Pills State
-    if (hotelSeasonPills) {
-      hotelSeasonPills.querySelectorAll(".hotel-season-pill").forEach(btn => {
-        const s = btn.getAttribute("data-hotel-season");
-        btn.classList.toggle("active", s === selectedHotelSeason);
-        btn.onclick = () => {
-          selectedHotelSeason = s;
-          currentSeason = s;
-          if (typeof seasonPills !== 'undefined' && seasonPills) {
-            seasonPills.querySelectorAll(".pill").forEach(p => {
-              p.classList.toggle("active", p.getAttribute("data-season") === s);
-            });
-          }
-          currentCardPage = 1;
-          renderCards();
-          renderHotelGuide();
-        };
-      });
-    }
+    // 4.5. Update Hotel Season Shortcuts State (Two-Way Sync)
+    syncDateToSeasonShortcuts(selectedCheckinDate);
 
     // 5. If Custom Hotel Search Query is Active
     if (customHotelSearchQuery.trim() !== "") {
@@ -967,10 +1019,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Bind Season Shortcuts Click Listeners (Two-Way Sync)
+  if (hotelSeasonShortcuts) {
+    hotelSeasonShortcuts.querySelectorAll(".season-shortcut-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const targetSeason = e.currentTarget.getAttribute("data-target-season");
+        const targetDate = e.currentTarget.getAttribute("data-target-date");
+        setDateFromShortcut(targetSeason, targetDate);
+      });
+    });
+  }
+
   // Bind Date Picker Event Listeners
   if (hotelCheckinDateInput) {
     hotelCheckinDateInput.addEventListener("change", (e) => {
       selectedCheckinDate = e.target.value;
+      syncDateToSeasonShortcuts(selectedCheckinDate);
       renderHotelGuide();
     });
   }
@@ -991,6 +1055,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (hotelCheckinDateInput) selectedCheckinDate = hotelCheckinDateInput.value;
       if (hotelStayNightsSelect) selectedStayNights = parseInt(hotelStayNightsSelect.value, 10) || 2;
       if (hotelGuestCountSelect) selectedGuestCount = parseInt(hotelGuestCountSelect.value, 10) || 2;
+      syncDateToSeasonShortcuts(selectedCheckinDate);
       renderHotelGuide();
     });
   }
