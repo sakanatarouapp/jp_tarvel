@@ -1113,6 +1113,42 @@
           <button type="button" class="pocket-modal-close-btn" id="close-pocket-export-modal-btn">&times;</button>
         </div>
 
+        <!-- Quick Settings & Customizer Bar inside Modal -->
+        <div class="pocket-quick-settings-bar">
+          <div class="pocket-setting-item">
+            <label for="pocket-setting-date"><span>🗓️</span> วันเริ่มเดินทาง:</label>
+            <input type="date" id="pocket-setting-date" class="pocket-setting-input">
+          </div>
+          <div class="pocket-setting-item">
+            <label for="pocket-setting-nights"><span>🌙</span> จำนวนคืน:</label>
+            <select id="pocket-setting-nights" class="pocket-setting-select">
+              <option value="1">1 คืน</option>
+              <option value="2" selected>2 คืน</option>
+              <option value="3">3 คืน</option>
+              <option value="4">4 คืน</option>
+              <option value="5">5 คืน</option>
+              <option value="6">6 คืน</option>
+              <option value="7">7 คืน (1 สัปดาห์)</option>
+              <option value="10">10 คืน</option>
+              <option value="14">14 คืน (2 สัปดาห์)</option>
+            </select>
+          </div>
+          <div class="pocket-setting-item">
+            <label for="pocket-setting-guests"><span>👥</span> ผู้เดินทาง:</label>
+            <select id="pocket-setting-guests" class="pocket-setting-select">
+              <option value="1">1 ท่าน (Solo)</option>
+              <option value="2" selected>2 ท่าน (Double/Twin)</option>
+              <option value="3">3 ท่าน (Triple)</option>
+              <option value="4">4 ท่าน (Family 4)</option>
+              <option value="5">5 ท่าน (กลุ่ม 5 คน)</option>
+              <option value="6">6 ท่าน (กลุ่ม 6 คน)</option>
+            </select>
+          </div>
+          <div class="pocket-setting-item holiday-pill-wrap">
+            <span class="pocket-holiday-badge" id="pocket-holiday-badge">⚡ เรตสดวันเดินทาง</span>
+          </div>
+        </div>
+
         <!-- Export Toolbar Action Bar -->
         <div class="pocket-export-toolbar">
           <button type="button" class="export-tool-btn print-pdf-btn" id="export-action-pdf-btn">

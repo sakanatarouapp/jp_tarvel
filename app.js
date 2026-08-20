@@ -4220,9 +4220,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const exportActionLinkBtn = document.getElementById("export-action-link-btn");
   const exportActionLineBtn = document.getElementById("export-action-line-btn");
   const pocketSheetRenderTarget = document.getElementById("pocket-sheet-render-target");
+  const pocketSettingDate = document.getElementById("pocket-setting-date");
+  const pocketSettingNights = document.getElementById("pocket-setting-nights");
+  const pocketSettingGuests = document.getElementById("pocket-setting-guests");
+  const pocketHolidayBadge = document.getElementById("pocket-holiday-badge");
 
   function openPocketExportModal() {
     if (!pocketSheetRenderTarget) return;
+
+    // Sync input controls with current global settings
+    if (pocketSettingDate && selectedCheckinDate) {
+      pocketSettingDate.value = selectedCheckinDate;
+    }
+    if (pocketSettingNights && selectedStayNights) {
+      pocketSettingNights.value = String(selectedStayNights);
+    }
+    if (pocketSettingGuests && selectedGuestCount) {
+      pocketSettingGuests.value = String(selectedGuestCount);
+    }
 
     // Use current itinerary or fallback to sample items if empty
     let planItems = itineraryList;
@@ -4301,6 +4316,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const hotelPricing = calculateDateAwareHotelPricing(sampleHotel, selectedCheckinDate, selectedStayNights, selectedGuestCount);
 
+    if (pocketHolidayBadge) {
+      if (hotelPricing.isHoliday) {
+        pocketHolidayBadge.textContent = hotelPricing.holidayLabel;
+        pocketHolidayBadge.style.background = "#fef2f2";
+        pocketHolidayBadge.style.color = "#dc2626";
+        pocketHolidayBadge.style.borderColor = "#f87171";
+      } else {
+        pocketHolidayBadge.textContent = `⚡ เรตสด (${hotelPricing.dayLabel})`;
+        pocketHolidayBadge.style.background = "#ecfdf5";
+        pocketHolidayBadge.style.color = "#059669";
+        pocketHolidayBadge.style.borderColor = "#86efac";
+      }
+    }
+
     // Budget Calculation
     const estTransitJPY = planItems.length * 2800;
     const estFoodJPY = totalDays * 4500 * (selectedGuestCount || 2);
@@ -4375,7 +4404,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div style="font-size: 0.78rem; color: #334155; line-height: 1.5; margin-bottom: 0.5rem;">
               • ค่าเดินทาง/ตั๋ว: ~¥${estTransitJPY.toLocaleString()} เยน (~${Math.round(estTransitJPY * currentExchangeRate).toLocaleString()} บ.)<br>
-              • ค่าอาหาร & กินดื่ม: ~¥${estFoodJPY.toLocaleString()} เยน (~${Math.round(estFoodJPY * currentExchangeRate).toLocaleString()} บ.)<br>
+              • ค่าอาหาร & กินดื่ม (${selectedGuestCount || 2} ท่าน): ~¥${estFoodJPY.toLocaleString()} เยน (~${Math.round(estFoodJPY * currentExchangeRate).toLocaleString()} บ.)<br>
               • ค่าที่พัก (${hotelPricing.nights} คืน): ~¥${estHotelJPY.toLocaleString()} เยน (~${Math.round(estHotelJPY * currentExchangeRate).toLocaleString()} บ.)<br>
               <strong style="color: #047857; font-size: 0.84rem;">🏷️ รวมงบประมาณทริป: ~¥${grandTotalJPY.toLocaleString()} เยน (~${grandTotalTHB.toLocaleString()} บาท)</strong>
             </div>
@@ -4490,6 +4519,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (exportActionLineBtn) {
     exportActionLineBtn.addEventListener("click", shareItineraryToLine);
+  }
+
+  // Live Quick Customizer Handlers inside Pocket Export Modal
+  if (pocketSettingDate) {
+    pocketSettingDate.addEventListener("change", (e) => {
+      selectedCheckinDate = e.target.value;
+      if (hotelCheckinDateInput) hotelCheckinDateInput.value = selectedCheckinDate;
+      syncDateToSeasonShortcuts(selectedCheckinDate);
+      openPocketExportModal();
+      renderHotelGuide();
+    });
+  }
+
+  if (pocketSettingNights) {
+    pocketSettingNights.addEventListener("change", (e) => {
+      selectedStayNights = parseInt(e.target.value, 10) || 2;
+      if (hotelStayNightsSelect) hotelStayNightsSelect.value = String(selectedStayNights);
+      openPocketExportModal();
+      renderHotelGuide();
+    });
+  }
+
+  if (pocketSettingGuests) {
+    pocketSettingGuests.addEventListener("change", (e) => {
+      selectedGuestCount = parseInt(e.target.value, 10) || 2;
+      if (hotelGuestCountSelect) hotelGuestCountSelect.value = String(selectedGuestCount);
+      openPocketExportModal();
+      renderHotelGuide();
+    });
   }
 
   function checkUrlShareParams() {

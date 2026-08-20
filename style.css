@@ -6218,6 +6218,66 @@ body {
   border-color: #f87171;
 }
 
+.pocket-quick-settings-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  flex-wrap: wrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pocket-setting-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pocket-setting-item label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pocket-setting-input,
+.pocket-setting-select {
+  padding: 0.3rem 0.55rem;
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: #f8fafc;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.pocket-setting-input:focus,
+.pocket-setting-select:focus {
+  border-color: #0284c7;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.pocket-holiday-badge {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #86efac;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
 .pocket-export-toolbar {
   display: flex;
   gap: 0.5rem;
