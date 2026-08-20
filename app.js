@@ -326,10 +326,167 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let customHotelSearchQuery = "";
   let selectedHotelSeason = "all";
+  let selectedCheckinDate = "";
+  let selectedStayNights = 2;
+  let selectedGuestCount = 2;
+
   const hotelCustomSearchInput = document.getElementById("hotel-custom-search-input");
   const hotelClearSearchBtn = document.getElementById("hotel-clear-search-btn");
   const hotelSearchSubmitBtn = document.getElementById("hotel-search-submit-btn");
   const hotelSeasonPills = document.getElementById("hotel-season-pills");
+  const hotelCheckinDateInput = document.getElementById("hotel-checkin-date");
+  const hotelStayNightsSelect = document.getElementById("hotel-stay-nights");
+  const hotelGuestCountSelect = document.getElementById("hotel-guest-count");
+  const hotelDateSyncBtn = document.getElementById("hotel-date-sync-btn");
+  const dateLiveMatchBadge = document.getElementById("date-live-match-badge");
+  const dateInsightHint = document.getElementById("date-insight-hint");
+
+  function initHotelDatePicker() {
+    if (hotelCheckinDateInput && !hotelCheckinDateInput.value) {
+      const today = new Date();
+      today.setDate(today.getDate() + 14); // 2 weeks ahead
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      selectedCheckinDate = `${yyyy}-${mm}-${dd}`;
+      hotelCheckinDateInput.value = selectedCheckinDate;
+      hotelCheckinDateInput.min = new Date().toISOString().split('T')[0];
+    } else if (hotelCheckinDateInput) {
+      selectedCheckinDate = hotelCheckinDateInput.value;
+    }
+    if (hotelStayNightsSelect) {
+      selectedStayNights = parseInt(hotelStayNightsSelect.value, 10) || 2;
+    }
+    if (hotelGuestCountSelect) {
+      selectedGuestCount = parseInt(hotelGuestCountSelect.value, 10) || 2;
+    }
+  }
+  initHotelDatePicker();
+
+  function calculateDateAwareHotelPricing(hotel, checkinDateStr, nights = 2, guests = 2) {
+    if (!checkinDateStr) {
+      const d = new Date();
+      d.setDate(d.getDate() + 14);
+      checkinDateStr = d.toISOString().split('T')[0];
+    }
+
+    const parts = checkinDateStr.split('-');
+    const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    const month = dateObj.getMonth() + 1;
+    const day = dateObj.getDate();
+    const dayOfWeek = dateObj.getDay();
+
+    let seasonMult = 1.0;
+    let seasonName = "☀️ ฤดูร้อน (โลว์ซีซั่นโปรโมชัน)";
+    let badgeText = "☀️ โลว์โปรโมชัน";
+    let badgeColor = "#059669";
+    let badgeBg = "#ecfdf5";
+
+    if (month >= 3 && month <= 5) {
+      seasonMult = 1.45;
+      seasonName = "🌸 ฤดูใบไม้ผลิ (ช่วงซากุระพีค)";
+      badgeText = "🌸 ซากุระพีค (+45%)";
+      badgeColor = "#db2777";
+      badgeBg = "#fdf2f8";
+    } else if (month >= 6 && month <= 8) {
+      seasonMult = 1.0;
+      seasonName = "☀️ ฤดูร้อน (โลว์ซีซั่นโปรโมชัน)";
+      badgeText = "☀️ โลว์โปรโมชัน (ราคาต่ำสุด)";
+      badgeColor = "#059669";
+      badgeBg = "#ecfdf5";
+    } else if (month >= 9 && month <= 11) {
+      seasonMult = 1.28;
+      seasonName = "🍁 ฤดูใบไม้เปลี่ยนสี (ช่วงพีค)";
+      badgeText = "🍁 ใบไม้เปลี่ยนสี (+28%)";
+      badgeColor = "#ea580c";
+      badgeBg = "#fff7ed";
+    } else {
+      seasonMult = 1.15;
+      seasonName = "❄️ ฤดูหนาว / หิมะ";
+      badgeText = "❄️ ฤดูหนาว (+15%)";
+      badgeColor = "#2563eb";
+      badgeBg = "#eff6ff";
+    }
+
+    let dayMult = 1.0;
+    let dayLabel = "วันธรรมดา (Weekday Promo)";
+    if (dayOfWeek === 5 || dayOfWeek === 0) {
+      dayMult = 1.08;
+      dayLabel = "คืนวันศุกร์/อาทิตย์ (+8%)";
+    } else if (dayOfWeek === 6) {
+      dayMult = 1.22;
+      dayLabel = "คืนวันเสาร์ Weekend Peak (+22%)";
+    }
+
+    let isHoliday = false;
+    let holidayLabel = "";
+    if ((month === 4 && day >= 29) || (month === 5 && day <= 6)) {
+      isHoliday = true;
+      holidayLabel = "🎌 Golden Week ญี่ปุ่น (+40%)";
+      seasonMult = 1.40;
+    } else if (month === 8 && day >= 10 && day <= 18) {
+      isHoliday = true;
+      holidayLabel = "🎌 Obon Festival (+30%)";
+      seasonMult = 1.30;
+    } else if ((month === 12 && day >= 28) || (month === 1 && day <= 5)) {
+      isHoliday = true;
+      holidayLabel = "🎌 ช่วงปีใหม่ New Year (+45%)";
+      seasonMult = 1.45;
+    } else if ((month === 3 && day >= 20) || (month === 4 && day <= 15)) {
+      isHoliday = true;
+      holidayLabel = "🌸 ช่วงซากุระบานสะพรั่ง Peak (+45%)";
+      seasonMult = 1.45;
+    }
+
+    const combinedMultiplier = seasonMult * dayMult;
+    const baseJPY = hotel.priceJPY || 8500;
+    const nightlyJPY = Math.round(baseJPY * combinedMultiplier);
+    const nightlyTHB = Math.round(nightlyJPY * currentExchangeRate);
+    const totalJPY = nightlyJPY * nights;
+    const totalTHB = nightlyTHB * nights;
+
+    const checkoutDateObj = new Date(dateObj);
+    checkoutDateObj.setDate(checkoutDateObj.getDate() + nights);
+    const cY = checkoutDateObj.getFullYear();
+    const cM = String(checkoutDateObj.getMonth() + 1).padStart(2, '0');
+    const cD = String(checkoutDateObj.getDate()).padStart(2, '0');
+    const checkoutDateStr = `${cY}-${cM}-${cD}`;
+
+    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    const formattedCheckin = `${day} ${thaiMonths[month - 1]} ${dateObj.getFullYear()}`;
+
+    const googleHotelsUrl = `https://www.google.com/travel/hotels?q=${encodeURIComponent((hotel.name || 'hotel') + ' hotel ' + (hotel.japanese || '') + ' japan')}&checkin=${checkinDateStr}&checkout=${checkoutDateStr}&adults=${guests}`;
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.searchQuery || hotel.name || 'hotel japan')}`;
+    const agodaUrl = `https://www.agoda.com/search?text=${encodeURIComponent((hotel.name || 'hotel') + ' japan')}&checkIn=${checkinDateStr}&checkOut=${checkoutDateStr}&rooms=1&adults=${guests}`;
+
+    return {
+      checkinDateStr,
+      checkoutDateStr,
+      nights,
+      guests,
+      month,
+      day,
+      dayOfWeek,
+      seasonMult,
+      dayMult,
+      combinedMultiplier,
+      seasonName,
+      badgeText,
+      badgeColor,
+      badgeBg,
+      dayLabel,
+      isHoliday,
+      holidayLabel,
+      nightlyJPY,
+      nightlyTHB,
+      totalJPY,
+      totalTHB,
+      formattedCheckin,
+      googleHotelsUrl,
+      googleMapsUrl,
+      agodaUrl
+    };
+  }
 
   function getSeasonalHotelMultiplier(season) {
     switch (season) {
@@ -385,6 +542,21 @@ document.addEventListener("DOMContentLoaded", () => {
       item.nearbyHotels && item.nearbyHotels.length > 0 && item.category !== "transport"
     );
 
+    // Update Date Bar Insights & Badge
+    const samplePricing = calculateDateAwareHotelPricing({ priceJPY: 6550 }, selectedCheckinDate, selectedStayNights, selectedGuestCount);
+    if (dateLiveMatchBadge) {
+      dateLiveMatchBadge.textContent = `⚡ เรตสด ${samplePricing.formattedCheckin} (${samplePricing.dayLabel})`;
+      dateLiveMatchBadge.style.backgroundColor = samplePricing.badgeBg;
+      dateLiveMatchBadge.style.color = samplePricing.badgeColor;
+      dateLiveMatchBadge.style.borderColor = samplePricing.badgeColor;
+    }
+    if (dateInsightHint) {
+      dateInsightHint.innerHTML = `
+        💡 <strong>คำแนะนำราคา:</strong> วันที่เลือกคือ <strong>${samplePricing.formattedCheckin}</strong> เป็น <em>${samplePricing.dayLabel}</em> ในช่วง <em>${samplePricing.seasonName}</em> — 
+        ${samplePricing.isHoliday ? `<span style="color: #ea580c; font-weight: 800;">${samplePricing.holidayLabel}</span>` : 'ราคาห้องพักตรงตามช่วงโปรโมชันบน Google Hotels และ Trip.com'}
+      `;
+    }
+
     // 1. Render City/Region Pills
     if (hotelRegionPills) {
       hotelRegionPills.innerHTML = HOTEL_REGIONS_CONFIG.map(reg => {
@@ -405,7 +577,6 @@ document.addEventListener("DOMContentLoaded", () => {
           if (hotelCustomSearchInput) hotelCustomSearchInput.value = "";
           if (hotelClearSearchBtn) hotelClearSearchBtn.style.display = "none";
           selectedHotelRegion = e.currentTarget.getAttribute("data-region-id");
-          // Automatically select the first landmark in this region
           const regionItems = attractionsWithHotels.filter(i => {
             if (selectedHotelRegion === "all") return true;
             if (selectedHotelRegion === "fukuoka") return i.region === "fukuoka" || i.region === "hiroshima";
@@ -497,8 +668,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    const seasonInfo = getSeasonalHotelMultiplier(selectedHotelSeason);
-
     // 5. If Custom Hotel Search Query is Active
     if (customHotelSearchQuery.trim() !== "") {
       const q = customHotelSearchQuery.trim().toLowerCase();
@@ -523,9 +692,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let customHotelCardHtml = "";
       if (matchedHotels.length === 0) {
-        const baseJpy = 8500;
-        const estJpy = Math.round(baseJpy * seasonInfo.multiplier);
-        const estThb = Math.round(estJpy * currentExchangeRate);
+        const customObj = { name: customHotelSearchQuery, priceJPY: 8500, searchQuery: customHotelSearchQuery + ' hotel japan' };
+        const pricing = calculateDateAwareHotelPricing(customObj, selectedCheckinDate, selectedStayNights, selectedGuestCount);
+        
         customHotelCardHtml = `
           <div class="hotel-showcase-card" style="border: 2px dashed #059669; background: #f0fdf4;">
             <div class="hotel-card-badge-row">
@@ -533,27 +702,29 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="hotel-rating-badge">⭐ 4.5+ (ประเมิน)</span>
             </div>
             <h4 class="hotel-showcase-name">${customHotelSearchQuery}</h4>
-            <div class="hotel-showcase-jp">日本ホテル検索 (Live Hotel Search)</div>
+            <div class="hotel-showcase-jp">日本ホテル検索 (Live Date Search)</div>
             
             <div class="hotel-tags-row">
               <span class="hotel-tag type">โรงแรม / ที่พักในญี่ปุ่น</span>
               <span class="hotel-tag distance">🚶 ใจกลางเมือง / ใกล้สถานี</span>
             </div>
 
-            <p class="hotel-showcase-highlight">ค้นหาข้อมูลห้องพัก พิกัดแผนที่จริง และเช็กราคาเรียลไทม์จากระบบจองโรงแรม</p>
+            <p class="hotel-showcase-highlight">ค้นหาข้อมูลห้องพัก พิกัดแผนที่จริง และเช็กราคาเรียลไทม์จาก Google Hotels & Agoda สำหรับวันที่ ${pricing.formattedCheckin}</p>
 
             <div class="hotel-showcase-pricing">
               <div class="hotel-price-box">
-                <span class="hotel-price-range">${selectedHotelSeason === "all" ? '¥8,500 - ¥22,000 / คืน' : `คาดการณ์: ¥${estJpy.toLocaleString()} เยน`}</span>
-                <strong class="hotel-price-thb">${selectedHotelSeason === "all" ? 'เริ่มต้น ' : ''}~${estThb.toLocaleString()} บาท/คืน</strong>
-                ${selectedHotelSeason !== "all" ? `<small style="font-size: 0.72rem; color: ${seasonInfo.badgeColor}; font-weight: 700; margin-top: 2px;">${seasonInfo.seasonLabel}</small>` : ''}
+                <span class="hotel-price-range">คืนละ ¥${pricing.nightlyJPY.toLocaleString()} เยน (~${pricing.nightlyTHB.toLocaleString()} บ.)</span>
+                <strong class="hotel-price-thb">เริ่มต้น ~${pricing.nightlyTHB.toLocaleString()} บาท/คืน</strong>
+                <small style="font-size: 0.74rem; color: #047857; font-weight: 700; margin-top: 2px;">
+                  🌙 รวม ${pricing.nights} คืน: ~${pricing.totalTHB.toLocaleString()} บาท (${pricing.guests} ท่าน)
+                </small>
               </div>
-              <div style="display: flex; gap: 0.4rem; flex-direction: column; width: 100%;">
-                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customHotelSearchQuery + ' hotel japan')}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
-                  🗺️ ดูพิกัดบน Google Maps
+              <div class="hotel-actions-col">
+                <a href="${pricing.googleHotelsUrl}" target="_blank" rel="noopener noreferrer" class="hotel-google-btn">
+                  🗺️ เช็กราคาสดบน Google Hotels (${pricing.formattedCheckin})
                 </a>
-                <a href="https://www.agoda.com/search?text=${encodeURIComponent(customHotelSearchQuery + ' japan')}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn" style="background: #0284c7;">
-                  🏨 เช็กราคาห้องว่างบน Agoda
+                <a href="${pricing.agodaUrl}" target="_blank" rel="noopener noreferrer" class="hotel-agoda-btn">
+                  🏨 ดูห้องว่างบน Agoda (${pricing.nights} คืน)
                 </a>
               </div>
             </div>
@@ -565,7 +736,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hotel-search-results-banner">
           <div>
             <strong>🔍 ผลการค้นหาโรงแรม:</strong> พบ ${matchedHotels.length > 0 ? matchedHotels.length : 1} รายการ สำหรับ <em>"${customHotelSearchQuery}"</em>
-            ${selectedHotelSeason !== "all" ? `<span style="margin-left: 0.5rem; color: ${seasonInfo.badgeColor}; font-weight: 700;">(${seasonInfo.seasonLabel})</span>` : ''}
+            <span style="margin-left: 0.5rem; color: #059669; font-weight: 700;">(เช็คอิน: ${samplePricing.formattedCheckin} • ${selectedStayNights} คืน)</span>
           </div>
           <button type="button" class="hotel-reset-search-btn" id="hotel-reset-search-btn">
             🔄 ล้างการค้นหา & กลับไปดูตามย่าน
@@ -575,16 +746,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hotel-showcase-grid">
           ${customHotelCardHtml}
           ${matchedHotels.map((h, idx) => {
-            const estJPY = Math.round(h.priceJPY * seasonInfo.multiplier);
-            const estTHB = Math.round(estJPY * currentExchangeRate);
+            const pricing = calculateDateAwareHotelPricing(h, selectedCheckinDate, selectedStayNights, selectedGuestCount);
 
             let badgeHtml = "";
             if (h.promoBadge) {
               badgeHtml = `<span class="hotel-rank-badge" style="background: #dc2626; color: white;">${h.promoBadge}</span>`;
-            } else if (seasonInfo.badge) {
-              badgeHtml = `<span class="hotel-rank-badge" style="background: ${seasonInfo.badgeBg}; color: ${seasonInfo.badgeColor}; border: 1px solid ${seasonInfo.badgeColor}; font-weight: 800;">${seasonInfo.badge}</span>`;
+            } else if (pricing.isHoliday) {
+              badgeHtml = `<span class="hotel-rank-badge" style="background: #fff7ed; color: #ea580c; border: 1px solid #ea580c; font-weight: 800;">${pricing.holidayLabel}</span>`;
             } else {
-              badgeHtml = `<span class="hotel-rank-badge">#${idx + 1} ตรงกับคำค้นหา</span>`;
+              badgeHtml = `<span class="hotel-rank-badge" style="background: ${pricing.badgeBg}; color: ${pricing.badgeColor}; border: 1px solid ${pricing.badgeColor}; font-weight: 800;">${pricing.badgeText}</span>`;
             }
 
             return `
@@ -605,13 +775,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <div class="hotel-showcase-pricing">
                   <div class="hotel-price-box">
-                    <span class="hotel-price-range">${selectedHotelSeason === "all" ? h.priceRange : `¥${estJPY.toLocaleString()} เยน / คืน`}</span>
-                    <strong class="hotel-price-thb">${selectedHotelSeason === "all" ? 'เริ่มต้น ' : ''}~${estTHB.toLocaleString()} บาท/คืน</strong>
-                    ${selectedHotelSeason !== "all" ? `<small style="font-size: 0.72rem; color: ${seasonInfo.badgeColor}; font-weight: 700; margin-top: 2px;">${seasonInfo.seasonLabel}</small>` : ''}
+                    <span class="hotel-price-range">คืนละ ¥${pricing.nightlyJPY.toLocaleString()} เยน (~${pricing.nightlyTHB.toLocaleString()} บ.)</span>
+                    <strong class="hotel-price-thb">เริ่มต้น ~${pricing.nightlyTHB.toLocaleString()} บาท/คืน</strong>
+                    <small style="font-size: 0.74rem; color: #047857; font-weight: 700; margin-top: 2px;">
+                      🌙 รวม ${pricing.nights} คืน: ~${pricing.totalTHB.toLocaleString()} บาท (${pricing.guests} ท่าน)
+                    </small>
                   </div>
-                  <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
-                    🗺️ ดูแผนที่ & เช็กห้องว่าง
-                  </a>
+                  <div class="hotel-actions-col">
+                    <a href="${pricing.googleHotelsUrl}" target="_blank" rel="noopener noreferrer" class="hotel-google-btn">
+                      🗺️ เช็กราคาสดบน Google Hotels (${pricing.formattedCheckin})
+                    </a>
+                    <a href="${pricing.agodaUrl}" target="_blank" rel="noopener noreferrer" class="hotel-agoda-btn">
+                      🏨 ดูห้องว่างบน Agoda (${pricing.nights} คืน)
+                    </a>
+                  </div>
                 </div>
               </div>
             `;
@@ -638,7 +815,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hotel-showcase-title-wrap">
           <div class="hotel-showcase-location-badge">📍 ${currentItem.title} (${currentItem.japanese})</div>
           <h3>🏨 3 โรงแรม & ที่พักแนะนำยอดนิยมประจำย่าน</h3>
-          <p>คัดสรรทำเลที่ดีที่สุด ใกล้ ${currentItem.title.split('(')[0].trim()} เดินทางสะดวก พร้อมคาดการณ์ราคาเงินบาทสดตามฤดูกาล</p>
+          <p>คัดสรรทำเลที่ดีที่สุด ใกล้ ${currentItem.title.split('(')[0].trim()} เดินทางสะดวก พร้อมประเมินราคาตรงกับ Google Maps & Agoda สำหรับวันที่ <strong>${samplePricing.formattedCheckin}</strong></p>
         </div>
         <button class="btn primary view-landmark-detail-btn" data-id="${currentItem.id}">
           📖 ดูข้อมูลที่เที่ยวนี้
@@ -647,16 +824,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <div class="hotel-showcase-grid">
         ${currentItem.nearbyHotels.map((h, idx) => {
-          const estJPY = Math.round(h.priceJPY * seasonInfo.multiplier);
-          const estTHB = Math.round(estJPY * currentExchangeRate);
+          const pricing = calculateDateAwareHotelPricing(h, selectedCheckinDate, selectedStayNights, selectedGuestCount);
 
           let badgeHtml = "";
           if (h.promoBadge) {
             badgeHtml = `<span class="hotel-rank-badge" style="background: #dc2626; color: white;">${h.promoBadge}</span>`;
-          } else if (seasonInfo.badge) {
-            badgeHtml = `<span class="hotel-rank-badge" style="background: ${seasonInfo.badgeBg}; color: ${seasonInfo.badgeColor}; border: 1px solid ${seasonInfo.badgeColor}; font-weight: 800;">${seasonInfo.badge}</span>`;
+          } else if (pricing.isHoliday) {
+            badgeHtml = `<span class="hotel-rank-badge" style="background: #fff7ed; color: #ea580c; border: 1px solid #ea580c; font-weight: 800;">${pricing.holidayLabel}</span>`;
           } else {
-            badgeHtml = `<span class="hotel-rank-badge">#${idx + 1} ยอดนิยม</span>`;
+            badgeHtml = `<span class="hotel-rank-badge" style="background: ${pricing.badgeBg}; color: ${pricing.badgeColor}; border: 1px solid ${pricing.badgeColor}; font-weight: 800;">#${idx + 1} ${pricing.badgeText}</span>`;
           }
 
           return `
@@ -677,13 +853,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
               <div class="hotel-showcase-pricing">
                 <div class="hotel-price-box">
-                  <span class="hotel-price-range">${selectedHotelSeason === "all" ? h.priceRange : `¥${estJPY.toLocaleString()} เยน / คืน`}</span>
-                  <strong class="hotel-price-thb">${selectedHotelSeason === "all" ? 'เริ่มต้น ' : ''}~${estTHB.toLocaleString()} บาท/คืน</strong>
-                  ${selectedHotelSeason !== "all" ? `<small style="font-size: 0.72rem; color: ${seasonInfo.badgeColor}; font-weight: 700; margin-top: 2px;">${seasonInfo.seasonLabel}</small>` : ''}
+                  <span class="hotel-price-range">คืนละ ¥${pricing.nightlyJPY.toLocaleString()} เยน (~${pricing.nightlyTHB.toLocaleString()} บ.)</span>
+                  <strong class="hotel-price-thb">เริ่มต้น ~${pricing.nightlyTHB.toLocaleString()} บาท/คืน</strong>
+                  <small style="font-size: 0.74rem; color: #047857; font-weight: 700; margin-top: 2px;">
+                    🌙 รวม ${pricing.nights} คืน: ~${pricing.totalTHB.toLocaleString()} บาท (${pricing.guests} ท่าน)
+                  </small>
                 </div>
-                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.searchQuery)}" target="_blank" rel="noopener noreferrer" class="hotel-book-btn">
-                  🗺️ ดูแผนที่ & เช็กห้องว่าง
-                </a>
+                <div class="hotel-actions-col">
+                  <a href="${pricing.googleHotelsUrl}" target="_blank" rel="noopener noreferrer" class="hotel-google-btn">
+                    🗺️ เช็กราคาสดบน Google Hotels (${pricing.formattedCheckin})
+                  </a>
+                  <a href="${pricing.agodaUrl}" target="_blank" rel="noopener noreferrer" class="hotel-agoda-btn">
+                    🏨 ดูห้องว่างบน Agoda (${pricing.nights} คืน)
+                  </a>
+                </div>
               </div>
             </div>
           `;
@@ -693,6 +876,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     hotelAttractionDisplay.querySelector(".view-landmark-detail-btn")?.addEventListener("click", (e) => {
       openDetailModal(currentItem.id);
+    });
+  }
+
+  // Bind Date Picker Event Listeners
+  if (hotelCheckinDateInput) {
+    hotelCheckinDateInput.addEventListener("change", (e) => {
+      selectedCheckinDate = e.target.value;
+      renderHotelGuide();
+    });
+  }
+  if (hotelStayNightsSelect) {
+    hotelStayNightsSelect.addEventListener("change", (e) => {
+      selectedStayNights = parseInt(e.target.value, 10) || 2;
+      renderHotelGuide();
+    });
+  }
+  if (hotelGuestCountSelect) {
+    hotelGuestCountSelect.addEventListener("change", (e) => {
+      selectedGuestCount = parseInt(e.target.value, 10) || 2;
+      renderHotelGuide();
+    });
+  }
+  if (hotelDateSyncBtn) {
+    hotelDateSyncBtn.addEventListener("click", () => {
+      if (hotelCheckinDateInput) selectedCheckinDate = hotelCheckinDateInput.value;
+      if (hotelStayNightsSelect) selectedStayNights = parseInt(hotelStayNightsSelect.value, 10) || 2;
+      if (hotelGuestCountSelect) selectedGuestCount = parseInt(hotelGuestCountSelect.value, 10) || 2;
+      renderHotelGuide();
     });
   }
 

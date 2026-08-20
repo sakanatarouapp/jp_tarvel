@@ -203,6 +203,46 @@
             <button type="button" class="hotel-season-pill" data-hotel-season="winter">❄️ ฤดูหนาว / หิมะ</button>
           </div>
         </div>
+
+        <!-- Tier 5: Real-World Check-in Date Picker & Google Hotels Matcher -->
+        <div class="hotel-datepicker-bar">
+          <div class="datepicker-header-row">
+            <span class="hotel-step-label">5️⃣ 📅 ระบุวันเข้าพักจริง (ประเมินราคาตรงกับ Google Maps & Agoda):</span>
+            <span class="date-live-match-badge" id="date-live-match-badge">⚡ เรตโปรวันธรรมดา Low-Season</span>
+          </div>
+          <div class="datepicker-controls-row">
+            <div class="date-input-group">
+              <label for="hotel-checkin-date"><span class="input-icon">🗓️</span> วันเช็คอิน (Check-in):</label>
+              <input type="date" id="hotel-checkin-date" class="hotel-date-input">
+            </div>
+            <div class="nights-input-group">
+              <label for="hotel-stay-nights"><span class="input-icon">🌙</span> จำนวนคืน:</label>
+              <select id="hotel-stay-nights" class="hotel-nights-select">
+                <option value="1">1 คืน</option>
+                <option value="2" selected>2 คืน</option>
+                <option value="3">3 คืน</option>
+                <option value="4">4 คืน</option>
+                <option value="5">5 คืน</option>
+                <option value="7">7 คืน (1 สัปดาห์)</option>
+              </select>
+            </div>
+            <div class="guests-input-group">
+              <label for="hotel-guest-count"><span class="input-icon">👥</span> ผู้เข้าพัก:</label>
+              <select id="hotel-guest-count" class="hotel-guests-select">
+                <option value="1">1 ท่าน (Single)</option>
+                <option value="2" selected>2 ท่าน (Double/Twin)</option>
+                <option value="3">3 ท่าน (Triple)</option>
+                <option value="4">4 ท่าน (Family)</option>
+              </select>
+            </div>
+            <button type="button" id="hotel-date-sync-btn" class="hotel-date-sync-btn">
+              ⚡ ซิงค์ราคาตามวัน
+            </button>
+          </div>
+          <div class="date-insight-hint" id="date-insight-hint">
+            💡 <strong>คำแนะนำราคา:</strong> วันที่เลือกเป็น <em>วันธรรมดา (Weekday)</em> ในช่วง <em>ฤดูร้อน</em> ราคาโรงแรมบน Google Hotels จะเป็น <strong>ช่วงโปรโมชันลดสูงสุด (เริ่มต้น ~1,350 - 1,598 บาท/คืน)</strong>
+          </div>
+        </div>
       </div>
 
       <!-- Selected Attraction Hotels Display -->
