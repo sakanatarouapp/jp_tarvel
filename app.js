@@ -376,6 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setDateFromShortcut(targetSeason, targetDate) {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const currentYear = today.getFullYear();
 
     let resolvedDate = "";
@@ -385,9 +386,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const dd = String(today.getDate()).padStart(2, '0');
       resolvedDate = `${yyyy}-${mm}-${dd}`;
     } else {
-      const parts = targetDate.split('-');
-      const m = parseInt(parts[1], 10);
-      const d = parseInt(parts[2], 10);
+      let m = 3, d = 1;
+      if (targetSeason === "spring") { m = 3; d = 1; }
+      else if (targetSeason === "summer") { m = 6; d = 1; }
+      else if (targetSeason === "autumn") { m = 9; d = 1; }
+      else if (targetSeason === "winter") { m = 12; d = 1; }
+      else {
+        const parts = targetDate.split('-');
+        m = parseInt(parts[1], 10);
+        d = parseInt(parts[2], 10);
+      }
       
       let yr = currentYear;
       const targetThisYear = new Date(currentYear, m - 1, d);
