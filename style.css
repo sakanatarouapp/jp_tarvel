@@ -484,6 +484,15 @@ body {
   color: var(--text-main);
 }
 
+.pill:focus {
+  outline: none;
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--primary-red);
+  outline-offset: 2px;
+}
+
 .pill.active {
   background-color: var(--primary-red);
   color: white;

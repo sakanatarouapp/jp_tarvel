@@ -369,14 +369,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.classList.toggle("active", target === detectedShortcut);
       });
     }
-
-    // Also sync with top Hero season pills
-    if (typeof seasonPills !== 'undefined' && seasonPills) {
-      const heroSeasonKey = (detectedShortcut === "all" ? "all" : detectedShortcut);
-      seasonPills.querySelectorAll(".pill").forEach(p => {
-        p.classList.toggle("active", p.getAttribute("data-season") === heroSeasonKey);
-      });
-    }
   }
 
   function setDateFromShortcut(targetSeason, targetDate) {
