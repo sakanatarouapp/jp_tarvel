@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.6">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -1113,38 +1113,56 @@
           <button type="button" class="pocket-modal-close-btn" id="close-pocket-export-modal-btn">&times;</button>
         </div>
 
-        <!-- Quick Settings & Customizer Bar inside Modal -->
-        <div class="pocket-quick-settings-bar">
-          <div class="pocket-setting-item">
-            <label for="pocket-setting-date"><span>🗓️</span> วันเริ่มเดินทาง:</label>
-            <input type="date" id="pocket-setting-date" class="pocket-setting-input">
+        <!-- Modern Segmented Customizer Capsule Bar -->
+        <div class="pocket-customizer-capsule">
+          <div class="customizer-field date-field">
+            <span class="field-icon">🗓️</span>
+            <div class="field-content">
+              <span class="field-label">วันเริ่มเดินทาง</span>
+              <input type="date" id="pocket-setting-date" class="customizer-input date-input">
+            </div>
           </div>
-          <div class="pocket-setting-item">
-            <label for="pocket-setting-nights"><span>🌙</span> จำนวนคืน:</label>
-            <select id="pocket-setting-nights" class="pocket-setting-select">
-              <option value="1">1 คืน</option>
-              <option value="2" selected>2 คืน</option>
-              <option value="3">3 คืน</option>
-              <option value="4">4 คืน</option>
-              <option value="5">5 คืน</option>
-              <option value="6">6 คืน</option>
-              <option value="7">7 คืน (1 สัปดาห์)</option>
-              <option value="10">10 คืน</option>
-              <option value="14">14 คืน (2 สัปดาห์)</option>
-            </select>
+
+          <div class="customizer-divider"></div>
+
+          <div class="customizer-field select-field">
+            <span class="field-icon">🌙</span>
+            <div class="field-content">
+              <span class="field-label">จำนวนคืน</span>
+              <select id="pocket-setting-nights" class="customizer-select">
+                <option value="1">1 คืน</option>
+                <option value="2" selected>2 คืน</option>
+                <option value="3">3 คืน</option>
+                <option value="4">4 คืน</option>
+                <option value="5">5 คืน</option>
+                <option value="6">6 คืน</option>
+                <option value="7">7 คืน (1 สัปดาห์)</option>
+                <option value="10">10 คืน</option>
+                <option value="14">14 คืน (2 สัปดาห์)</option>
+              </select>
+            </div>
           </div>
-          <div class="pocket-setting-item">
-            <label for="pocket-setting-guests"><span>👥</span> ผู้เดินทาง:</label>
-            <select id="pocket-setting-guests" class="pocket-setting-select">
-              <option value="1">1 ท่าน (Solo)</option>
-              <option value="2" selected>2 ท่าน (Double/Twin)</option>
-              <option value="3">3 ท่าน (Triple)</option>
-              <option value="4">4 ท่าน (Family 4)</option>
-              <option value="5">5 ท่าน (กลุ่ม 5 คน)</option>
-              <option value="6">6 ท่าน (กลุ่ม 6 คน)</option>
-            </select>
+
+          <div class="customizer-divider"></div>
+
+          <div class="customizer-field select-field">
+            <span class="field-icon">👥</span>
+            <div class="field-content">
+              <span class="field-label">ผู้เดินทาง</span>
+              <select id="pocket-setting-guests" class="customizer-select">
+                <option value="1">1 ท่าน (Solo)</option>
+                <option value="2" selected>2 ท่าน (คู่/เพื่อน)</option>
+                <option value="3">3 ท่าน (Triple)</option>
+                <option value="4">4 ท่าน (ครอบครัว 4)</option>
+                <option value="5">5 ท่าน (กลุ่ม 5 คน)</option>
+                <option value="6">6 ท่าน (กลุ่ม 6 คน)</option>
+              </select>
+            </div>
           </div>
-          <div class="pocket-setting-item holiday-pill-wrap">
+
+          <div class="customizer-divider"></div>
+
+          <div class="customizer-badge-wrap">
             <span class="pocket-holiday-badge" id="pocket-holiday-badge">⚡ เรตสดวันเดินทาง</span>
           </div>
         </div>
