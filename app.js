@@ -346,12 +346,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const parts = checkinDateStr.split('-');
     if (parts.length < 3) return;
     const month = parseInt(parts[1], 10);
-    const day = parseInt(parts[2], 10);
 
     let detectedShortcut = "all";
-    if (month === 12 && (day === 24 || day === 25)) {
-      detectedShortcut = "christmas";
-    } else if (month >= 3 && month <= 5) {
+    if (month >= 3 && month <= 5) {
       detectedShortcut = "spring";
     } else if (month >= 6 && month <= 8) {
       detectedShortcut = "summer";
@@ -370,7 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Also sync with top Hero season pills
     if (typeof seasonPills !== 'undefined' && seasonPills) {
-      const heroSeasonKey = (detectedShortcut === "christmas") ? "winter" : (detectedShortcut === "all" ? "all" : detectedShortcut);
+      const heroSeasonKey = (detectedShortcut === "all" ? "all" : detectedShortcut);
       seasonPills.querySelectorAll(".pill").forEach(p => {
         p.classList.toggle("active", p.getAttribute("data-season") === heroSeasonKey);
       });
