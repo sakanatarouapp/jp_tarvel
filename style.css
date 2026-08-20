@@ -3987,35 +3987,143 @@ body {
   padding: 1.25rem;
 }
 
+.itinerary-day-block {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 0.95rem 0.65rem;
+  margin-bottom: 1.15rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.itinerary-day-header {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--primary-red);
+  margin-bottom: 0.65rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.35rem;
+}
+
 .itinerary-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: #f8fafc;
   border: 1px solid var(--border-color);
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 0.85rem;
   border-radius: var(--radius-md);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.55rem;
+  gap: 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.itinerary-item:hover {
+  border-color: #93c5fd;
+  background-color: #f0f9ff;
+}
+
+.itinerary-item-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .itinerary-item-title {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--primary-navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .itinerary-item-sub {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+.itinerary-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.item-day-select {
+  background: white;
+  border: 1.5px solid #cbd5e1;
+  color: #1e3a8a;
+  font-weight: 800;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.item-day-select:focus,
+.item-day-select:hover {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.move-item-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 2px 5px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-main);
+}
+
+.move-item-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
 }
 
 .remove-itinerary-btn {
   background: transparent;
   border: none;
   color: #ef4444;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding: 4px;
+  padding: 2px 4px;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.remove-itinerary-btn:hover {
+  background: #fee2e2;
+}
+
+.add-new-day-btn {
+  background: #f8fafc;
+  border: 1.5px dashed #94a3b8;
+  color: #475569;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 0.5rem;
+}
+
+.add-new-day-btn:hover {
+  background: #f0fdf4;
+  border-color: #22c55e;
+  color: #15803d;
 }
 
 .empty-itinerary {

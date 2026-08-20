@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentCalcStyleIndex = 1;
   let searchQuery = "";
   let itineraryList = JSON.parse(localStorage.getItem("nippon_itinerary") || "[]");
+  itineraryList.forEach((item, idx) => {
+    if (!item.day || typeof item.day !== "number") {
+      item.day = Math.floor(idx / 3) + 1;
+    }
+  });
   let customPlacesStore = JSON.parse(localStorage.getItem("nippon_custom_places") || "[]");
 
   // Register saved custom places into ROUTE_SIMULATION_META
@@ -2242,11 +2247,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 8. Toggle Itinerary Items
-  function toggleItineraryItem(id) {
+  function toggleItineraryItem(id, targetDay = null) {
     const idx = itineraryList.findIndex(i => i.id === id);
     if (idx >= 0) {
       itineraryList.splice(idx, 1);
     } else {
+      const assignedDay = targetDay ? parseInt(targetDay, 10) : (itineraryList.length > 0 ? Math.max(...itineraryList.map(i => i.day || 1)) : 1);
       const builtin = JAPAN_DATA.find(i => i.id === id);
       if (builtin) {
         itineraryList.push({
@@ -2255,7 +2261,8 @@ document.addEventListener("DOMContentLoaded", () => {
           tag: builtin.tag,
           cost: builtin.estimatedCost,
           region: builtin.region,
-          japanese: builtin.japanese
+          japanese: builtin.japanese,
+          day: assignedDay
         });
       } else {
         const custom = customPlacesStore.find(i => i.id === id);
@@ -2268,7 +2275,8 @@ document.addEventListener("DOMContentLoaded", () => {
             region: custom.region,
             japanese: custom.japanese,
             icon: custom.icon,
-            isCustom: true
+            isCustom: true,
+            day: assignedDay
           });
         }
       }
@@ -2280,7 +2288,37 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRouteSimulator();
   }
 
-  // 9. Update Itinerary Drawer UI
+  function setItineraryItemDay(id, newDay) {
+    const item = itineraryList.find(i => i.id === id);
+    if (item) {
+      item.day = parseInt(newDay, 10) || 1;
+      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+      updateItineraryUI();
+      renderRouteSimulator();
+    }
+  }
+
+  function moveItineraryItemInList(id, direction) {
+    const idx = itineraryList.findIndex(i => i.id === id);
+    if (idx < 0) return;
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= itineraryList.length) return;
+
+    const temp = itineraryList[idx];
+    itineraryList[idx] = itineraryList[targetIdx];
+    itineraryList[targetIdx] = temp;
+
+    // Sync day with target location's day if crossing
+    if (itineraryList[idx] && itineraryList[targetIdx]) {
+      itineraryList[targetIdx].day = itineraryList[targetIdx].day || 1;
+    }
+    
+    localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+    updateItineraryUI();
+    renderRouteSimulator();
+  }
+
+  // 9. Update Itinerary Drawer UI with Day Grouping
   function updateItineraryUI() {
     if (itineraryCountBadge) itineraryCountBadge.textContent = itineraryList.length;
     if (drawerItemCount) drawerItemCount.textContent = `${itineraryList.length} รายการ`;
@@ -2301,43 +2339,75 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Split itinerary items into Day 1, Day 2, Day 3 (up to 3 items per day)
-    let daysHtml = "";
-    const itemsPerDay = 3;
-    const totalDays = Math.ceil(itineraryList.length / itemsPerDay);
+    // Ensure all items have a valid day property
+    itineraryList.forEach((item, idx) => {
+      if (!item.day || typeof item.day !== "number") {
+        item.day = Math.floor(idx / 3) + 1;
+      }
+    });
 
-    for (let day = 1; day <= totalDays; day++) {
-      const startIndex = (day - 1) * itemsPerDay;
-      const dayItems = itineraryList.slice(startIndex, startIndex + itemsPerDay);
+    // Group items by day
+    const dayBuckets = {};
+    itineraryList.forEach(item => {
+      const d = item.day || 1;
+      if (!dayBuckets[d]) dayBuckets[d] = [];
+      dayBuckets[d].push(item);
+    });
+
+    const dayNumbers = Object.keys(dayBuckets).map(Number).sort((a, b) => a - b);
+    const maxDayInList = Math.max(3, ...dayNumbers, (selectedStayNights || 2));
+    const availableDays = Array.from({ length: Math.max(maxDayInList + 1, 5) }, (_, i) => i + 1);
+
+    let daysHtml = "";
+    let globalCounter = 1;
+
+    dayNumbers.forEach(day => {
+      const dayItems = dayBuckets[day];
 
       daysHtml += `
-        <div class="itinerary-day-block" style="margin-bottom: 1.25rem;">
-          <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary-red); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+        <div class="itinerary-day-block">
+          <div class="itinerary-day-header">
             <span>🗓️ DAY ${day}</span>
-            <span style="font-size: 0.78rem; color: var(--text-muted);">${dayItems.length} จุดหมาย</span>
+            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted);">${dayItems.length} จุดหมาย</span>
           </div>
-          ${dayItems.map((item, index) => {
+          ${dayItems.map(item => {
             const isCustom = item.isCustom || item.id.startsWith("custom-");
             const icon = item.icon || (isCustom ? "📍" : "🗾");
+            const num = globalCounter++;
             return `
-              <div class="itinerary-item">
-                <div>
+              <div class="itinerary-item" data-id="${item.id}">
+                <div class="itinerary-item-info">
                   <div class="itinerary-item-title" style="display: flex; align-items: center; gap: 4px;">
                     <span>${icon}</span>
-                    <strong>${startIndex + index + 1}. ${item.title}</strong>
+                    <strong title="${item.title}">${num}. ${item.title}</strong>
                   </div>
                   <div class="itinerary-item-sub">
                     ${isCustom ? `<span style="background: #ecfdf5; color: #059669; font-weight: 700; padding: 1px 5px; border-radius: 6px; font-size: 0.7rem;">Custom</span> ` : ''}
                     ${item.tag || 'จุดหมาย'} • ${item.japanese || item.title}
                   </div>
                 </div>
-                <button class="remove-itinerary-btn" data-id="${item.id}" title="ลบออกจากแผน">&times;</button>
+                <div class="itinerary-item-actions">
+                  <select class="item-day-select" data-id="${item.id}" title="ย้ายไปวันที่...">
+                    ${availableDays.map(d => `
+                      <option value="${d}" ${d === item.day ? 'selected' : ''}>DAY ${d}</option>
+                    `).join("")}
+                  </select>
+                  <button type="button" class="move-item-btn up" data-id="${item.id}" title="เลื่อนขึ้น">⬆️</button>
+                  <button type="button" class="move-item-btn down" data-id="${item.id}" title="เลื่อนลง">⬇️</button>
+                  <button type="button" class="remove-itinerary-btn" data-id="${item.id}" title="ลบออกจากแผน">&times;</button>
+                </div>
               </div>
             `;
           }).join("")}
         </div>
       `;
-    }
+    });
+
+    daysHtml += `
+      <button type="button" class="add-new-day-btn" id="add-new-empty-day-btn">
+        <span>➕</span> เพิ่มวันใหม่ (DAY ${dayNumbers.length > 0 ? Math.max(...dayNumbers) + 1 : 1})
+      </button>
+    `;
 
     itineraryItemsList.innerHTML = daysHtml;
 
@@ -2347,12 +2417,47 @@ document.addEventListener("DOMContentLoaded", () => {
       estimatedBudgetTotal.textContent = `~¥${estimatedJPY.toLocaleString()} เยน (~${estimatedTHB.toLocaleString()} บาท)`;
     }
 
+    // Attach Day change listener
+    itineraryItemsList.querySelectorAll(".item-day-select").forEach(select => {
+      select.addEventListener("change", (e) => {
+        const id = e.target.getAttribute("data-id");
+        const newDay = e.target.value;
+        setItineraryItemDay(id, newDay);
+      });
+    });
+
+    // Attach Move Up & Move Down
+    itineraryItemsList.querySelectorAll(".move-item-btn.up").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.currentTarget.getAttribute("data-id");
+        moveItineraryItemInList(id, -1);
+      });
+    });
+
+    itineraryItemsList.querySelectorAll(".move-item-btn.down").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.currentTarget.getAttribute("data-id");
+        moveItineraryItemInList(id, 1);
+      });
+    });
+
+    // Attach Remove
     itineraryItemsList.querySelectorAll(".remove-itinerary-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         const id = e.currentTarget.getAttribute("data-id");
         toggleItineraryItem(id);
       });
     });
+
+    // Add New Day Button
+    const addEmptyDayBtn = document.getElementById("add-new-empty-day-btn");
+    if (addEmptyDayBtn) {
+      addEmptyDayBtn.addEventListener("click", () => {
+        if (customPlaceModal) {
+          customPlaceModal.style.display = "flex";
+        }
+      });
+    }
   }
 
   // ================= 10. Smart Custom Place & Hotspots Hub =================
@@ -4140,10 +4245,17 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
     }
 
-    // Build Day by Day
-    const itemsPerDay = 3;
-    const totalDays = Math.ceil(planItems.length / itemsPerDay);
-    const dayTimes = ["09:00", "12:30", "15:30", "18:30"];
+    // Group items by day
+    const dayMap = {};
+    planItems.forEach((item, idx) => {
+      const day = item.day || (Math.floor(idx / 3) + 1);
+      if (!dayMap[day]) dayMap[day] = [];
+      dayMap[day].push(item);
+    });
+
+    const dayNumbers = Object.keys(dayMap).map(Number).sort((a, b) => a - b);
+    const totalDays = dayNumbers.length || 1;
+    const dayTimes = ["09:00", "12:30", "15:30", "18:30", "20:30"];
     const transitSteps = [
       "🚇 Tokyo Metro / JR Line (~15 นาที)",
       "🚶 เดินชมเมือง (~8 นาที) / ต่อรถไฟใต้ดิน (~12 นาที)",
@@ -4151,9 +4263,10 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
 
     let daysHtml = "";
-    for (let day = 1; day <= totalDays; day++) {
-      const startIndex = (day - 1) * itemsPerDay;
-      const dayList = planItems.slice(startIndex, startIndex + itemsPerDay);
+    let sheetGlobalCounter = 1;
+
+    dayNumbers.forEach(day => {
+      const dayList = dayMap[day];
 
       daysHtml += `
         <div class="pocket-day-section">
@@ -4165,12 +4278,13 @@ document.addEventListener("DOMContentLoaded", () => {
             ${dayList.map((item, idx) => {
               const fullData = JAPAN_DATA.find(d => d.id === item.id) || {};
               const station = fullData.transport ? fullData.transport.split('(')[0].replace('สถานี', '').trim() : (item.tag || 'ใจกลางเมือง');
-              const tTime = dayTimes[idx] || `${9 + idx * 3}:00`;
+              const tTime = dayTimes[idx % dayTimes.length];
+              const num = sheetGlobalCounter++;
               return `
                 <div class="pocket-timeline-row">
                   <div class="pocket-time-col">⏰ ${tTime}</div>
                   <div class="pocket-info-col">
-                    <div class="pocket-place-name">${startIndex + idx + 1}. ${item.title}</div>
+                    <div class="pocket-place-name">${num}. ${item.title}</div>
                     <div class="pocket-place-sub">
                       📍 สถานี/พิกัด: <strong>${station}</strong> • 🇯🇵 ${item.japanese || item.title}
                     </div>
@@ -4182,7 +4296,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         </div>
       `;
-    }
+    });
 
     // Selected Hotel Data
     const sampleHotel = JAPAN_DATA.find(i => i.nearbyHotels && i.nearbyHotels.length > 0)?.nearbyHotels[0] || {
