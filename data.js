@@ -1575,7 +1575,7 @@ const JAPAN_DATA = [
     tag: "ศาลเจ้าหัวสิงโตยักษ์ / ปัดเป่าเคราะห์ & ขอโชคลาภ",
     rating: 4.8,
     keyword: "namba yasaka shrine lion head giant mouth fortune osaka",
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Namba-Yasaka-Shrine-lions_head_theater.jpg/1200px-Namba-Yasaka-Shrine-lions_head_theater.jpg",
+    image: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&w=1200&q=80",
     description: "ศาลเจ้าศักดิ์สิทธิ์ใจกลางเมืองโอซาก้า โดดเด่นด้วยเวทีหัวสิงโตทองคำอ้าปากกว้างขนาดยักษ์สูง 12 เมตร เชื่อว่าพลังอำนาจของสิงโตจะช่วยกลืนกินสิ่งชั่วร้าย เคราะห์กรรม และดึงดูดโชคลาภความสำเร็จเข้ามา",
     transport: "🚶 เดิน 6 นาทีจากสถานี Namba Station (Osaka Metro Midosuji Line / Nankai Line ทางออก 5 หรือ 6)",
     bestTime: "08:30 - 11:00 น. (ช่วงเช้าแสงแดดส่องกระทบหัวสิงโตสวยงามและคนไม่เยอะ)",

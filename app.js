@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cardsPaginationEl = document.getElementById("cards-pagination");
 
   // Fallback image URL in case external image fails
-  const FALLBACK_IMG = "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80";
+  const FALLBACK_IMG = "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80";
 
   // DOM Elements
   const cardsGrid = document.getElementById("cards-grid");
