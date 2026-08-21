@@ -453,16 +453,17 @@
     </div>
   </section>
 
-  <!-- Section 5: Real-time Currency & Tax-Free Calculator -->
+  <!-- Section 5: Real-time Currency, Tax-Free & Store Discount Hub -->
   <section class="currency-section" id="currency-calc">
     <div class="container">
       <div class="section-title-wrap">
-        <span class="sub-heading">💴 CURRENCY & TAX-FREE TOOLS</span>
-        <h2>เครื่องแปลงค่าเงินเยน (JPY ↔ THB) & คำนวณคืนภาษี Tax-Free 10%</h2>
-        <p>แปลงค่าเงินเยนเป็นบาทแบบทันใจ พร้อมคำนวณเงินคืนเมื่อช้อปปิ้งครบ 5,000 เยน</p>
+        <span class="sub-heading">💴 CURRENCY, TAX-FREE & SHOPPING HUB</span>
+        <h2>เครื่องแปลงค่าเงินเยน (JPY ↔ THB) & คำนวณคืนภาษี Tax-Free + ส่วนลดคูปองร้านดัง</h2>
+        <p>แปลงค่าเงินเยนเป็นบาทแบบเรียลไทม์ พร้อมคำนวณเงินคืน Tax-Free 10% และคูปองลดเพิ่มจาก Donki, Bic Camera, Matsumoto Kiyoshi</p>
       </div>
 
       <div class="currency-calculator-card">
+        <!-- 1. Two-Way Currency Converter Inputs -->
         <div class="currency-grid-row">
           <div class="currency-input-block">
             <label>🇯🇵 จำนวนเงินเยน (JPY - ¥):</label>
@@ -481,6 +482,20 @@
           </div>
         </div>
 
+        <!-- Quick Amount Stepper Chips -->
+        <div class="currency-stepper-row">
+          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">กดเพิ่มยอดเงินด่วน:</span>
+          <div class="currency-steppers-list">
+            <button type="button" class="amount-stepper-btn" data-add="1000">+¥1,000</button>
+            <button type="button" class="amount-stepper-btn" data-add="5000">+¥5,000</button>
+            <button type="button" class="amount-stepper-btn" data-add="10000">+¥10,000</button>
+            <button type="button" class="amount-stepper-btn" data-add="30000">+¥30,000</button>
+            <button type="button" class="amount-stepper-btn" data-add="50000">+¥50,000</button>
+            <button type="button" class="amount-stepper-btn clear-btn" id="clear-jpy-amount-btn">✕ ล้างค่า</button>
+          </div>
+        </div>
+
+        <!-- 2. Rate Adjuster & Presets -->
         <div class="rate-adjust-bar">
           <div class="rate-custom-input-box">
             <label for="custom-rate-input">
@@ -504,24 +519,110 @@
           </div>
         </div>
 
+        <!-- 3. Store Discount Coupon Selector -->
+        <div class="store-coupon-section">
+          <div class="store-coupon-title-row">
+            <h4>🏷️ เลือกคูปองส่วนลดร้านค้า (กดใช้ส่วนลดเพื่อคำนวณเงินคืนรวม):</h4>
+            <span class="store-selected-badge" id="store-selected-badge">🛍️ Tax-Free ทั่วไป (10%)</span>
+          </div>
+          <div class="store-coupon-grid" id="store-coupon-grid">
+            <button type="button" class="store-coupon-card active" data-store="tax_only" data-discount="0">
+              <div class="store-card-icon">🏷️</div>
+              <div class="store-card-info">
+                <div class="store-card-name">Tax-Free ทั่วไป</div>
+                <div class="store-card-desc">คืนภาษี 10% (เมื่อซื้อครบ ¥5,000)</div>
+              </div>
+              <span class="store-discount-tag">Tax 10%</span>
+            </button>
+
+            <button type="button" class="store-coupon-card" data-store="donki" data-discount="5">
+              <div class="store-card-icon">🐧</div>
+              <div class="store-card-info">
+                <div class="store-card-name">Don Quijote (ดองกี้)</div>
+                <div class="store-card-desc">Tax-Free 10% + คูปองลดเพิ่ม 5% (ยอด ≥ ¥10,000)</div>
+              </div>
+              <span class="store-discount-tag highlight-donki">10% + 5%</span>
+            </button>
+
+            <button type="button" class="store-coupon-card" data-store="bic_camera" data-discount="7">
+              <div class="store-card-icon">📷</div>
+              <div class="store-card-info">
+                <div class="store-card-name">Bic Camera / Yodobashi</div>
+                <div class="store-card-desc">Tax-Free 10% + คูปองกล้อง/เครื่องใช้ไฟฟ้า 7%</div>
+              </div>
+              <span class="store-discount-tag highlight-bic">10% + 7%</span>
+            </button>
+
+            <button type="button" class="store-coupon-card" data-store="matsukiyo" data-discount="5">
+              <div class="store-card-icon">💊</div>
+              <div class="store-card-info">
+                <div class="store-card-name">Matsumoto Kiyoshi / Sundrug</div>
+                <div class="store-card-desc">Tax-Free 10% + คูปองยาสกินแคร์ 5% (ยอด ≥ ¥10,000)</div>
+              </div>
+              <span class="store-discount-tag highlight-drug">10% + 5%</span>
+            </button>
+
+            <button type="button" class="store-coupon-card" data-store="department" data-discount="5">
+              <div class="store-card-icon">🏬</div>
+              <div class="store-card-info">
+                <div class="store-card-name">ห้างสรรพสินค้า (Daimaru / Hankyu)</div>
+                <div class="store-card-desc">Tax-Free 10% + Guest Card ลดเพิ่ม 5%</div>
+              </div>
+              <span class="store-discount-tag highlight-dept">10% + 5%</span>
+            </button>
+
+            <button type="button" class="store-coupon-card" data-store="custom" data-discount="0" id="custom-coupon-card-btn">
+              <div class="store-card-icon">✏️</div>
+              <div class="store-card-info">
+                <div class="store-card-name">ระบุส่วนลดเอง (Custom %)</div>
+                <div class="store-card-desc">กำหนด % ส่วนลดพิเศษเพิ่มเติมเอง</div>
+              </div>
+              <div class="custom-discount-inline" id="custom-discount-inline" style="display: none;">
+                <input type="number" id="custom-discount-percent-input" value="5" min="1" max="50" step="1" style="width: 45px; padding: 2px 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: 700;">
+                <span style="font-size: 0.75rem; font-weight: 700;">%</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Real-time Calculation Breakdown Box -->
         <div class="tax-free-box">
           <div class="tax-free-header">
-            <h4>🛍️ เครื่องคำนวณการคืนภาษี Tax-Free (10%)</h4>
-            <span class="tax-qualify-badge" id="tax-qualify-badge">✓ ช้อปเกิน 5,000 เยน ลดภาษีได้!</span>
+            <h4>🛍️ สรุปยอดเงินจ่ายจริง & ยอดประหยัด (Shopping Savings Breakdown)</h4>
+            <span class="tax-qualify-badge" id="tax-qualify-badge">✓ ช้อปครบ 5,000 เยน ทำ Tax-Free ได้!</span>
           </div>
           <div class="tax-free-results">
             <div class="tax-result-item">
-              <span>ราคาสินค้ารวมภาษี:</span>
-              <strong id="tax-gross-price">¥10,000 เยน</strong>
-            </div>
-            <div class="tax-result-item highlight-green">
-              <span>ยอดเงินที่ประหยัดได้ (Tax-Free 10%):</span>
-              <strong id="tax-saved-price">-¥909 เยน (~213 บาท)</strong>
+              <span>ราคาสินค้ารวมภาษีเดิม (Original Gross Price):</span>
+              <strong id="tax-gross-price">¥10,000 เยน (~2,350 บาท)</strong>
             </div>
             <div class="tax-result-item">
-              <span>ราคาจ่ายจริงสุทธิ (Net Price):</span>
-              <strong id="tax-net-price">¥9,091 เยน (~2,136 บาท)</strong>
+              <span>หักคืนภาษี Tax-Free 10%:</span>
+              <strong id="tax-refund-amount" style="color: #059669;">-¥909 เยน (~213 บาท)</strong>
             </div>
+            <div class="tax-result-item" id="coupon-discount-row" style="display: none;">
+              <span id="coupon-discount-label">หักคูปองส่วนลดร้านค้า (0%):</span>
+              <strong id="coupon-discount-amount" style="color: #0284c7;">-¥0 เยน (~0 บาท)</strong>
+            </div>
+            <div class="tax-result-item highlight-green" style="background: rgba(16, 185, 129, 0.08); padding: 0.6rem 0.85rem; border-radius: 8px; border: 1px solid #86efac; margin: 0.35rem 0;">
+              <span>💰 ประหยัดรวมทั้งสิ้น (Total Saved):</span>
+              <strong id="tax-saved-price" style="font-size: 1.15rem; color: #15803d;">-¥909 เยน (~213 บาท) (ลดไป 9.1%)</strong>
+            </div>
+            <div class="tax-result-item" style="background: #f8fafc; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+              <span style="font-weight: 800; color: #0f172a; font-size: 1rem;">💳 ยอดจ่ายจริงสุทธิ (Final Net Price):</span>
+              <strong id="tax-net-price" style="font-size: 1.25rem; color: #1e3a8a; font-weight: 900;">¥9,091 เยน (~2,136 บาท)</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Quick Price Reference & 1-Click Comparison Table -->
+        <div class="quick-price-table-wrap">
+          <div class="quick-price-header">
+            <h4>⚡ ตารางเทียบราคาสินค้ายอดฮิตในญี่ปุ่น (กดที่รายการเพื่อคำนวณยอดเงินทันที)</h4>
+            <span style="font-size: 0.76rem; color: var(--text-muted); font-weight: 600;">คลิกรายการเพื่อคำนวณ ➔</span>
+          </div>
+          <div class="quick-price-grid" id="quick-price-grid">
+            <!-- Injected via JavaScript -->
           </div>
         </div>
       </div>

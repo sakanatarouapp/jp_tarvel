@@ -4232,7 +4232,26 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ================= 12. Currency Converter & Tax-Free Logic =================
+  // ================= 12. Currency Converter, Store Coupons & Tax-Free Hub =================
   let currentExchangeRate = parseFloat(localStorage.getItem("nippon_exchange_rate")) || 0.235;
+  let selectedStoreCoupon = "tax_only";
+  let customCouponDiscountPercent = 5;
+
+  const JAPAN_POPULAR_PRICES_DATA = [
+    { icon: "🥫", name: "ชาเขียว/น้ำดื่มตู้หยอดเหรียญ", jpy: 160, desc: "เครื่องดื่มเย็น/ร้อน" },
+    { icon: "🍙", name: "ข้าวปั้นโอนิกิริ & แซนด์วิช 7-11", jpy: 300, desc: "ของกินเล่นร้านสะดวกซื้อ" },
+    { icon: "☕", name: "กาแฟสตาร์บัคส์ / คาเฟ่ญี่ปุ่น", jpy: 650, desc: "Starbucks / Doutor" },
+    { icon: "🍜", name: "อิจิรันราเมงข้อสอบ / ราเมง 1 ชาม", jpy: 1080, desc: "Ichiran / Ippudo Ramen" },
+    { icon: "🥩", name: "ข้าวหน้าเนื้อวากิว / ปิ้งย่างกลางวัน", jpy: 2200, desc: "เซ็ตมื้อเที่ยงสุดคุ้ม" },
+    { icon: "🍣", name: "ซูชิสายพานพรีเมียม / บุฟเฟต์", jpy: 3500, desc: "มื้อเย็นจุใจ" },
+    { icon: "🛍️", name: "ช้อปปิ้งดองกี้ขั้นต่ำเริ่ม Tax-Free", jpy: 5500, desc: "เริ่มลดภาษี 10% ได้ทันที" },
+    { icon: "🧴", name: "สกินแคร์ Matsumoto Kiyoshi เซ็ตยอดฮิต", jpy: 10000, desc: "ลด Tax-Free 10% + คูปอง 5%" },
+    { icon: "👟", name: "รองเท้า Onitsuka Tiger / เสื้อผ้า Uniqlo", jpy: 18000, desc: "รองเท้าผ้าใบยอดฮิต" },
+    { icon: "🎮", name: "Nintendo Switch OLED / เกมคอนโซล", jpy: 37980, desc: "เครื่องเล่นเกมพกพา" },
+    { icon: "💨", name: "ไดร์เป่าผม Dyson Supersonic", jpy: 48800, desc: "Bic Camera ลด 10% + 7%" },
+    { icon: "📷", name: "กล้อง Sony Alpha / เลนส์ยอดฮิต", jpy: 120000, desc: "อุปกรณ์ถ่ายภาพระดับโปร" }
+  ];
+
   const inputJpy = document.getElementById("input-jpy");
   const inputThb = document.getElementById("input-thb");
   const currentRateDisplay = document.getElementById("current-rate-display");
@@ -4240,8 +4259,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const resetRateDefaultBtn = document.getElementById("reset-rate-default-btn");
   const taxQualifyBadge = document.getElementById("tax-qualify-badge");
   const taxGrossPrice = document.getElementById("tax-gross-price");
+  const taxRefundAmount = document.getElementById("tax-refund-amount");
+  const couponDiscountRow = document.getElementById("coupon-discount-row");
+  const couponDiscountLabel = document.getElementById("coupon-discount-label");
+  const couponDiscountAmount = document.getElementById("coupon-discount-amount");
   const taxSavedPrice = document.getElementById("tax-saved-price");
   const taxNetPrice = document.getElementById("tax-net-price");
+  const storeSelectedBadge = document.getElementById("store-selected-badge");
+  const storeCouponGrid = document.getElementById("store-coupon-grid");
+  const customDiscountInline = document.getElementById("custom-discount-inline");
+  const customDiscountPercentInput = document.getElementById("custom-discount-percent-input");
+  const quickPriceGrid = document.getElementById("quick-price-grid");
 
   function setGlobalExchangeRate(rate, updateInput = true) {
     if (isNaN(rate) || rate <= 0) return;
@@ -4266,6 +4294,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     updateCurrencyCalculations("jpy");
+    renderQuickPriceTable();
+
     if (typeof renderHotelGuide === "function") {
       try { renderHotelGuide(); } catch(e) {}
     }
@@ -4294,33 +4324,185 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const currentJPY = parseFloat(inputJpy.value) || 0;
-    if (taxGrossPrice) taxGrossPrice.textContent = `¥${currentJPY.toLocaleString()} เยน`;
+    const grossTHB = Math.round(currentJPY * currentExchangeRate);
+    if (taxGrossPrice) taxGrossPrice.textContent = `¥${currentJPY.toLocaleString()} เยน (~${grossTHB.toLocaleString()} บาท)`;
 
     if (currentJPY >= 5000) {
-      if (taxQualifyBadge) {
-        taxQualifyBadge.textContent = "✓ ช้อปครบ 5,000 เยน ทำ Tax-Free ได้!";
-        taxQualifyBadge.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
-        taxQualifyBadge.style.color = "#059669";
+      const taxRefundJPY = Math.round(currentJPY - (currentJPY / 1.10));
+      const taxRefundTHB = Math.round(taxRefundJPY * currentExchangeRate);
+      const baseExTaxJPY = currentJPY - taxRefundJPY;
+
+      let couponPercent = 0;
+      let couponLabelText = "คูปองส่วนลด";
+      let couponNote = "";
+
+      if (selectedStoreCoupon === "donki") {
+        if (baseExTaxJPY >= 30000) {
+          couponPercent = 7;
+          couponLabelText = "คูปอง Don Quijote (ลดเพิ่ม 7% ยอด ≥ ¥30,000)";
+        } else if (baseExTaxJPY >= 10000) {
+          couponPercent = 5;
+          couponLabelText = "คูปอง Don Quijote (ลดเพิ่ม 5% ยอด ≥ ¥10,000)";
+        } else {
+          couponPercent = 0;
+          couponNote = " (ดองกี้ต้องยอดรวม ≥ ¥10,000 เพื่อรับคูปองเพิ่ม 5%)";
+          couponLabelText = "คูปอง Don Quijote" + couponNote;
+        }
+      } else if (selectedStoreCoupon === "bic_camera") {
+        couponPercent = 7;
+        couponLabelText = "คูปอง Bic Camera / Yodobashi (ลดเพิ่ม 7%)";
+      } else if (selectedStoreCoupon === "matsukiyo") {
+        if (baseExTaxJPY >= 10000) {
+          couponPercent = 5;
+          couponLabelText = "คูปอง Matsumoto Kiyoshi (ลดเพิ่ม 5% ยอด ≥ ¥10,000)";
+        } else {
+          couponPercent = 0;
+          couponNote = " (ต้องยอดรวม ≥ ¥10,000 เพื่อรับคูปองเพิ่ม 5%)";
+          couponLabelText = "คูปอง Matsumoto Kiyoshi" + couponNote;
+        }
+      } else if (selectedStoreCoupon === "department") {
+        couponPercent = 5;
+        couponLabelText = "ห้างสรรพสินค้า Guest Card (ลดเพิ่ม 5%)";
+      } else if (selectedStoreCoupon === "custom") {
+        couponPercent = customCouponDiscountPercent;
+        couponLabelText = `คูปองส่วนลดพิเศษที่คุณระบุ (${couponPercent}%)`;
       }
 
-      const savedJPY = Math.round(currentJPY - (currentJPY / 1.10));
-      const savedTHB = Math.round(savedJPY * currentExchangeRate);
-      const netJPY = currentJPY - savedJPY;
-      const netTHB = Math.round(netJPY * currentExchangeRate);
+      const couponDiscountJPY = Math.round(baseExTaxJPY * (couponPercent / 100));
+      const couponDiscountTHB = Math.round(couponDiscountJPY * currentExchangeRate);
+      const totalSavedJPY = taxRefundJPY + couponDiscountJPY;
+      const totalSavedTHB = Math.round(totalSavedJPY * currentExchangeRate);
+      const finalNetJPY = Math.max(0, currentJPY - totalSavedJPY);
+      const finalNetTHB = Math.round(finalNetJPY * currentExchangeRate);
+      const savedPercent = ((totalSavedJPY / currentJPY) * 100).toFixed(1);
 
-      if (taxSavedPrice) taxSavedPrice.textContent = `-¥${savedJPY.toLocaleString()} เยน (~${savedTHB.toLocaleString()} บาท)`;
-      if (taxNetPrice) taxNetPrice.textContent = `¥${netJPY.toLocaleString()} เยน (~${netTHB.toLocaleString()} บาท)`;
-    } else {
       if (taxQualifyBadge) {
-        taxQualifyBadge.textContent = "⚠️ ยอดไม่ถึง 5,000 เยน (ไม่สามารถทำ Tax-Free ได้)";
+        if (couponPercent > 0) {
+          taxQualifyBadge.textContent = `✓ ลด Tax-Free 10% + ได้ส่วนลดคูปองเพิ่ม ${couponPercent}%!`;
+          taxQualifyBadge.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
+          taxQualifyBadge.style.color = "#047857";
+        } else {
+          taxQualifyBadge.textContent = "✓ ช้อปครบ 5,000 เยน ทำ Tax-Free 10% ได้ทันที!";
+          taxQualifyBadge.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+          taxQualifyBadge.style.color = "#059669";
+        }
+      }
+
+      if (taxRefundAmount) taxRefundAmount.textContent = `-¥${taxRefundJPY.toLocaleString()} เยน (~${taxRefundTHB.toLocaleString()} บาท)`;
+
+      if (couponDiscountRow && couponDiscountAmount && couponDiscountLabel) {
+        if (selectedStoreCoupon !== "tax_only") {
+          couponDiscountRow.style.display = "flex";
+          couponDiscountLabel.textContent = `หัก${couponLabelText}:`;
+          couponDiscountAmount.textContent = couponDiscountJPY > 0 ? `-¥${couponDiscountJPY.toLocaleString()} เยน (~${couponDiscountTHB.toLocaleString()} บาท)` : `¥0 เยน (ยอดไม่ถึงเกณฑ์)`;
+        } else {
+          couponDiscountRow.style.display = "none";
+        }
+      }
+
+      if (taxSavedPrice) {
+        taxSavedPrice.textContent = `-¥${totalSavedJPY.toLocaleString()} เยน (~${totalSavedTHB.toLocaleString()} บาท) (ประหยัดไป ${savedPercent}%)`;
+      }
+      if (taxNetPrice) {
+        taxNetPrice.textContent = `¥${finalNetJPY.toLocaleString()} เยน (~${finalNetTHB.toLocaleString()} บาท)`;
+      }
+    } else {
+      // Gross < 5,000 JPY
+      if (taxQualifyBadge) {
+        taxQualifyBadge.textContent = `⚠️ ยอดไม่ถึง ¥5,000 (ยังทำ Tax-Free ไม่ได้ ขาดอีก ¥${(5000 - currentJPY).toLocaleString()})`;
         taxQualifyBadge.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
         taxQualifyBadge.style.color = "#dc2626";
       }
 
+      if (taxRefundAmount) taxRefundAmount.textContent = `¥0 เยน (~0 บาท)`;
+      if (couponDiscountRow) couponDiscountRow.style.display = "none";
       if (taxSavedPrice) taxSavedPrice.textContent = `¥0 เยน (ซื้อเพิ่มอีก ¥${(5000 - currentJPY).toLocaleString()} เพื่อลดภาษี)`;
-      const totalTHB = Math.round(currentJPY * currentExchangeRate);
-      if (taxNetPrice) taxNetPrice.textContent = `¥${currentJPY.toLocaleString()} เยน (~${totalTHB.toLocaleString()} บาท)`;
+      if (taxNetPrice) taxNetPrice.textContent = `¥${currentJPY.toLocaleString()} เยน (~${grossTHB.toLocaleString()} บาท)`;
     }
+  }
+
+  function renderQuickPriceTable() {
+    if (!quickPriceGrid) return;
+    quickPriceGrid.innerHTML = JAPAN_POPULAR_PRICES_DATA.map(item => {
+      const thb = Math.round(item.jpy * currentExchangeRate);
+      return `
+        <div class="quick-price-item" data-jpy="${item.jpy}" title="คลิกเพื่อนำยอด ¥${item.jpy.toLocaleString()} ไปคำนวณ">
+          <div class="quick-price-title-col">
+            <span style="font-size: 1.15rem;">${item.icon}</span>
+            <div>
+              <div class="quick-price-title-text">${item.name}</div>
+              <div class="quick-price-thb-sub">${item.desc} • ~${thb.toLocaleString()} บาท</div>
+            </div>
+          </div>
+          <span class="quick-price-jpy-badge">¥${item.jpy.toLocaleString()}</span>
+        </div>
+      `;
+    }).join("");
+
+    quickPriceGrid.querySelectorAll(".quick-price-item").forEach(el => {
+      el.addEventListener("click", (e) => {
+        const jpy = parseFloat(e.currentTarget.getAttribute("data-jpy"));
+        if (!isNaN(jpy) && inputJpy) {
+          inputJpy.value = jpy;
+          updateCurrencyCalculations("jpy");
+          const calcCard = document.querySelector(".currency-calculator-card");
+          if (calcCard) calcCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
+    });
+  }
+
+  // Bind Stepper Buttons
+  document.querySelectorAll(".amount-stepper-btn[data-add]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const addVal = parseInt(e.currentTarget.getAttribute("data-add"), 10);
+      const cur = parseFloat(inputJpy.value) || 0;
+      inputJpy.value = cur + addVal;
+      updateCurrencyCalculations("jpy");
+    });
+  });
+
+  const clearJpyAmountBtn = document.getElementById("clear-jpy-amount-btn");
+  if (clearJpyAmountBtn) {
+    clearJpyAmountBtn.addEventListener("click", () => {
+      if (inputJpy) inputJpy.value = 0;
+      updateCurrencyCalculations("jpy");
+    });
+  }
+
+  // Bind Store Coupon Cards
+  if (storeCouponGrid) {
+    storeCouponGrid.querySelectorAll(".store-coupon-card").forEach(card => {
+      card.addEventListener("click", (e) => {
+        storeCouponGrid.querySelectorAll(".store-coupon-card").forEach(c => c.classList.remove("active"));
+        card.classList.add("active");
+        selectedStoreCoupon = card.getAttribute("data-store");
+
+        if (selectedStoreCoupon === "custom") {
+          if (customDiscountInline) customDiscountInline.style.display = "inline-flex";
+          if (storeSelectedBadge) storeSelectedBadge.textContent = `✏️ ส่วนลดระบุเอง (${customCouponDiscountPercent}%)`;
+        } else {
+          if (customDiscountInline) customDiscountInline.style.display = "none";
+          const storeName = card.querySelector(".store-card-name")?.textContent || "คูปองร้านค้า";
+          if (storeSelectedBadge) storeSelectedBadge.textContent = `🛍️ ${storeName}`;
+        }
+
+        updateCurrencyCalculations("jpy");
+      });
+    });
+  }
+
+  if (customDiscountPercentInput) {
+    customDiscountPercentInput.addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value);
+      if (!isNaN(val) && val >= 0) {
+        customCouponDiscountPercent = val;
+        if (storeSelectedBadge && selectedStoreCoupon === "custom") {
+          storeSelectedBadge.textContent = `✏️ ส่วนลดระบุเอง (${customCouponDiscountPercent}%)`;
+        }
+        updateCurrencyCalculations("jpy");
+      }
+    });
   }
 
   // Initial rate setup
@@ -4353,6 +4535,9 @@ document.addEventListener("DOMContentLoaded", () => {
       setGlobalExchangeRate(rate, true);
     });
   });
+
+  // Initial render of Quick Price Table
+  renderQuickPriceTable();
 
   // ================= 12.1 Real-Time Live Sync & Dynamic Seasonal Pricing Engine =================
   const DEFAULT_GOOGLE_SHEET_ID = "1TORgRDsPN0DH3ZAaSBibtZPw7FRzIg8r9fnYZlsxQhw";
