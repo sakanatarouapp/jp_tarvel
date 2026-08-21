@@ -6687,10 +6687,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function generateSmartItinerary(days, region, season = "all", style = "landmarks") {
-    const timeSlots = ["09:00", "13:00", "17:30"];
-    const placesPerDay = 3;
-    const totalNeeded = days * placesPerDay;
-
     // Combine standard JAPAN_DATA and saved custom places
     const availablePool = [...JAPAN_DATA, ...customPlacesStore];
 
@@ -6754,43 +6750,78 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sort descending by score
     scored.sort((a, b) => b.score - a.score);
 
+    // Build Day Schedule Configuration (Arrival, Full Exploration Days, and Departure Flight Day)
+    const dayConfigs = [];
+    for (let d = 1; d <= days; d++) {
+      if (days > 1 && d === days) {
+        // Departure day: 2 light spots (10:00 & 12:30) leaving afternoon clear for Airport & Flight check-in!
+        dayConfigs.push({
+          day: d,
+          targetCount: 2,
+          times: ["10:00", "12:30"],
+          isDeparture: true,
+          theme: "วันเดินทางกลับ • ช้อปปิ้งของฝาก & มุ่งสู่สนามบิน"
+        });
+      } else if (d === 1 && days > 1) {
+        // Arrival day: Smooth start
+        dayConfigs.push({
+          day: d,
+          targetCount: 3,
+          times: ["10:00", "13:30", "17:30"],
+          isArrival: true,
+          theme: "วันแรกของการเดินทาง • เช็กอินแลนด์มาร์กหลัก"
+        });
+      } else {
+        // Full Mid-Trip Days
+        dayConfigs.push({
+          day: d,
+          targetCount: 3,
+          times: ["09:00", "13:00", "17:30"],
+          isFull: true,
+          theme: "วันเที่ยวเต็มวัน • ตะลุยไฮไลต์ & เช็กอินครบสูตร"
+        });
+      }
+    }
+
     // Guaranteed ZERO duplicates: track used Canonical IDs across all aliases & datasets
     const usedCanonicalIds = new Set();
     const newItinerary = [];
 
-    for (let idx = 0; idx < scored.length && newItinerary.length < totalNeeded; idx++) {
-      const candidate = scored[idx].item;
-      const canonicalId = getCanonicalPlaceId(candidate.baseId || candidate.id, candidate.title || candidate.name);
-      
-      if (!usedCanonicalIds.has(canonicalId)) {
-        usedCanonicalIds.add(canonicalId);
-        const canonInJapanData = JAPAN_DATA.find(j => j.id === canonicalId);
-        const finalTitle = canonInJapanData ? canonInJapanData.title : candidate.title;
-        const finalJp = canonInJapanData ? canonInJapanData.japanese : candidate.japanese;
-        const finalRegion = canonInJapanData ? canonInJapanData.region : candidate.region;
-        const finalStation = canonInJapanData ? (canonInJapanData.station || candidate.station) : candidate.station;
-        const finalTag = canonInJapanData ? (canonInJapanData.tag || candidate.tag) : candidate.tag;
-        const finalCost = canonInJapanData ? (canonInJapanData.estimatedCost || candidate.cost || "ฟรี") : (candidate.cost || "ฟรี");
+    dayConfigs.forEach(cfg => {
+      let stopsAddedForDay = 0;
+      for (let idx = 0; idx < scored.length && stopsAddedForDay < cfg.targetCount; idx++) {
+        const candidate = scored[idx].item;
+        const canonicalId = getCanonicalPlaceId(candidate.baseId || candidate.id, candidate.title || candidate.name);
+        
+        if (!usedCanonicalIds.has(canonicalId)) {
+          usedCanonicalIds.add(canonicalId);
+          const canonInJapanData = JAPAN_DATA.find(j => j.id === canonicalId);
+          const finalTitle = canonInJapanData ? canonInJapanData.title : candidate.title;
+          const finalJp = canonInJapanData ? canonInJapanData.japanese : candidate.japanese;
+          const finalRegion = canonInJapanData ? canonInJapanData.region : candidate.region;
+          const finalStation = canonInJapanData ? (canonInJapanData.station || candidate.station) : candidate.station;
+          const finalTag = canonInJapanData ? (canonInJapanData.tag || candidate.tag) : candidate.tag;
+          const finalCost = canonInJapanData ? (canonInJapanData.estimatedCost || candidate.cost || "ฟรี") : (candidate.cost || "ฟรี");
 
-        const dayNum = Math.floor(newItinerary.length / placesPerDay) + 1;
-        const timeSlot = timeSlots[newItinerary.length % placesPerDay] || "10:00";
-
-        newItinerary.push({
-          id: candidate.id,
-          baseId: canonicalId,
-          title: finalTitle,
-          japanese: finalJp,
-          region: finalRegion,
-          tag: finalTag,
-          cost: finalCost,
-          station: finalStation,
-          stayHours: candidate.stayHours || (canonInJapanData ? canonInJapanData.stayHours : "1.5 - 2.5 ชม."),
-          icon: candidate.icon || (canonInJapanData ? canonInJapanData.icon : "📍"),
-          day: dayNum,
-          time: timeSlot
-        });
+          newItinerary.push({
+            id: candidate.id,
+            baseId: canonicalId,
+            title: finalTitle,
+            japanese: finalJp,
+            region: finalRegion,
+            tag: finalTag,
+            cost: finalCost,
+            station: finalStation,
+            stayHours: candidate.stayHours || (canonInJapanData ? canonInJapanData.stayHours : "1.5 - 2.5 ชม."),
+            icon: candidate.icon || (canonInJapanData ? canonInJapanData.icon : "📍"),
+            day: cfg.day,
+            time: cfg.times[stopsAddedForDay],
+            isDepartureDay: !!cfg.isDeparture
+          });
+          stopsAddedForDay++;
+        }
       }
-    }
+    });
 
     itineraryList = newItinerary;
     sortItineraryList();
@@ -6869,8 +6900,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Pacing & Crowd explanations
     let pacingRationale = "จัดวางวัดและศาลเจ้าประวัติศาสตร์ไว้ช่วงเช้า (09:00 น.) เพื่อเลี่ยงความแออัดของนักท่องเที่ยวและรับพลังความสงบยามเช้า, วางตลาดสดและแหล่งของกินไว้ช่วงเที่ยง (13:00 น.) ที่อาหารสดใหม่ที่สุด, และวางย่านช้อปปิ้ง/จุดชมวิวหอคอยไว้ช่วงเย็น-ค่ำ (17:30 น.) เพื่อชมพระอาทิตย์ตกดินและไฟนีออนยามราตรี";
 
+    // Departure Day Principle
+    let departureRationale = days > 1 
+      ? `ในวันสุดท้าย (วันที่ ${days}) AI ปรับลดโปรแกรมเหลือเพียง 2 จุดเบาๆ (10:00 น. และ 12:30 น.) เน้นจุดช้อปปิ้งของฝาก ตลาดสด และแหล่งต่อรถไฟสนามบิน ไม่จัดโปรแกรมแน่น เพื่อให้คุณมีเวลาเช็กเอาต์โรงแรม ฝากกระเป๋า และเดินทางถึงสนามบินเพื่อเช็กอินล่วงหน้า 3 ชั่วโมงได้อย่างสบายใจ ไม่ต้องเร่งรีบหรือเสี่ยงตกเครื่อง`
+      : `สำหรับทริป 1 วัน AI จัดโปรแกรมกระชับ 3 จุดไฮไลต์ต่อเนื่อง เพื่อให้คุณได้สัมผัสจุดเด่นสำคัญของเมืองอย่างเต็มอิ่มและคุ้มค่าเวลามากที่สุด`;
+
     // Budget & Fatigue balance
-    let budgetRationale = `เกลี่ยสัดส่วนระหว่างสถานที่เข้าชมฟรี (วัด, ศาลเจ้า, สวนสาธารณะ, ย่านการค้า) กับสถานที่ที่ต้องซื้อบัตร (ธีมพาร์ค, หอคอย) ไว้อย่างลงตัว โดยเฉลี่ยงบไม่เกิน ~¥5,500/วัน และกำหนดจุดแวะพอดีที่ 3 สถานที่ต่อวัน เพื่อให้มีเวลาดื่มด่ำ ไม่เร่งรีบ และไม่เหนื่อยล้า`;
+    let budgetRationale = `เกลี่ยสัดส่วนระหว่างสถานที่เข้าชมฟรี (วัด, ศาลเจ้า, สวนสาธารณะ, ย่านการค้า) กับสถานที่ที่ต้องซื้อบัตร (ธีมพาร์ค, หอคอย) ไว้อย่างลงตัว โดยเฉลี่ยงบไม่เกิน ~¥5,500/วัน และกำหนดจุดแวะพอดีเพื่อให้มีเวลาดื่มด่ำ ไม่เร่งรีบ และไม่เหนื่อยล้า`;
 
     // Day-by-day themes
     const dayGroups = {};
@@ -6881,21 +6917,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const dayCardsHtml = Object.keys(dayGroups).map(d => {
+      const dayNum = parseInt(d, 10);
       const items = dayGroups[d];
       const titles = items.map(i => i.title.split('(')[0].trim()).join(" ➔ ");
       const areaName = items[0]?.region === "tokyo" ? "มหานครโตเกียว" : (items[0]?.region === "kyoto" ? "เกียวโตโบราณ" : (items[0]?.region === "osaka" ? "โอซาก้า & คันไซ" : "ฮอกไกโด / ธรรมชาติ"));
       
+      const isDepDay = (days > 1 && dayNum === days);
+      const dayBadgeText = isDepDay ? `DAY ${d} (วันเดินทางกลับ 🛫)` : `DAY ${d}`;
+      const dayThemeText = isDepDay ? `ช้อปปิ้งของฝาก & มุ่งสู่สนามบินขากลับ` : `โซน${areaName} • เที่ยวตามแนวเส้นทางหลัก`;
+      const dayStrategyText = isDepDay
+        ? `💡 <strong>กลยุทธ์ AI:</strong> เที่ยวช่วงเช้า-เที่ยง (10:00น. ➔ 12:30น.) แวะซื้อของฝากและกินมื้อเที่ยง จากนั้นช่วงบ่ายมุ่งหน้าสู่สนามบินเพื่อเตรียมตัวเช็กอินเที่ยวบินขากลับอย่างปลอดภัย`
+        : `💡 <strong>กลยุทธ์ AI:</strong> เที่ยวเรียงลำดับเวลา 09:00น. ➔ 13:00น. ➔ 17:30น. อยู่บนสายรถไฟเดียวกัน เดินทางง่าย ไม่เหนื่อย`;
+
       return `
-        <div class="rationale-day-row">
+        <div class="rationale-day-row" style="${isDepDay ? 'border-left: 4px solid #f59e0b; background: #fffbeb;' : ''}">
           <div class="rationale-day-badge-line">
-            <span class="rationale-day-badge">DAY ${d}</span>
-            <span class="rationale-day-theme">โซน${areaName} • เที่ยวตามแนวเส้นทางหลัก</span>
+            <span class="rationale-day-badge" style="${isDepDay ? 'background: #d97706;' : ''}">${dayBadgeText}</span>
+            <span class="rationale-day-theme">${dayThemeText}</span>
           </div>
           <div class="rationale-day-stops">
             📍 ลำดับการเที่ยว: <strong>${titles}</strong>
           </div>
           <div class="rationale-day-reason">
-            💡 <strong>กลยุทธ์ AI:</strong> เที่ยวเรียงลำดับเวลา 09:00น. ➔ 13:00น. ➔ 17:30น. อยู่บนสายรถไฟเดียวกัน เดินทางง่าย ไม่เหนื่อย
+            ${dayStrategyText}
           </div>
         </div>
       `;
@@ -6904,28 +6948,37 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
       <div class="rationale-hero-card">
         <div class="rationale-hero-title">
-          ✨ กลยุทธ์การวางแผน: ทริป ${days} วัน (${regionLabels[region] || region.toUpperCase()})
+          ✨ กลยุทธ์การวางแผน: ทริป ${days} วัน ${days > 1 ? `(${days-1} คืน)` : ''} (${regionLabels[region] || region.toUpperCase()})
         </div>
         <div style="font-size: 0.84rem; opacity: 0.9; line-height: 1.4;">
-          ระบบ Nippon AI ได้วิเคราะห์ฐานข้อมูล 3 มิติ และวางแผนการเดินทางจำนวน <strong>${newItinerary.length} จุดหมายเฉพาะตัว (ไม่ซ้ำกัน 100%)</strong> ให้พร้อมสำหรับการเดินทางจริงของคุณ
+          ระบบ Nippon AI ได้วิเคราะห์ฐานข้อมูลและจัดจังหวะเวลาการเที่ยวจริง (รวมทั้งวันเดินทางกลับ) วางแผนจำนวน <strong>${newItinerary.length} จุดหมายเฉพาะตัว (ไม่ซ้ำกัน 100%)</strong> ให้พร้อมสำหรับการเดินทางจริงของคุณ
         </div>
         <div class="rationale-hero-tags">
-          <span class="rationale-tag-pill">🗓️ ${days} วัน</span>
+          <span class="rationale-tag-pill">🗓️ ${days} วัน ${days > 1 ? `(${days-1} คืน)` : ''}</span>
           <span class="rationale-tag-pill">${seasonLabels[season] || season}</span>
           <span class="rationale-tag-pill">${styleLabels[style] || style}</span>
+          <span class="rationale-tag-pill">🛫 วันสุดท้ายไม่แน่น ป้องกันตกเครื่อง</span>
           <span class="rationale-tag-pill">🎯 รวม ${newItinerary.length} จุดหมายไม่ซ้ำกัน</span>
         </div>
       </div>
 
       <div>
         <div style="font-size: 0.95rem; font-weight: 800; color: #1e1b4b; margin-bottom: 0.65rem;">
-          🧠 4 เสาหลักเหตุผลเบื้องหลังการออกแบบแผนโดย AI:
+          🧠 5 เสาหลักเหตุผลเบื้องหลังการออกแบบแผนโดย AI:
         </div>
         <div class="rationale-pillars-grid">
           <div class="rationale-pillar-card">
             <div class="rationale-pillar-header">
+              <span class="rationale-pillar-icon">🛫</span>
+              <span class="rationale-pillar-title">1. วันเดินทางกลับ (Departure Optimization)</span>
+            </div>
+            <p class="rationale-pillar-desc">${departureRationale}</p>
+          </div>
+
+          <div class="rationale-pillar-card">
+            <div class="rationale-pillar-header">
               <span class="rationale-pillar-icon">🌸</span>
-              <span class="rationale-pillar-title">1. เหตุผลด้านฤดูกาล (Seasonal Match)</span>
+              <span class="rationale-pillar-title">2. เหตุผลด้านฤดูกาล (Seasonal Match)</span>
             </div>
             <p class="rationale-pillar-desc">${seasonRationale}</p>
           </div>
@@ -6933,7 +6986,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="rationale-pillar-card">
             <div class="rationale-pillar-header">
               <span class="rationale-pillar-icon">🚇</span>
-              <span class="rationale-pillar-title">2. การจัดกลุ่มสถานี & รถไฟ (Transit Clustering)</span>
+              <span class="rationale-pillar-title">3. การจัดกลุ่มสถานี & รถไฟ (Transit Clustering)</span>
             </div>
             <p class="rationale-pillar-desc">${transitRationale}</p>
           </div>
@@ -6941,7 +6994,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="rationale-pillar-card">
             <div class="rationale-pillar-header">
               <span class="rationale-pillar-icon">⏰</span>
-              <span class="rationale-pillar-title">3. จังหวะเวลา & เลี่ยงฝูงชน (Pacing & Crowd)</span>
+              <span class="rationale-pillar-title">4. จังหวะเวลา & เลี่ยงฝูงชน (Pacing & Crowd)</span>
             </div>
             <p class="rationale-pillar-desc">${pacingRationale}</p>
           </div>
@@ -6949,7 +7002,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="rationale-pillar-card">
             <div class="rationale-pillar-header">
               <span class="rationale-pillar-icon">💰</span>
-              <span class="rationale-pillar-title">4. ความสมดุลของงบ & กำลังกาย (Balance)</span>
+              <span class="rationale-pillar-title">5. ความสมดุลของงบ & กำลังกาย (Balance)</span>
             </div>
             <p class="rationale-pillar-desc">${budgetRationale}</p>
           </div>
