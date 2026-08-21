@@ -2043,13 +2043,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getRouteItems() {
     if (selectedRoutePresetId === "custom") {
+      itineraryList.forEach((item, idx) => {
+        if (!item.day || typeof item.day !== "number") {
+          item.day = Math.floor(idx / 3) + 1;
+        }
+      });
+      // Sort itineraryList by Day ascending so chronological order is strictly preserved
+      itineraryList.sort((a, b) => (a.day || 1) - (b.day || 1));
+      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+
       return itineraryList.map((item, idx) => {
         const builtin = JAPAN_DATA.find(i => i.id === item.id);
         const custom = customPlacesStore.find(i => i.id === item.id);
         const base = builtin || custom || item;
         return {
           ...base,
-          day: item.day || (Math.floor(idx / 3) + 1)
+          day: item.day || 1
         };
       });
     }
@@ -2151,6 +2160,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const temp = itineraryList[index];
       itineraryList[index] = itineraryList[targetIdx];
       itineraryList[targetIdx] = temp;
+      
+      // Update day to match target location's day if crossed
+      if (itineraryList[index] && itineraryList[targetIdx]) {
+        itineraryList[index].day = itineraryList[targetIdx].day || 1;
+      }
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
       updateItineraryUI();
     } else {
@@ -2168,6 +2182,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (selectedRoutePresetId === "custom") {
       const movedItem = itineraryList.splice(fromIdx, 1)[0];
+      if (itineraryList[toIdx]) {
+        movedItem.day = itineraryList[toIdx].day || 1;
+      }
       itineraryList.splice(toIdx, 0, movedItem);
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
       updateItineraryUI();
@@ -2371,7 +2388,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         metroHtml += `
           <div class="metro-station-node" id="metro-node-${i}" style="border-color: ${theme.color};">
-            <div class="metro-node-num" style="color: ${theme.color};">STOP #${i + 1}</div>
+            <div class="metro-node-num" style="color: ${theme.color};">DAY ${item.day || 1} · STOP #${i + 1}</div>
             <div class="metro-node-title">${meta.icon} ${item.title.split('(')[0].slice(0, 14)}</div>
             <div class="metro-node-station">🚉 ${meta.station.split('(')[0].slice(0, 16)}</div>
           </div>
@@ -2379,39 +2396,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (i < activeSimulationRoute.length - 1) {
           const nextItem = activeSimulationRoute[i + 1];
-          const leg = calculateTransitLeg(item, nextItem);
-          metroHtml += `
-            <div class="metro-leg-bridge">
-              <span class="metro-bridge-label" style="color: ${theme.color};">${leg.icon} ${leg.duration}</span>
-              <div class="metro-bridge-line" style="background: ${theme.color};"></div>
-              <span style="font-size: 0.65rem; color: #64748b;">${leg.mode.slice(0, 15)}</span>
-            </div>
-          `;
+          const isDayBreak = ((item.day || 1) !== (nextItem.day || 1));
+          if (isDayBreak) {
+            metroHtml += `
+              <div class="metro-leg-bridge" style="border-left: 2px dashed #94a3b8; padding-left: 4px;">
+                <span class="metro-bridge-label" style="color: #64748b;">🌙 ข้ามวัน</span>
+                <div class="metro-bridge-line" style="background: #94a3b8; border-style: dashed;"></div>
+                <span style="font-size: 0.65rem; color: #64748b; font-weight: 700;">DAY ${nextItem.day || 1} 🌅</span>
+              </div>
+            `;
+          } else {
+            const leg = calculateTransitLeg(item, nextItem);
+            metroHtml += `
+              <div class="metro-leg-bridge">
+                <span class="metro-bridge-label" style="color: ${theme.color};">${leg.icon} ${leg.duration}</span>
+                <div class="metro-bridge-line" style="background: ${theme.color};"></div>
+                <span style="font-size: 0.65rem; color: #64748b;">${leg.mode.slice(0, 15)}</span>
+              </div>
+            `;
+          }
         }
       }
       metroTrackLine.innerHTML = metroHtml;
     }
 
-    // 3. Render Auto-Grouped Timeline with Drag-and-Drop & Region Headers
+    // 3. Render Auto-Grouped Timeline with Drag-and-Drop, Day Banners & Region Headers
     let timelineHtml = `
       <div class="timeline-drag-tip">
         <span>✋ คลิกลากการ์ดเพื่อสลับลำดับจุดแวะ (Drag & Drop) หรือกดปุ่ม ⬆️ ⬇️</span>
       </div>
     `;
 
+    let lastDay = null;
     let lastRegion = null;
 
     for (let i = 0; i < activeSimulationRoute.length; i++) {
       const item = activeSimulationRoute[i];
+      const currentDay = item.day || 1;
       const meta = getSmartMetaForItem(item);
       const regCode = meta.region || item.region || "tokyo";
       const theme = (typeof REGION_THEMES !== "undefined" && REGION_THEMES[regCode]) ? REGION_THEMES[regCode] : { color: "#0284c7", icon: "📍", dayLabel: "โซนท่องเที่ยว", name: regCode, bg: "#f0f9ff", border: "#bae6fd" };
 
-      // Add Region Group Header if region changed
+      // Add Day Group Header if day changed
+      if (currentDay !== lastDay) {
+        lastDay = currentDay;
+        lastRegion = null; // Reset region grouping per day
+        const dayStopsCount = activeSimulationRoute.filter(x => (x.day || 1) === currentDay).length;
+        timelineHtml += `
+          <div class="timeline-day-header" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 0.75rem 1.15rem; border-radius: 12px; margin: 1.25rem 0 0.75rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.2rem;">🗓️</span>
+              <span style="font-weight: 800; font-size: 1rem; letter-spacing: 0.5px;">DAY ${currentDay}</span>
+              <span style="font-size: 0.75rem; background: rgba(255,255,255,0.22); padding: 2px 9px; border-radius: 12px; font-weight: 700;">${dayStopsCount} จุดหมาย</span>
+            </div>
+            <span style="font-size: 0.78rem; color: #cbd5e1; font-weight: 600;">${theme.name || regCode}</span>
+          </div>
+        `;
+      }
+
+      // Add Region Sub-header if region changed within day
       if (regCode !== lastRegion) {
         lastRegion = regCode;
         timelineHtml += `
-          <div class="region-group-header" style="background: ${theme.bg}; border: 1px solid ${theme.border}; color: ${theme.color};">
+          <div class="region-group-header" style="background: ${theme.bg}; border: 1px solid ${theme.border}; color: ${theme.color}; margin-top: 0.4rem;">
             <div class="region-group-title">
               <span>${theme.icon}</span>
               <span>${theme.dayLabel}</span>
@@ -2427,6 +2474,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="stop-title-wrap">
               <span class="stop-drag-handle" title="คลิกลากเพื่อสลับลำดับ">⋮⋮</span>
               <span class="stop-num-badge" style="background: ${theme.color};">${i + 1}</span>
+              <span style="background: #e2e8f0; color: #334155; font-size: 0.72rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">DAY ${currentDay}</span>
               <div>
                 <div class="stop-title-text">${meta.icon} ${item.title}</div>
                 <div style="font-size: 0.75rem; color: ${theme.color}; font-weight: 700;">${item.japanese}</div>
@@ -2446,26 +2494,41 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
-      // If not last stop, render connecting transit leg
+      // If not last stop, render connecting transit leg or day transition divider
       if (i < activeSimulationRoute.length - 1) {
         const nextItem = activeSimulationRoute[i + 1];
-        const nextMeta = ROUTE_SIMULATION_META[nextItem.id] || { region: nextItem.region || "tokyo" };
-        const nextRegCode = nextMeta.region || nextItem.region || "tokyo";
-        const isCross = (regCode !== nextRegCode);
+        const nextDay = nextItem.day || 1;
+        const isDayBreak = (currentDay !== nextDay);
 
-        const leg = calculateTransitLeg(item, nextItem);
-        const fareTHB = Math.round(leg.fareJPY * currentExchangeRate);
-
-        timelineHtml += `
-          <div class="route-transit-leg ${isCross ? 'cross-region' : ''}">
-            <div class="transit-leg-mode">
-              <span>${leg.icon}</span>
-              <span>${leg.mode}</span>
+        if (isDayBreak) {
+          timelineHtml += `
+            <div class="route-transit-leg day-transition-leg" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 0.7rem 1.15rem; margin: 0.65rem 0; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #475569;">
+                <span>🌙</span>
+                <span>จบแผนเที่ยว DAY ${currentDay} ➔ พักค้างคืน / เริ่มต้นเช้าวันใหม่ <strong>DAY ${nextDay}</strong></span>
+              </div>
+              <span style="font-size: 0.72rem; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 6px; font-weight: 700;">เช้าวันใหม่ 🌅</span>
             </div>
-            <div class="transit-leg-time">⏱️ ${leg.duration}</div>
-            <div class="transit-leg-fare">~¥${leg.fareJPY.toLocaleString()} (${fareTHB} บ.)</div>
-          </div>
-        `;
+          `;
+        } else {
+          const nextMeta = ROUTE_SIMULATION_META[nextItem.id] || { region: nextItem.region || "tokyo" };
+          const nextRegCode = nextMeta.region || nextItem.region || "tokyo";
+          const isCross = (regCode !== nextRegCode);
+
+          const leg = calculateTransitLeg(item, nextItem);
+          const fareTHB = Math.round(leg.fareJPY * currentExchangeRate);
+
+          timelineHtml += `
+            <div class="route-transit-leg ${isCross ? 'cross-region' : ''}">
+              <div class="transit-leg-mode">
+                <span>${leg.icon}</span>
+                <span>${leg.mode}</span>
+              </div>
+              <div class="transit-leg-time">⏱️ ${leg.duration}</div>
+              <div class="transit-leg-fare">~¥${leg.fareJPY.toLocaleString()} (${fareTHB} บ.)</div>
+            </div>
+          `;
+        }
       }
     }
 
@@ -3070,6 +3133,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const item = itineraryList.find(i => i.id === id);
     if (item) {
       item.day = parseInt(newDay, 10) || 1;
+      // Stable sort itineraryList by Day ascending so the entire itinerary and route simulator are in perfect chronological order!
+      itineraryList.sort((a, b) => (a.day || 1) - (b.day || 1));
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
       updateItineraryUI();
       renderRouteSimulator();
@@ -3086,9 +3151,9 @@ document.addEventListener("DOMContentLoaded", () => {
     itineraryList[idx] = itineraryList[targetIdx];
     itineraryList[targetIdx] = temp;
 
-    // Sync day with target location's day if crossing
+    // Sync day with target location's day if crossing day boundary
     if (itineraryList[idx] && itineraryList[targetIdx]) {
-      itineraryList[targetIdx].day = itineraryList[targetIdx].day || 1;
+      itineraryList[targetIdx].day = itineraryList[idx].day || 1;
     }
     
     localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
