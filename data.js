@@ -1395,6 +1395,234 @@ const JAPAN_DATA = [
       }
     ]
   },
+  {
+    id: "osaka-denden-town",
+    title: "ย่านเด็นเด็นทาวน์ นิปปอนบาชิ (Nipponbashi Denden Town)",
+    japanese: "でんでんタウン (日本橋電気街)",
+    region: "osaka",
+    category: "shopping",
+    seasons: ["all_year"],
+    tag: "อนิเมะ / ฟิกเกอร์ / เกมส์ & เมดคาเฟ่",
+    rating: 4.8,
+    keyword: "den den town nipponbashi osaka anime figures gaming retro",
+    image: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=1200&q=80",
+    description: "อากิฮาบาระแห่งคันไซ ศูนย์รวมร้านฟิกเกอร์ อนิเมะ โมเดลกันพลา การ์ดสะสม อุปกรณ์อิเล็กทรอนิกส์ เกมเรโทร และเมดคาเฟ่ที่มีให้เลือกช้อปตลอดสองฝั่งถนน",
+    transport: "🚇 เดิน 3 นาทีจากสถานี Nipponbashi (Osaka Metro Sakaisuji/Sennichimae Line ทางออก 5 หรือ 10) หรือสถานี Ebisucho (ทางออก 1B)",
+    bestTime: "12:00 - 18:30 น. (ร้านค้าเปิดครบทุกร้านและบรรยากาศคึกคักที่สุด)",
+    foodTips: "ห้ามพลาด: เมดคาเฟ่ยอดฮิต Maidreamin, ทงคัตสึข้าวหมูทอดร้านดังคิวยาว และซอฟต์เสิร์ฟไอศกรีมมัทฉะ",
+    estimatedCost: "งบช้อปปิ้งของเล่น/ฟิกเกอร์ 2,000 - 15,000 เยน",
+    mustTry: ["ส่องร้านฟิกเกอร์มือสองหายากที่ Animate & Mandarake", "หมุนตู้กาชาปองยักษ์กว่า 500 ตู้", "สัมผัสประสบการณ์เมดคาเฟ่ญี่ปุ่นดั้งเดิม"],
+    nearbyHotels: [
+      {
+        name: "Dormy Inn Premium Namba (Natural Hot Spring)",
+        japanese: "ドーミーイン プレミアム なんば",
+        type: "โรงแรมยอดนิยมอันดับ 1 พร้อมออนเซ็น",
+        distance: "เดิน 5 นาทีถึงถนนเด็นเด็นทาวน์",
+        priceJPY: 13500,
+        priceRange: "¥11,000 - ¥18,000 / คืน",
+        rating: 4.8,
+        highlight: "บ่อออนเซ็นธรรมชาติ ซาวน่า และบริการราเมง Yonaki Soba ฟรีทุกคืน ทำเลเดินช้อปปิ้งสะดวกสุดๆ",
+        searchQuery: "Dormy Inn Premium Namba Osaka"
+      },
+      {
+        name: "Citadines Namba Osaka",
+        japanese: "シタディーンなんば大阪",
+        type: "เซอร์วิสอพาร์ตเมนต์หรูในตึกประวัติศาสตร์",
+        distance: "เดิน 2 นาทีถึงเด็นเด็นทาวน์",
+        priceJPY: 19500,
+        priceRange: "¥16,000 - ¥26,000 / คืน",
+        rating: 4.8,
+        highlight: "รีโนเวทจากห้างสรรพสินค้าเก่าแก่ สถาปัตยกรรมสวยงาม ห้องพักกว้างขวางพร้อมสิ่งอำนวยความสะดวกครบครัน",
+        searchQuery: "Citadines Namba Osaka"
+      }
+    ]
+  },
+  {
+    id: "osaka-shinsekai",
+    title: "ย่านชินเซไก & หอคอยซึเทนคาคุ (Shinsekai & Tsutenkaku Tower)",
+    japanese: "新世界 / 通天閣 (つうてんかく)",
+    region: "osaka",
+    category: "attraction",
+    seasons: ["all_year"],
+    tag: "ย่านเรโทร / ของทอดคุชิคัตสึ / สไลเดอร์ยักษ์",
+    rating: 4.7,
+    keyword: "shinsekai tsutenkaku tower osaka kushikatsu retro billiken",
+    image: "https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=1200&q=80",
+    description: "ย่านประวัติศาสตร์สไตล์เรโทรยุคโชวะที่มีหอคอยซึเทนคาคุอันเป็นสัญลักษณ์ รูปปั้นเทพเจ้าแห่งโชคลาภบิลลิเคน (Billiken) สไลเดอร์ยักษ์ Tower Slider ทะลุหอคอย และดงของทอดเสียบไม้",
+    transport: "🚇 เดิน 3 นาทีจากสถานี Ebisucho (Osaka Metro Sakaisuji Line ทางออก 3) หรือสถานี Dobutsuen-mae (Midosuji Line ทางออก 1)",
+    bestTime: "11:30 - 14:00 น. หรือช่วงค่ำ 17:30 - 20:30 น. ป้ายไฟนีออนปลาปักเป้าเปิดสว่างไสว",
+    foodTips: "ห้ามพลาด: คุชิคัตสึ (Kushikatsu) ของทอดเสียบไม้ร้าน Kushikatsu Daruma ต้นตำรับ, ซุปเนื้อตุ๋น Doteyaki หอมหวาน",
+    estimatedCost: "ค่าขึ้นหอคอย 900 เยน (เล่นสไลเดอร์ Tower Slider 1,000 เยน) / ค่าอาหาร 1,500 - 3,000 เยน",
+    mustTry: ["ลูบฝ่าเท้าขอพรเทพเจ้า Billiken", "สัมผัสความเสียวบน Tower Slider สไลเดอร์วนรอบหอคอย", "กินของทอดเสียบไม้คุชิคัตสึร้อนๆ จิ้มซอสสูตรเด็ด"],
+    nearbyHotels: [
+      {
+        name: "OMO7 Osaka by Hoshino Resorts",
+        japanese: "OMO7 大阪 by 星野リゾート",
+        type: "โรงแรมดีไซน์พรีเมียมโดยเครือโฮชิโนะ",
+        distance: "เดิน 5 นาทีถึงหอคอยซึเทนคาคุ",
+        priceJPY: 24000,
+        priceRange: "¥20,000 - ¥35,000 / คืน",
+        rating: 4.9,
+        highlight: "มีสนามหญ้าลอยฟ้าขนาดใหญ่ การแสดงไฟบนผนังตึก บ่ออาบน้ำสาธารณะ และทัวร์พาชิมของกินชินเซไกฟรี",
+        searchQuery: "OMO7 Osaka by Hoshino Resorts"
+      }
+    ]
+  },
+  {
+    id: "osaka-kaiyukan",
+    title: "พิพิธภัณฑ์สัตว์น้ำไคยูคัง (Osaka Aquarium Kaiyukan)",
+    japanese: "海遊館 (かいゆうかん)",
+    region: "osaka",
+    category: "attraction",
+    seasons: ["all_year"],
+    tag: "อควาเรียมยักษ์ระดับโลก / ฉลามวาฬ & ชิงช้าสวรรค์",
+    rating: 4.9,
+    keyword: "kaiyukan osaka aquarium whale shark tempozan ferris wheel",
+    image: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?auto=format&fit=crop&w=1200&q=80",
+    description: "หนึ่งในพิพิธภัณฑ์สัตว์น้ำที่ใหญ่ที่สุดในโลก จำลองระบบนิเวศวงแหวนแห่งแปซิฟิก ไฮไลต์คือแท็งก์น้ำวนขนาดมหึมาลึก 9 เมตรที่มีฉลามวาฬ (Whale Shark) และปลากระเบนราหูแหวกว่ายอย่างสง่างาม",
+    transport: "🚇 เดิน 5 นาทีจากสถานี Osakako (Osaka Metro Chuo Line ทางออก 1)",
+    bestTime: "10:00 - 13:00 น. หรือช่วง 17:00 น. เป็นต้นไป (มี Night Aquarium แสงไฟสลัวโรแมนติก)",
+    foodTips: "ห้ามพลาด: ไอศกรีมซอฟต์เสิร์ฟลายฉลามวาฬสีฟ้า-ขาว (Whale Shark Soft Cream) ที่คาเซ่คาเฟ่ในอควาเรียม",
+    estimatedCost: "ค่าเข้าชมผู้ใหญ่ 2,700 เยน / เด็ก 1,400 เยน",
+    mustTry: ["ชมฉลามวาฬยักษ์แหวกว่ายในแท็งก์แปซิฟิก", "เดินในอุโมงค์กระจกใต้ทะเล Aqua Gate", "ขึ้นชิงช้าสวรรค์เทมโปซานชมวิวอ่าวโอซาก้า"],
+    nearbyHotels: [
+      {
+        name: "Hotel Universal Port Vita",
+        japanese: "ホテル ユニバーサル ポート ヴィータ",
+        type: "โรงแรมหรูวิวอ่าวใกล้ USJ และไคยูคัง",
+        distance: "นั่งเรือเฟอร์รี่ Captain Line ข้ามฟาก 10 นาทีถึงไคยูคัง",
+        priceJPY: 17500,
+        priceRange: "¥13,500 - ¥23,000 / คืน",
+        rating: 4.8,
+        highlight: "ห้องพักขนาดใหญ่ ตกแต่งธีมมินเนี่ยน อาหารเช้าบุฟเฟต์นานาชาติยอดเยี่ยมระดับท็อปของโอซาก้า",
+        searchQuery: "Hotel Universal Port Vita Osaka"
+      }
+    ]
+  },
+  {
+    id: "osaka-namba-yasaka",
+    title: "ศาลเจ้านัมบะ ยาซากะ (Namba Yasaka Shrine - ศาลเจ้าหัวสิงโตยักษ์)",
+    japanese: "難波八阪神社 (なんばやさかじんじゃ)",
+    region: "osaka",
+    category: "attraction",
+    seasons: ["all_year", "spring"],
+    tag: "ศาลเจ้าหัวสิงโตยักษ์ / ปัดเป่าเคราะห์ & ขอโชคลาภ",
+    rating: 4.8,
+    keyword: "namba yasaka shrine lion head giant mouth fortune osaka",
+    image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80",
+    description: "ศาลเจ้าศักดิ์สิทธิ์ใจกลางเมืองโอซาก้า โดดเด่นด้วยเวทีหัวสิงโตทองคำอ้าปากกว้างขนาดยักษ์สูง 12 เมตร เชื่อว่าพลังอำนาจของสิงโตจะช่วยกลืนกินสิ่งชั่วร้าย เคราะห์กรรม และดึงดูดโชคลาภความสำเร็จเข้ามา",
+    transport: "🚶 เดิน 6 นาทีจากสถานี Namba Station (Osaka Metro Midosuji Line / Nankai Line ทางออก 5 หรือ 6)",
+    bestTime: "08:30 - 11:00 น. (ช่วงเช้าแสงแดดส่องกระทบหัวสิงโตสวยงามและคนไม่เยอะ)",
+    foodTips: "หลังจากไหว้พระ เดิน 7 นาทีไปชิมชีสทาร์ตชื่อดัง Pablo Namba หรือเนื้อย่างเกรดพรีเมียมในย่านนัมบะ",
+    estimatedCost: "เข้าชมฟรี (เช่าเครื่องรางและเซียมซีหัวสิงโต 300 - 800 เยน)",
+    mustTry: ["ถ่ายรูปมุมตรงกับหัวสิงโตยักษ์อ้าปากกว้าง", "ซื้อเครื่องรางหัวสิงโตนำโชคด้านการเรียนและธุรกิจ", "เสี่ยงเซียมซีพับทรงพัดญี่ปุ่น"],
+    nearbyHotels: [
+      {
+        name: "Swissotel Nankai Osaka",
+        japanese: "スイスホテル南海大阪",
+        type: "โรงแรมหรู 5 ดาวตั้งอยู่เหนือสถานี Namba",
+        distance: "เดิน 6 นาทีถึงศาลเจ้านัมบะ ยาซากะ",
+        priceJPY: 31000,
+        priceRange: "¥25,000 - ¥42,000 / คืน",
+        rating: 4.8,
+        highlight: "ทำเลเชื่อมต่อรถไฟ Nankai Rapi:t ตรงจากสนามบินคันไซ KIX มีสปา สระว่ายน้ำ และห้องอาหารวิวเมือง 36 ชั้น",
+        searchQuery: "Swissotel Nankai Osaka"
+      }
+    ]
+  },
+  {
+    id: "osaka-shinsaibashi",
+    title: "ถนนคนเดินชินไซบาชิ & อเมริกาหมู่บ้าน (Shinsaibashi-suji & Amerikamura)",
+    japanese: "心斎橋筋商店街 / アメリカ村",
+    region: "osaka",
+    category: "shopping",
+    seasons: ["all_year"],
+    tag: "ถนนช้อปปิ้งในร่ม / เสื้อผ้าแฟชั่น & สตรีทฟู้ด",
+    rating: 4.8,
+    keyword: "shinsaibashi suji shopping street amerikamura osaka fashion",
+    image: "https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=1200&q=80",
+    description: "ถนนคนเดินในร่มหลังคาสูงยาวเกือบ 600 เมตร สวรรค์ของนักช้อป รวมร้านค้าแบรนด์เนม ห้างไดมารู ร้านดองกี้ และย่าน Amerikamura แหล่งรวมสตรีทแฟชั่น เสื้อผ้ามือสองวินเทจ คาเฟ่ฮิปสเตอร์ และทาโกะยากิเจ้าดัง",
+    transport: "🚇 สถานี Shinsaibashi (Osaka Metro Midosuji Line ทางออก 5 หรือ 6 เชื่อมตรงเข้าถนนช้อปปิ้ง)",
+    bestTime: "13:00 - 20:30 น. (ร้านค้าเปิดครบ และแสงสีค่ำคืนคึกคัก)",
+    foodTips: "ห้ามพลาด: ทาโกะยากิร้าน Kogaryu ในสวน Sankaku Koen (Amerikamura), ชาเขียวมัทฉะเข้มข้นร้าน Ujien, ครัวซองต์กรอบร้าน Le Croissant",
+    estimatedCost: "งบช้อปปิ้ง & กินดื่ม 3,000 - 12,000 เยน",
+    mustTry: ["เดินช้อปปิ้งตั้งแต่ชินไซบาชิทะลุไปยังป้ายกูลิโกะโดทงโบริ", "ชิมทาโกะยากิราดซอสมายองเนสตาข่ายร้าน Kogaryu", "ค้นหาเสื้อผ้าวินเทจและไอเทมสตรีทแฟชั่นใน Amerikamura"],
+    nearbyHotels: [
+      {
+        name: "Cross Hotel Osaka",
+        japanese: "クロスホテル大阪",
+        type: "โรงแรมทำเลทองติดถนนชินไซบาชิ",
+        distance: "ตั้งอยู่บนถนนชินไซบาชิ เดิน 1 นาทีถึงโดทงโบริ",
+        priceJPY: 17000,
+        priceRange: "¥14,000 - ¥25,000 / คืน",
+        rating: 4.8,
+        highlight: "ทำเลดีที่สุดในโอซาก้า ช้อปปิ้งเสร็จเดินเอาของกลับมาเก็บที่ห้องได้ทันที ห้องน้ำแยกโซนเปียกแห้งกว้างขวาง",
+        searchQuery: "Cross Hotel Osaka Shinsaibashi"
+      }
+    ]
+  },
+  {
+    id: "osaka-abeno-harukas",
+    title: "จุดชมวิวตึกระฟ้า อาเบโนะ ฮารุกัส 300 (Abeno Harukas 300 Observatory)",
+    japanese: "あべのハルカス (ハルカス300展望台)",
+    region: "osaka",
+    category: "attraction",
+    seasons: ["all_year"],
+    tag: "ตึกระฟ้า 300 เมตร / วิวพาโนรามา 360 องศา",
+    rating: 4.8,
+    keyword: "abeno harukas 300 observatory tower osaka tennoji night view",
+    image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80",
+    description: "ตึกระฟ้าที่สูงที่สุดในโอซาก้า (300 เมตร) จุดชมวิวฮารุกัส 300 บนชั้น 58-60 ผนังกระจกใสรอบทิศ มองเห็นวิวพาโนรามาครอบคลุมโอซาก้า อ่าวคันไซ ไปจนถึงเกียวโตและโกเบในวันที่ฟ้าโปร่ง",
+    transport: "🚇 สถานี Tennoji (JR / Osaka Metro Midosuji Line) หรือสถานี Osaka-Abenobashi เชื่อมตรงใต้ตึก",
+    bestTime: "16:30 - 19:00 น. (ชมแสงทไวไลท์ พระอาทิตย์ตกดิน และแสงไฟมหานครเปิดสว่าง)",
+    foodTips: "ห้ามพลาด: ขนมพุดดิ้งคลาวด์ Harukas 300 บนชั้น 58 และชิมอาหารในห้างสรรพสินค้า Kintetsu Department Store ที่ใหญ่ที่สุดในญี่ปุ่น",
+    estimatedCost: "ค่าขึ้นชมวิวผู้ใหญ่ 2,000 เยน / เด็กโต 1,200 เยน",
+    mustTry: ["ยืนบนพื้นกระจกซีทรูมองทะลุลงไปชั้นล่าง", "ถ่ายรูปกับมาสคอตหมีเมฆ Abenobea", "นั่งจิบเครื่องดื่มชมพระอาทิตย์ตกที่ลานเปิดโล่งชั้น 58"],
+    nearbyHotels: [
+      {
+        name: "Osaka Marriott Miyako Hotel",
+        japanese: "大阪マリオット都ホテル",
+        type: "โรงแรมหรูระดับเวิลด์คลาสบนตึกฮารุกัส",
+        distance: "ตั้งอยู่บนชั้น 38-57 ของตึก Abeno Harukas",
+        priceJPY: 39000,
+        priceRange: "¥32,000 - ¥55,000 / คืน",
+        rating: 4.9,
+        highlight: "นอนชมวิวมหานครโอซาก้าจากหน้าต่างกระจกบานใหญ่ในห้องพัก สิทธิพิเศษเข้าชม Harukas 300 ก่อนเวลาเปิด",
+        searchQuery: "Osaka Marriott Miyako Hotel Abeno Harukas"
+      }
+    ]
+  },
+  {
+    id: "osaka-minoh-falls",
+    title: "น้ำตกมิโนะ & อุทยานธรรมชาติ (Minoh Falls & Park)",
+    japanese: "箕面大滝 (みのおおおたき) / 箕面公園",
+    region: "osaka",
+    category: "attraction",
+    seasons: ["autumn", "spring", "summer"],
+    tag: "ธรรมชาติ & น้ำตก / เมเปิ้ลทอดเทมปุระ",
+    rating: 4.8,
+    keyword: "minoh falls waterfall osaka maple momiji tempura autumn park",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+    description: "อุทยานธรรมชาติและน้ำตกความสูง 33 เมตรที่สวยที่สุดของโอซาก้า เดินทอดน่องตามเส้นทางเลียบธารน้ำร่มรื่น 2.8 กม. จุดชมใบไม้เปลี่ยนสีอันดับหนึ่งของภูมิภาคคันไซ",
+    transport: "🚆 สถานี Minoh Station (Hankyu Minoh Line นั่งจาก Umeda เพียง 25 นาที) แล้วเดินตามเส้นทางเดินธรรมชาติ",
+    bestTime: "กลาง พ.ย. - ต้น ธ.ค. (ใบไม้เปลี่ยนสีแดงส้มเต็มหุบเขา) หรือช่วงฤดูร้อนเพื่อรับลมเย็นสบาย",
+    foodTips: "ห้ามพลาด: ใบเมเปิ้ลชุบแป้งทอดกรอบ (Momiji Tempura) ของฝากดั้งเดิมกว่า 1,300 ปี กรอบหวานมันเคี้ยวเพลิน",
+    estimatedCost: "เข้าชมฟรี (ค่าเดินทางรถไฟ Hankyu ~280 เยน / ขนมเมเปิ้ลทอด 500 เยน)",
+    mustTry: ["เดินชมธรรมชาติเลียบลำธารใสไปยังหน้าน้ำตก", "ชิมใบเมเปิ้ลทอดเทมปุระสดใหม่ริมทาง", "แวะแช่เท้าที่บ่อน้ำพุร้อนหน้าสถานี Minoh"],
+    nearbyHotels: [
+      {
+        name: "Ooedo Onsen Monogatari Minoh Kanko Hotel",
+        japanese: "大江戸温泉物語 箕面観光ホテル",
+        type: "โรงแรมเรียวกังออนเซ็นชมวิวมหานคร",
+        distance: "เดิน 5 นาทีจากสถานี Minoh",
+        priceJPY: 16500,
+        priceRange: "¥13,000 - ¥22,000 / คืน",
+        rating: 4.7,
+        highlight: "บ่อออนเซ็นลอยฟ้า Sky Open-air Bath ชมวิวพาโนรามาแสงไฟโอซาก้า มีบุฟเฟต์มื้อค่ำอาหารญี่ปุ่นและเนื้อย่างจัดเต็ม",
+        searchQuery: "Minoh Kanko Hotel Osaka"
+      }
+    ]
+  },
 
   // --- NEW CHUBU & HOKKAIDO DESTINATIONS ---
   {
@@ -2497,7 +2725,7 @@ const ROUTE_SIMULATION_META = {
     mapsName: "Umeda Sky Building, Osaka"
   },
   "osaka-shinsekai": {
-    station: "สถานี Shin-Imamiya (JR) / Dobutsuen-mae (M22)",
+    station: "สถานี Shin-Imamiya (JR) / Dobutsuen-mae (M22) / Ebisucho (K18)",
     city: "โอซาก้า",
     region: "osaka",
     lat: 34.6525,
@@ -2507,6 +2735,78 @@ const ROUTE_SIMULATION_META = {
     bestTimeOfDay: "12:00 - 14:00 น.",
     icon: "🗼",
     mapsName: "Shinsekai Tsutenkaku, Osaka"
+  },
+  "osaka-denden-town": {
+    station: "สถานี Nipponbashi (K17/S17) / Ebisucho (K18)",
+    city: "โอซาก้า",
+    region: "osaka",
+    lat: 34.6605,
+    lng: 135.5060,
+    svgPos: { x: 42, y: 74 },
+    stayHours: "2 - 3 ชม.",
+    bestTimeOfDay: "12:00 - 18:00 น.",
+    icon: "🎮",
+    mapsName: "Nipponbashi Denden Town, Osaka"
+  },
+  "osaka-kaiyukan": {
+    station: "สถานี Osakako (C11 ทางออก 1)",
+    city: "โอซาก้า",
+    region: "osaka",
+    lat: 34.6545,
+    lng: 135.4289,
+    svgPos: { x: 38, y: 74 },
+    stayHours: "2.5 - 3.5 ชม.",
+    bestTimeOfDay: "10:00 - 14:00 น.",
+    icon: "🦈",
+    mapsName: "Osaka Aquarium Kaiyukan, Osaka"
+  },
+  "osaka-namba-yasaka": {
+    station: "สถานี Namba (M20/Y15 เดิน 6 นาที)",
+    city: "โอซาก้า",
+    region: "osaka",
+    lat: 34.6629,
+    lng: 135.4965,
+    svgPos: { x: 41, y: 74 },
+    stayHours: "45 นาที - 1 ชม.",
+    bestTimeOfDay: "09:00 - 11:30 น.",
+    icon: "🦁",
+    mapsName: "Namba Yasaka Shrine, Osaka"
+  },
+  "osaka-shinsaibashi": {
+    station: "สถานี Shinsaibashi (M19 ทางออก 5/6)",
+    city: "โอซาก้า",
+    region: "osaka",
+    lat: 34.6710,
+    lng: 135.5010,
+    svgPos: { x: 42, y: 72 },
+    stayHours: "2.5 - 4 ชม.",
+    bestTimeOfDay: "14:00 - 20:00 น.",
+    icon: "🛍️",
+    mapsName: "Shinsaibashi-suji, Osaka"
+  },
+  "osaka-abeno-harukas": {
+    station: "สถานี Tennoji (JR/M23) / Osaka-Abenobashi",
+    city: "โอซาก้า",
+    region: "osaka",
+    lat: 34.6458,
+    lng: 135.5138,
+    svgPos: { x: 43, y: 76 },
+    stayHours: "1.5 - 2 ชม.",
+    bestTimeOfDay: "16:30 - 19:30 น.",
+    icon: "✨",
+    mapsName: "Abeno Harukas 300, Osaka"
+  },
+  "osaka-minoh-falls": {
+    station: "สถานี Minoh Station (Hankyu Minoh Line)",
+    city: "โอซาก้า",
+    region: "osaka",
+    lat: 34.8488,
+    lng: 135.4744,
+    svgPos: { x: 41, y: 64 },
+    stayHours: "3 - 4 ชม.",
+    bestTimeOfDay: "09:00 - 13:00 น.",
+    icon: "🍁",
+    mapsName: "Minoh Falls, Osaka"
   },
   "kansai-nara-park": {
     station: "สถานี Kintetsu-Nara (เดิน 5 นาที)",
@@ -2919,12 +3219,26 @@ const POPULAR_HOTSPOTS_DATA = [
     category: "food",
     icon: "🦀",
     region: "osaka",
-    station: "ย่านโดทงโบริ โอซาก้า",
+    station: "สถานี Namba / Nipponbashi เดิน 3 นาที",
     stayHours: "1.5 - 2 ชม.",
     lat: 34.6687,
     lng: 135.5020,
     tag: "อิซากายะ 24 ชม.",
     desc: "ร้านซีฟู้ดปิ้งย่างบนเตาไฟ ไฮไลต์คือมันปูย่างกระดอง (Kani Miso) หอมมันเข้มข้น เปิดตลอด 24 ชั่วโมง"
+  },
+  {
+    id: "hotspot-food-kushikatsu-daruma",
+    name: "Kushikatsu Daruma Shinsekai (ของทอดดารุมะต้นตำรับ)",
+    japanese: "元祖串かつ だるま 新世界総本店",
+    category: "food",
+    icon: "🍢",
+    region: "osaka",
+    station: "สถานี Ebisucho / Dobutsuen-mae เดิน 4 นาที",
+    stayHours: "1 - 1.5 ชม.",
+    lat: 34.6521,
+    lng: 135.5061,
+    tag: "ของทอดเสียบไม้โอซาก้า",
+    desc: "ร้านของทอดเสียบไม้ในตำนานตั้งแต่ปี 1929 แป้งบางกรอบไม่อมน้ำมัน จิ้มซอสสูตรเด็ด (ห้ามจุ่มซอสซ้ำสอง)"
   },
 
   // --- SHOPPING ---
@@ -2970,8 +3284,78 @@ const POPULAR_HOTSPOTS_DATA = [
     tag: "เอาต์เล็ตแบรนด์เนม",
     desc: "เอาต์เล็ตที่ใหญ่ที่สุดในญี่ปุ่น รวมแบรนด์เนมกว่า 290 ร้าน พร้อมมุมถ่ายรูปวิวภูเขาไฟฟูจิแบบพาโนรามาสุดอลังการ"
   },
+  {
+    id: "hotspot-shop-denden-town",
+    name: "Nipponbashi Denden Town (ย่านเด็นเด็นทาวน์ อนิเมะ/เกม)",
+    japanese: "日本橋でんでんタウン",
+    category: "shopping",
+    icon: "🎮",
+    region: "osaka",
+    station: "สถานี Nipponbashi / Ebisucho เดิน 3 นาที",
+    stayHours: "2 - 3 ชม.",
+    lat: 34.6605,
+    lng: 135.5060,
+    tag: "อนิเมะ/ฟิกเกอร์/เกมส์",
+    desc: "อากิฮาบาระแห่งคันไซ ศูนย์รวมฟิกเกอร์ อนิเมะ โมเดลกันพลา การ์ดสะสม และเมดคาเฟ่"
+  },
+  {
+    id: "hotspot-shop-shinsaibashi",
+    name: "Shinsaibashi-suji & Amerikamura (ถนนช้อปปิ้งชินไซบาชิ)",
+    japanese: "心斎橋筋商店街 / アメリカ村",
+    category: "shopping",
+    icon: "🛍️",
+    region: "osaka",
+    station: "สถานี Shinsaibashi ทางออก 5 หรือ 6",
+    stayHours: "2.5 - 4 ชม.",
+    lat: 34.6710,
+    lng: 135.5010,
+    tag: "ถนนช้อปปิ้งในร่ม",
+    desc: "ถนนช้อปปิ้งในร่มยาว 600 เมตร รวมแบรนด์เนม ดองกี้ เสื้อผ้าแฟชั่น และย่านสตรีท Amerikamura"
+  },
 
   // --- ATTRACTIONS & THEME PARKS ---
+  {
+    id: "hotspot-attraction-kaiyukan",
+    name: "Osaka Aquarium Kaiyukan (พิพิธภัณฑ์สัตว์น้ำไคยูคัง)",
+    japanese: "海遊館 (かいゆうかん)",
+    category: "attraction",
+    icon: "🦈",
+    region: "osaka",
+    station: "สถานี Osakako (Chuo Line ทางออก 1) เดิน 5 นาที",
+    stayHours: "2.5 - 3.5 ชม.",
+    lat: 34.6545,
+    lng: 135.4289,
+    tag: "อควาเรียมระดับโลก",
+    desc: "อควาเรียมยักษ์ระดับโลก ชมฉลามวาฬแหวกว่ายในแท็งก์น้ำวน 9 เมตร และชิงช้าสวรรค์เทมโปซาน"
+  },
+  {
+    id: "hotspot-attraction-namba-yasaka",
+    name: "Namba Yasaka Shrine (ศาลเจ้านัมบะ ยาซากะ หัวสิงโตยักษ์)",
+    japanese: "難波八阪神社",
+    category: "attraction",
+    icon: "🦁",
+    region: "osaka",
+    station: "สถานี Namba เดิน 6 นาที",
+    stayHours: "45 นาที - 1 ชม.",
+    lat: 34.6629,
+    lng: 135.4965,
+    tag: "ศาลเจ้าหัวสิงโตยักษ์",
+    desc: "ศาลเจ้าศักดิ์สิทธิ์ใจกลางเมือง โดดเด่นด้วยหัวสิงโตทองอ้าปากกว้าง 12 เมตร ช่วยกลืนกินเคราะห์และเรียกโชคลาภ"
+  },
+  {
+    id: "hotspot-attraction-abeno-harukas",
+    name: "Abeno Harukas 300 (ตึกระฟ้า อาเบโนะ ฮารุกัส 300)",
+    japanese: "あべのハルカス300",
+    category: "attraction",
+    icon: "✨",
+    region: "osaka",
+    station: "สถานี Tennoji / Osaka-Abenobashi เชื่อมตรงใต้ตึก",
+    stayHours: "1.5 - 2 ชม.",
+    lat: 34.6458,
+    lng: 135.5138,
+    tag: "จุดชมวิวตึกระฟ้า 300 ม.",
+    desc: "จุดชมวิวพาโนรามา 360 องศาบนตึกที่สูงที่สุดในโอซาก้า ชมพระอาทิตย์ตกและแสงสีค่ำคืนคันไซ"
+  },
   {
     id: "hotspot-attraction-disneysea",
     name: "Tokyo DisneySea (โตเกียว ดิสนีย์ซี & โซน Fantasy Springs)",

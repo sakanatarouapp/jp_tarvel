@@ -1278,6 +1278,146 @@ document.addEventListener("DOMContentLoaded", () => {
     return itineraryList;
   }
 
+  // ================= SMART PROXIMITY & LOCATION RESOLUTION ENGINE =================
+  const MAJOR_JAPAN_STATIONS = [
+    // Osaka
+    { name: "สถานี Namba (M20/Y15)", lat: 34.6669, lng: 135.5005, region: "osaka", distName: "Namba" },
+    { name: "สถานี Nipponbashi (K17/S17)", lat: 34.6667, lng: 135.5065, region: "osaka", distName: "Nipponbashi / Denden Town" },
+    { name: "สถานี Shinsaibashi (M19)", lat: 34.6750, lng: 135.5004, region: "osaka", distName: "Shinsaibashi" },
+    { name: "สถานี Ebisucho (K18) / Dobutsuen-mae", lat: 34.6525, lng: 135.5063, region: "osaka", distName: "Shinsekai" },
+    { name: "สถานี Osaka / Umeda (JR/Metro)", lat: 34.7024, lng: 135.4959, region: "osaka", distName: "Umeda" },
+    { name: "สถานี Osakajokoen / Morinomiya (JR Loop Line)", lat: 34.6885, lng: 135.5342, region: "osaka", distName: "Osaka Castle" },
+    { name: "สถานี Osakako (C11)", lat: 34.6552, lng: 135.4312, region: "osaka", distName: "Kaiyukan" },
+    { name: "สถานี Tennoji (JR/M23)", lat: 34.6473, lng: 135.5140, region: "osaka", distName: "Tennoji / Harukas" },
+    { name: "สถานี Universal City (JR Yumesaki Line)", lat: 34.6678, lng: 135.4385, region: "osaka", distName: "USJ" },
+    { name: "สถานี Shin-Osaka (Shinkansen/M13)", lat: 34.7335, lng: 135.5003, region: "osaka", distName: "Shin-Osaka" },
+    { name: "สถานี Minoh (Hankyu Minoh Line)", lat: 34.8268, lng: 135.4704, region: "osaka", distName: "Minoh" },
+    // Tokyo
+    { name: "สถานี Shinjuku (JY17/M08)", lat: 35.6896, lng: 139.7005, region: "tokyo", distName: "Shinjuku" },
+    { name: "สถานี Shibuya (JY20/G01)", lat: 35.6580, lng: 139.7016, region: "tokyo", distName: "Shibuya" },
+    { name: "สถานี Tokyo Station (Marunouchi)", lat: 35.6812, lng: 139.7671, region: "tokyo", distName: "Tokyo Station" },
+    { name: "สถานี Asakusa (G19/A18)", lat: 35.7118, lng: 139.7966, region: "tokyo", distName: "Asakusa" },
+    { name: "สถานี Ueno (JY05/G16)", lat: 35.7141, lng: 139.7774, region: "tokyo", distName: "Ueno" },
+    { name: "สถานี Akihabara (JY03/H16)", lat: 35.6983, lng: 139.7730, region: "tokyo", distName: "Akihabara" },
+    { name: "สถานี Ginza (G09/M16)", lat: 35.6715, lng: 139.7649, region: "tokyo", distName: "Ginza" },
+    { name: "สถานี Roppongi (H04/E23)", lat: 35.6628, lng: 139.7313, region: "tokyo", distName: "Roppongi" },
+    { name: "สถานี Ikebukuro (JY13/M25)", lat: 35.7295, lng: 139.7109, region: "tokyo", distName: "Ikebukuro" },
+    // Kyoto
+    { name: "สถานี Kyoto Station (JR/Subway)", lat: 34.9858, lng: 135.7588, region: "kyoto", distName: "Kyoto Station" },
+    { name: "สถานี Gion-Shijo / Kawaramachi", lat: 35.0037, lng: 135.7725, region: "kyoto", distName: "Gion / Kawaramachi" },
+    { name: "สถานี Fushimi-Inari / Inari", lat: 34.9671, lng: 135.7727, region: "kyoto", distName: "Fushimi Inari" },
+    { name: "สถานี Saga-Arashiyama / Arashiyama", lat: 35.0166, lng: 135.6713, region: "kyoto", distName: "Arashiyama" }
+  ];
+
+  function getDistanceKm(lat1, lon1, lat2, lon2) {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 9999;
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function resolveSmartStationAndRegion(query, lat, lon) {
+    const qLower = (query || "").toLowerCase();
+
+    // 1. Check exact/partial keyword match in JAPAN_DATA
+    const matchInJapanData = JAPAN_DATA.find(d => 
+      d.id === qLower || 
+      d.title.toLowerCase().includes(qLower) || 
+      d.japanese.toLowerCase().includes(qLower) || 
+      (d.keyword && d.keyword.toLowerCase().includes(qLower)) ||
+      (qLower.includes("den den") && d.id.includes("denden")) ||
+      (qLower.includes("shinsekai") && d.id.includes("shinsekai")) ||
+      (qLower.includes("kaiyukan") && d.id.includes("kaiyukan")) ||
+      (qLower.includes("yasaka") && d.id.includes("yasaka")) ||
+      (qLower.includes("shinsaibashi") && d.id.includes("shinsaibashi")) ||
+      (qLower.includes("harukas") && d.id.includes("harukas")) ||
+      (qLower.includes("minoh") && d.id.includes("minoh"))
+    );
+
+    if (matchInJapanData) {
+      const stationText = matchInJapanData.transport ? matchInJapanData.transport.split('(')[0].replace('สถานี', '').trim() : matchInJapanData.tag;
+      return {
+        station: stationText,
+        fullTransport: matchInJapanData.transport,
+        region: matchInJapanData.region,
+        tag: matchInJapanData.tag,
+        stayHours: "1.5 - 2.5 ชม.",
+        lat: (ROUTE_SIMULATION_META[matchInJapanData.id] ? ROUTE_SIMULATION_META[matchInJapanData.id].lat : (lat || 34.6687)),
+        lng: (ROUTE_SIMULATION_META[matchInJapanData.id] ? ROUTE_SIMULATION_META[matchInJapanData.id].lng : (lon || 135.5013))
+      };
+    }
+
+    // 2. Proximity check against MAJOR_JAPAN_STATIONS
+    let closestStation = null;
+    let minDistance = 999999;
+    if (lat && lon) {
+      MAJOR_JAPAN_STATIONS.forEach(st => {
+        const dist = getDistanceKm(lat, lon, st.lat, st.lng);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestStation = st;
+        }
+      });
+    }
+
+    if (closestStation && minDistance < 6) {
+      const walkMin = Math.max(2, Math.round(minDistance * 13));
+      return {
+        station: `เดิน ${walkMin} นาทีจาก${closestStation.name}`,
+        region: closestStation.region,
+        tag: `ย่าน ${closestStation.distName}`,
+        stayHours: "1.5 - 2 ชม.",
+        lat: lat,
+        lng: lon
+      };
+    }
+
+    // 3. Fallback
+    return {
+      station: "ใจกลางย่านท่องเที่ยวโอซาก้า/คันไซ",
+      region: "osaka",
+      tag: "จุดหมายยอดฮิต",
+      stayHours: "1.5 - 2 ชม.",
+      lat: lat || 34.6687,
+      lng: lon || 135.5013
+    };
+  }
+
+  function getSmartMetaForItem(item) {
+    if (ROUTE_SIMULATION_META[item.id]) {
+      return ROUTE_SIMULATION_META[item.id];
+    }
+    const custom = customPlacesStore.find(cp => cp.id === item.id);
+    if (custom && custom.station && custom.station !== "สถานีใกล้เคียง" && custom.station !== "จากการค้นหา") {
+      return {
+        station: custom.station,
+        stayHours: custom.stayHours || "1.5 - 2 ชม.",
+        bestTimeOfDay: "ช่วงเวลาที่สะดวก",
+        icon: custom.icon || "📍",
+        region: custom.region || "osaka",
+        lat: custom.lat,
+        lng: custom.lng,
+        mapsName: custom.title
+      };
+    }
+    const resolved = resolveSmartStationAndRegion(item.title, item.lat, item.lng);
+    return {
+      station: (item.station && item.station !== "สถานีใกล้เคียง" && item.station !== "จากการค้นหา") ? item.station : resolved.station,
+      stayHours: item.stayHours || resolved.stayHours || "1.5 - 2 ชม.",
+      bestTimeOfDay: "ช่วงเวลาที่สะดวก",
+      icon: item.icon || "📍",
+      region: item.region || resolved.region || "osaka",
+      lat: item.lat || resolved.lat,
+      lng: item.lng || resolved.lng,
+      mapsName: item.title
+    };
+  }
+
   function calculateTransitLeg(fromItem, toItem) {
     if (!fromItem || !toItem) return { mode: "🚇 รถไฟ", duration: "15 นาที", fareJPY: 210, icon: "🚇" };
 
@@ -1458,14 +1598,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2.1 Add Numbered Circular Pin Markers with Region Themed Colors
       for (let i = 0; i < activeSimulationRoute.length; i++) {
         const item = activeSimulationRoute[i];
-        const meta = ROUTE_SIMULATION_META[item.id] || {
-          lat: 35.6895,
-          lng: 139.6917,
-          icon: "📍",
-          region: item.region || "tokyo",
-          station: "สถานีใกล้เคียง",
-          stayHours: "1.5 - 2 ชม."
-        };
+        const meta = getSmartMetaForItem(item);
         const regCode = meta.region || item.region || "tokyo";
         visitedRegions.add(regCode);
         const theme = (typeof REGION_THEMES !== "undefined" && REGION_THEMES[regCode]) ? REGION_THEMES[regCode] : { color: "#0284c7", icon: "📍" };
@@ -1504,8 +1637,8 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 0; i < activeSimulationRoute.length - 1; i++) {
         const item1 = activeSimulationRoute[i];
         const item2 = activeSimulationRoute[i + 1];
-        const meta1 = ROUTE_SIMULATION_META[item1.id] || { lat: 35.6895, lng: 139.6917, region: item1.region || "tokyo" };
-        const meta2 = ROUTE_SIMULATION_META[item2.id] || { lat: 35.6895, lng: 139.6917, region: item2.region || "tokyo" };
+        const meta1 = getSmartMetaForItem(item1);
+        const meta2 = getSmartMetaForItem(item2);
         const pos1 = [meta1.lat, meta1.lng];
         const pos2 = [meta2.lat, meta2.lng];
 
@@ -2483,26 +2616,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // Universal helper to add any place (hotspot, search, pin, form) directly into the plan
   function addCustomPlaceToPlan(placeData) {
     const customId = placeData.id || `custom-place-${Date.now()}`;
+    const smart = resolveSmartStationAndRegion(placeData.title || placeData.name, placeData.lat, placeData.lng);
+    const station = (placeData.station && placeData.station !== "สถานีใกล้เคียง" && placeData.station !== "จากการค้นหา") ? placeData.station : smart.station;
+    const region = placeData.region || smart.region || "osaka";
+    const tag = (placeData.tag && placeData.tag !== "จากการค้นหา" && placeData.tag !== "จุดหมายของฉัน") ? placeData.tag : smart.tag;
+    const stayHours = placeData.stayHours || smart.stayHours || "1 - 2 ชม.";
+
     const newPlace = {
       id: customId,
       title: placeData.title || placeData.name,
       japanese: placeData.japanese || placeData.title || placeData.name,
-      region: placeData.region || "tokyo",
-      tag: placeData.tag || "จุดหมายของฉัน",
+      region: region,
+      tag: tag,
       icon: placeData.icon || "📍",
-      cost: placeData.category === "hotel" ? "ค่าที่พัก" : "ค่ากิจกรรม/อาหาร",
-      station: placeData.station || "สถานีใกล้เคียง",
-      stayHours: placeData.stayHours || "1 - 2 ชม.",
-      lat: parseFloat(placeData.lat) || 35.6895,
-      lng: parseFloat(placeData.lng) || 139.6917,
+      cost: placeData.category === "hotel" ? "ค่าที่พัก" : (placeData.cost || "ค่ากิจกรรม/อาหาร"),
+      station: station,
+      stayHours: stayHours,
+      lat: parseFloat(placeData.lat) || smart.lat,
+      lng: parseFloat(placeData.lng) || smart.lng,
       isCustom: true
     };
 
     // 1. Save to customPlacesStore if not already there
-    if (!customPlacesStore.some(cp => cp.id === newPlace.id)) {
+    const existingCpIdx = customPlacesStore.findIndex(cp => cp.id === newPlace.id || cp.title === newPlace.title);
+    if (existingCpIdx >= 0) {
+      customPlacesStore[existingCpIdx] = newPlace;
+    } else {
       customPlacesStore.push(newPlace);
-      localStorage.setItem("nippon_custom_places", JSON.stringify(customPlacesStore));
     }
+    localStorage.setItem("nippon_custom_places", JSON.stringify(customPlacesStore));
 
     // 2. Register into ROUTE_SIMULATION_META for Leaflet mapping & timelines
     if (typeof ROUTE_SIMULATION_META !== "undefined") {
@@ -2519,19 +2661,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3. Add to itineraryList if not already present
-    if (!itineraryList.some(i => i.id === newPlace.id)) {
+    const existingItinIdx = itineraryList.findIndex(i => i.id === newPlace.id || i.title === newPlace.title);
+    if (existingItinIdx >= 0) {
+      itineraryList[existingItinIdx].station = newPlace.station;
+      itineraryList[existingItinIdx].stayHours = newPlace.stayHours;
+      itineraryList[existingItinIdx].region = newPlace.region;
+      itineraryList[existingItinIdx].tag = newPlace.tag;
+    } else {
       itineraryList.push({
         id: newPlace.id,
         title: newPlace.title,
         tag: newPlace.tag,
         cost: newPlace.cost,
         region: newPlace.region,
+        station: newPlace.station,
+        stayHours: newPlace.stayHours,
         japanese: newPlace.japanese,
         icon: newPlace.icon,
         isCustom: true
       });
-      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
     }
+    localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
 
     // 4. Switch to custom preset in Route Simulator so user immediately sees their place
     selectedRoutePresetId = "custom";
@@ -4285,10 +4435,37 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <div class="pocket-timeline-items">
             ${dayList.map((item, idx) => {
-              const fullData = JAPAN_DATA.find(d => d.id === item.id) || {};
-              const station = fullData.transport ? fullData.transport.split('(')[0].replace('สถานี', '').trim() : (item.tag || 'ใจกลางเมือง');
+              const fullData = JAPAN_DATA.find(d => d.id === item.id) || customPlacesStore.find(cp => cp.id === item.id) || {};
+              const smartMeta = getSmartMetaForItem(item);
+              const station = fullData.transport ? fullData.transport.split('(')[0].replace('สถานี', '').trim() : (smartMeta.station || item.station || 'ใจกลางเมือง');
               const tTime = dayTimes[idx % dayTimes.length];
               const num = sheetGlobalCounter++;
+
+              const itemRegion = smartMeta.region || item.region || fullData.region || "osaka";
+              let transitStep = "🚇 Tokyo Metro / JR Line (~15 นาที)";
+              if (itemRegion === "osaka") {
+                const osakaSteps = [
+                  "🚇 Osaka Metro Midosuji / Sakaisuji Line (~10-15 นาที)",
+                  "🚶 เดินชมเมือง (~6-10 นาที) / ต่อรถไฟ Nankai Line (~12 นาที)",
+                  "🚆 JR Osaka Loop Line (~15 นาที)"
+                ];
+                transitStep = osakaSteps[idx % osakaSteps.length];
+              } else if (itemRegion === "kyoto") {
+                const kyotoSteps = [
+                  "🚌 Kyoto City Bus สาย 205/206 (~15 นาที)",
+                  "🚶 เดินชมย่านประวัติศาสตร์ (~8-12 นาที)",
+                  "🚆 Keihan Main Line / Hankyu Line (~15 นาที)"
+                ];
+                transitStep = kyotoSteps[idx % kyotoSteps.length];
+              } else {
+                const tokyoSteps = [
+                  "🚇 Tokyo Metro / JR Yamanote Line (~15 นาที)",
+                  "🚶 เดินชมเมือง (~8 นาที) / ต่อรถไฟใต้ดิน (~12 นาที)",
+                  "🚆 JR Chuo-Sobu Line (~15 นาที)"
+                ];
+                transitStep = tokyoSteps[idx % tokyoSteps.length];
+              }
+
               return `
                 <div class="pocket-timeline-row">
                   <div class="pocket-time-col"><span>⏰</span> <span>${tTime}</span></div>
@@ -4311,7 +4488,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                   </div>
                 </div>
-                ${idx < dayList.length - 1 ? `<div class="pocket-transit-connector">↓ ${transitSteps[idx % transitSteps.length]}</div>` : ''}
+                ${idx < dayList.length - 1 ? `<div class="pocket-transit-connector">↓ ${transitStep}</div>` : ''}
               `;
             }).join("")}
           </div>
