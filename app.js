@@ -2041,15 +2041,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function sortItineraryList() {
+    itineraryList.forEach((item, idx) => {
+      item.day = parseInt(item.day, 10) || (Math.floor(idx / 3) + 1);
+    });
+    itineraryList.sort((a, b) => {
+      const dayA = parseInt(a.day, 10) || 1;
+      const dayB = parseInt(b.day, 10) || 1;
+      if (dayA !== dayB) return dayA - dayB;
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      return 0;
+    });
+  }
+
   function getRouteItems() {
     if (selectedRoutePresetId === "custom") {
-      itineraryList.forEach((item, idx) => {
-        if (!item.day || typeof item.day !== "number") {
-          item.day = Math.floor(idx / 3) + 1;
-        }
-      });
-      // Sort itineraryList by Day ascending so chronological order is strictly preserved
-      itineraryList.sort((a, b) => (a.day || 1) - (b.day || 1));
+      sortItineraryList();
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
 
       return itineraryList.map((item, idx) => {
@@ -2058,13 +2065,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const base = builtin || custom || item;
         return {
           ...base,
-          day: item.day || 1
+          day: parseInt(item.day, 10) || 1,
+          time: item.time || ""
         };
       });
     }
     const preset = ROUTE_PRESETS_DATA.find(p => p.id === selectedRoutePresetId);
     if (preset) {
-      return preset.itemIds.map((id, idx) => {
+      const items = preset.itemIds.map((id, idx) => {
         const b = JAPAN_DATA.find(item => item.id === id) || customPlacesStore.find(item => item.id === id) || { id, title: id, region: preset.region };
         let assignedDay = 1;
         if (preset.id === "preset-hokkaido-classic") {
@@ -2080,9 +2088,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return {
           ...b,
-          day: assignedDay
+          day: assignedDay,
+          time: ""
         };
       }).filter(Boolean);
+
+      items.sort((a, b) => (parseInt(a.day, 10) || 1) - (parseInt(b.day, 10) || 1));
+      return items;
     }
     return itineraryList;
   }
@@ -2213,6 +2225,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!routePresetPills || !routeTimelineList) return;
 
     activeSimulationRoute = getRouteItems();
+    // Bulletproof sort: activeSimulationRoute is always sorted by Day ascending, then by Time
+    activeSimulationRoute.sort((a, b) => {
+      const dayA = parseInt(a.day, 10) || 1;
+      const dayB = parseInt(b.day, 10) || 1;
+      if (dayA !== dayB) return dayA - dayB;
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      return 0;
+    });
 
     // 1. Render Preset Pills
     let pillsHtml = `
@@ -2474,8 +2494,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="stop-title-wrap">
               <span class="stop-drag-handle" title="คลิกลากเพื่อสลับลำดับ">⋮⋮</span>
               <span class="stop-num-badge" style="background: ${theme.color};">${i + 1}</span>
-              <span style="background: #e2e8f0; color: #334155; font-size: 0.72rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">DAY ${currentDay}</span>
-              <div>
+              <span class="stop-day-pill">DAY ${currentDay}</span>
+              <div style="min-width: 0; flex: 1 1 auto;">
                 <div class="stop-title-text">${meta.icon} ${item.title}</div>
                 <div style="font-size: 0.75rem; color: ${theme.color}; font-weight: 700;">${item.japanese}</div>
               </div>
@@ -2486,10 +2506,15 @@ document.addEventListener("DOMContentLoaded", () => {
               <button class="stop-reorder-btn remove-stop" data-idx="${i}" title="ลบออก" style="color: #ef4444;">✕</button>
             </div>
           </div>
-          <div class="stop-meta-row">
-            <span>🚉 ${meta.station}</span>
-            <span>⏳ เวลาแวะ: ${meta.stayHours}</span>
-            <span>⏰ แนะนำ: ${meta.bestTimeOfDay}</span>
+          <div class="stop-meta-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem 0.75rem;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+              <span>🚉 ${meta.station}</span>
+              <span>⏳ เวลาแวะ: ${meta.stayHours}</span>
+            </div>
+            <div class="stop-time-picker-box">
+              <span>🕒 เวลา:</span>
+              <input type="time" class="stop-time-picker-input" data-id="${item.id}" value="${item.time || ''}" title="เลือกเวลาเริ่มต้นของสถานที่นี้">
+            </div>
           </div>
         </div>
       `;
@@ -2588,6 +2613,15 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", (e) => {
         const idx = parseInt(e.currentTarget.getAttribute("data-idx"));
         removeRouteItem(idx);
+      });
+    });
+
+    // Attach Time Picker Listeners in Route Simulator
+    routeTimelineList.querySelectorAll(".stop-time-picker-input").forEach(input => {
+      input.addEventListener("change", (e) => {
+        const id = e.target.getAttribute("data-id");
+        const newTime = e.target.value;
+        setItineraryItemTime(id, newTime);
       });
     });
 
@@ -3093,7 +3127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (idx >= 0) {
       itineraryList.splice(idx, 1);
     } else {
-      const assignedDay = targetDay ? parseInt(targetDay, 10) : (itineraryList.length > 0 ? Math.max(...itineraryList.map(i => i.day || 1)) : 1);
+      const assignedDay = targetDay ? parseInt(targetDay, 10) : (itineraryList.length > 0 ? Math.max(...itineraryList.map(i => parseInt(i.day, 10) || 1)) : 1);
       const builtin = JAPAN_DATA.find(i => i.id === id);
       if (builtin) {
         itineraryList.push({
@@ -3103,7 +3137,8 @@ document.addEventListener("DOMContentLoaded", () => {
           cost: builtin.estimatedCost,
           region: builtin.region,
           japanese: builtin.japanese,
-          day: assignedDay
+          day: assignedDay,
+          time: ""
         });
       } else {
         const custom = customPlacesStore.find(i => i.id === id);
@@ -3117,12 +3152,14 @@ document.addEventListener("DOMContentLoaded", () => {
             japanese: custom.japanese,
             icon: custom.icon,
             isCustom: true,
-            day: assignedDay
+            day: assignedDay,
+            time: custom.time || ""
           });
         }
       }
     }
 
+    sortItineraryList();
     localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
     updateItineraryUI();
     renderCards();
@@ -3133,8 +3170,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const item = itineraryList.find(i => i.id === id);
     if (item) {
       item.day = parseInt(newDay, 10) || 1;
-      // Stable sort itineraryList by Day ascending so the entire itinerary and route simulator are in perfect chronological order!
-      itineraryList.sort((a, b) => (a.day || 1) - (b.day || 1));
+      sortItineraryList();
+      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+      updateItineraryUI();
+      renderRouteSimulator();
+    }
+  }
+
+  function setItineraryItemTime(id, newTime) {
+    const item = itineraryList.find(i => i.id === id);
+    if (item) {
+      item.time = newTime;
+      sortItineraryList();
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
       updateItineraryUI();
       renderRouteSimulator();
@@ -3161,7 +3208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRouteSimulator();
   }
 
-  // 9. Update Itinerary Drawer UI with Day Grouping
+  // 9. Update Itinerary Drawer UI with Day Grouping & Time Setting
   function updateItineraryUI() {
     if (itineraryCountBadge) itineraryCountBadge.textContent = itineraryList.length;
     if (drawerItemCount) drawerItemCount.textContent = `${itineraryList.length} รายการ`;
@@ -3182,17 +3229,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Ensure all items have a valid day property
-    itineraryList.forEach((item, idx) => {
-      if (!item.day || typeof item.day !== "number") {
-        item.day = Math.floor(idx / 3) + 1;
-      }
-    });
+    sortItineraryList();
 
     // Group items by day
     const dayBuckets = {};
     itineraryList.forEach(item => {
-      const d = item.day || 1;
+      const d = parseInt(item.day, 10) || 1;
       if (!dayBuckets[d]) dayBuckets[d] = [];
       dayBuckets[d].push(item);
     });
@@ -3227,6 +3269,10 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="itinerary-item-sub">
                     ${isCustom ? `<span style="background: #ecfdf5; color: #059669; font-weight: 700; padding: 1px 5px; border-radius: 6px; font-size: 0.7rem;">Custom</span> ` : ''}
                     ${item.tag || 'จุดหมาย'} • ${item.japanese || item.title}
+                  </div>
+                  <div class="itinerary-item-time-row" style="display: flex; align-items: center; gap: 6px; margin-top: 5px;">
+                    <span style="font-size: 0.72rem; color: #0369a1; font-weight: 700;">🕒 เวลา:</span>
+                    <input type="time" class="item-time-input" data-id="${item.id}" value="${item.time || ''}" title="ระบุเวลาของสถานที่นี้">
                   </div>
                 </div>
                 <div class="itinerary-item-actions">
@@ -3269,6 +3315,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Attach Time change listener
+    itineraryItemsList.querySelectorAll(".item-time-input").forEach(input => {
+      input.addEventListener("change", (e) => {
+        const id = e.target.getAttribute("data-id");
+        const newTime = e.target.value;
+        setItineraryItemTime(id, newTime);
+      });
+    });
+
     // Attach Move Up & Move Down
     itineraryItemsList.querySelectorAll(".move-item-btn.up").forEach(btn => {
       btn.addEventListener("click", (e) => {
@@ -3297,6 +3352,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (addEmptyDayBtn) {
       addEmptyDayBtn.addEventListener("click", () => {
         if (customPlaceModal) {
+          const nextD = dayNumbers.length > 0 ? Math.max(...dayNumbers) + 1 : 1;
+          const dayInput = document.getElementById("custom-place-day");
+          if (dayInput) dayInput.value = String(nextD);
           customPlaceModal.style.display = "flex";
         }
       });
@@ -3332,13 +3390,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchDebounceTimer = null;
 
   // Universal helper to add any place (hotspot, search, pin, form) directly into the plan
-  function addCustomPlaceToPlan(placeData) {
+  function addCustomPlaceToPlan(placeData, targetDay = null) {
     const customId = placeData.id || `custom-place-${Date.now()}`;
     const smart = resolveSmartStationAndRegion(placeData.title || placeData.name, placeData.lat, placeData.lng);
     const station = (placeData.station && placeData.station !== "สถานีใกล้เคียง" && placeData.station !== "จากการค้นหา") ? placeData.station : smart.station;
     const region = placeData.region || smart.region || "osaka";
     const tag = (placeData.tag && placeData.tag !== "จากการค้นหา" && placeData.tag !== "จุดหมายของฉัน") ? placeData.tag : smart.tag;
     const stayHours = placeData.stayHours || smart.stayHours || "1 - 2 ชม.";
+
+    // Determine Day & Time
+    const assignedDay = targetDay ? parseInt(targetDay, 10) : (placeData.day ? parseInt(placeData.day, 10) : (itineraryList.length > 0 ? Math.max(...itineraryList.map(i => parseInt(i.day, 10) || 1)) : 1));
+    const assignedTime = placeData.time || "";
 
     const newPlace = {
       id: customId,
@@ -3352,7 +3414,9 @@ document.addEventListener("DOMContentLoaded", () => {
       stayHours: stayHours,
       lat: parseFloat(placeData.lat) || smart.lat,
       lng: parseFloat(placeData.lng) || smart.lng,
-      isCustom: true
+      isCustom: true,
+      day: assignedDay,
+      time: assignedTime
     };
 
     // 1. Save to customPlacesStore if not already there
@@ -3373,7 +3437,7 @@ document.addEventListener("DOMContentLoaded", () => {
         region: newPlace.region,
         station: newPlace.station,
         stayHours: newPlace.stayHours,
-        bestTimeOfDay: "ช่วงเวลาที่สะดวก",
+        bestTimeOfDay: assignedTime ? `${assignedTime} น.` : "ช่วงเวลาที่สะดวก",
         mapsName: newPlace.title
       };
     }
@@ -3385,6 +3449,8 @@ document.addEventListener("DOMContentLoaded", () => {
       itineraryList[existingItinIdx].stayHours = newPlace.stayHours;
       itineraryList[existingItinIdx].region = newPlace.region;
       itineraryList[existingItinIdx].tag = newPlace.tag;
+      if (targetDay || placeData.day) itineraryList[existingItinIdx].day = assignedDay;
+      if (assignedTime) itineraryList[existingItinIdx].time = assignedTime;
     } else {
       itineraryList.push({
         id: newPlace.id,
@@ -3396,9 +3462,13 @@ document.addEventListener("DOMContentLoaded", () => {
         stayHours: newPlace.stayHours,
         japanese: newPlace.japanese,
         icon: newPlace.icon,
-        isCustom: true
+        isCustom: true,
+        day: assignedDay,
+        time: assignedTime
       });
     }
+
+    sortItineraryList();
     localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
 
     // 4. Switch to custom preset in Route Simulator so user immediately sees their place
@@ -3958,6 +4028,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const lat = customPlaceLat ? (parseFloat(customPlaceLat.value) || 35.6895) : 35.6895;
       const lng = customPlaceLng ? (parseFloat(customPlaceLng.value) || 139.6917) : 139.6917;
 
+      const customPlaceDay = document.getElementById("custom-place-day");
+      const customPlaceTime = document.getElementById("custom-place-time");
+      const chosenDay = customPlaceDay ? parseInt(customPlaceDay.value, 10) || 1 : 1;
+      const chosenTime = customPlaceTime ? customPlaceTime.value : "";
+
       const categoryLabels = {
         hotel: "โรงแรมที่พัก",
         food: "ร้านอาหาร/คาเฟ่",
@@ -3977,8 +4052,10 @@ document.addEventListener("DOMContentLoaded", () => {
         station: station,
         stayHours: stayHours,
         lat: lat,
-        lng: lng
-      });
+        lng: lng,
+        day: chosenDay,
+        time: chosenTime
+      }, chosenDay);
 
       closeCustomPlaceModal();
 
@@ -5337,23 +5414,23 @@ document.addEventListener("DOMContentLoaded", () => {
       activePreset = ROUTE_PRESETS_DATA.find(p => p.id === selectedRoutePresetId);
       planItems = getRouteItems();
     } else {
-      planItems = itineraryList;
+      planItems = getRouteItems();
     }
 
     if (!planItems || planItems.length === 0) {
       isFallback = true;
       planItems = [
-        { id: "sensoji", title: "วัดเซ็นโซจิ (Sensoji Temple)", japanese: "浅草寺", tag: "วัด & วัฒนธรรม", cost: "ฟรี", day: 1 },
-        { id: "skytree", title: "โตเกียวสกายทรี (Tokyo Skytree)", japanese: "東京スカイツリー", tag: "แลนด์มาร์ก & ชมวิว", cost: "¥2,100", day: 1 },
-        { id: "shibuya", title: "ห้าแยกชิบูย่า & ฮาจิโกะ", japanese: "渋谷スクランブル交差点", tag: "ช้อปปิ้ง & ไลฟ์สไตล์", cost: "ฟรี", day: 2 },
-        { id: "usj", title: "ยูนิเวอร์แซล สตูดิโอส์ เจแปน (USJ)", japanese: "ユニバーサル・スタジオ・ジャパン", tag: "สวนสนุกระดับโลก", cost: "¥8,600", day: 3 }
+        { id: "sensoji", title: "วัดเซ็นโซจิ (Sensoji Temple)", japanese: "浅草寺", tag: "วัด & วัฒนธรรม", cost: "ฟรี", day: 1, time: "09:00" },
+        { id: "skytree", title: "โตเกียวสกายทรี (Tokyo Skytree)", japanese: "東京スカイツリー", tag: "แลนด์มาร์ก & ชมวิว", cost: "¥2,100", day: 1, time: "12:30" },
+        { id: "shibuya", title: "ห้าแยกชิบูย่า & ฮาจิโกะ", japanese: "渋谷スクランブル交差点", tag: "ช้อปปิ้ง & ไลฟ์สไตล์", cost: "ฟรี", day: 2, time: "15:30" },
+        { id: "usj", title: "ยูนิเวอร์แซล สตูดิโอส์ เจแปน (USJ)", japanese: "ユニバーサル・スタジオ・ジャパン", tag: "สวนสนุกระดับโลก", cost: "¥8,600", day: 3, time: "08:30" }
       ];
     }
 
     // Group items by day
     const dayMap = {};
     planItems.forEach((item, idx) => {
-      const day = item.day || (Math.floor(idx / 3) + 1);
+      const day = parseInt(item.day, 10) || (Math.floor(idx / 3) + 1);
       if (!dayMap[day]) dayMap[day] = [];
       dayMap[day].push(item);
     });
@@ -5388,7 +5465,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const station = (fullData.transport && fullData.transport !== "สถานีใกล้เคียง" && fullData.transport !== "จากการค้นหา")
                 ? fullData.transport.split('(')[0].replace('สถานี', '').trim()
                 : (smartMeta.station && smartMeta.station !== "สถานีใกล้เคียง" ? smartMeta.station : (item.station && item.station !== "สถานีใกล้เคียง" ? item.station : 'ใจกลางเมือง'));
-              const tTime = dayTimes[idx % dayTimes.length];
+              const tTime = item.time ? `${item.time} น.` : (dayTimes[idx % dayTimes.length] + ' น.');
               const num = sheetGlobalCounter++;
               const jpName = smartMeta.japanese || fullData.japanese || item.japanese || item.title;
 
