@@ -1259,20 +1259,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getRouteItems() {
     if (selectedRoutePresetId === "custom") {
-      return itineraryList.map(item => {
+      return itineraryList.map((item, idx) => {
         const builtin = JAPAN_DATA.find(i => i.id === item.id);
-        if (builtin) return builtin;
         const custom = customPlacesStore.find(i => i.id === item.id);
-        if (custom) return custom;
-        return item;
+        const base = builtin || custom || item;
+        return {
+          ...base,
+          day: item.day || (Math.floor(idx / 3) + 1)
+        };
       });
     }
     const preset = ROUTE_PRESETS_DATA.find(p => p.id === selectedRoutePresetId);
     if (preset) {
-      return preset.itemIds.map(id => {
-        const b = JAPAN_DATA.find(item => item.id === id);
-        if (b) return b;
-        return customPlacesStore.find(item => item.id === id);
+      return preset.itemIds.map((id, idx) => {
+        const b = JAPAN_DATA.find(item => item.id === id) || customPlacesStore.find(item => item.id === id) || { id, title: id, region: preset.region };
+        let assignedDay = 1;
+        if (preset.id === "preset-hokkaido-classic") {
+          assignedDay = idx + 1;
+        } else if (preset.id === "preset-golden-route") {
+          assignedDay = Math.floor(idx / 2) + 1;
+        } else if (preset.id === "preset-kansai-2day") {
+          assignedDay = Math.floor(idx / 3) + 1;
+        } else if (preset.id === "preset-fuji-heritage") {
+          assignedDay = idx + 1;
+        } else {
+          assignedDay = Math.floor(idx / 3) + 1;
+        }
+        return {
+          ...b,
+          day: assignedDay
+        };
       }).filter(Boolean);
     }
     return itineraryList;
@@ -4372,15 +4388,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const exportActionLinkBtn = document.getElementById("export-action-link-btn");
   const exportActionLineBtn = document.getElementById("export-action-line-btn");
   const pocketSheetRenderTarget = document.getElementById("pocket-sheet-render-target");
+  const pocketSettingPlanSource = document.getElementById("pocket-setting-plan-source");
   const pocketSettingDate = document.getElementById("pocket-setting-date");
   const pocketSettingNights = document.getElementById("pocket-setting-nights");
   const pocketSettingGuests = document.getElementById("pocket-setting-guests");
   const pocketHolidayBadge = document.getElementById("pocket-holiday-badge");
 
-  function openPocketExportModal() {
+  function openPocketExportModal(forceSourceId = null) {
     if (!pocketSheetRenderTarget) return;
 
+    if (forceSourceId) {
+      selectedRoutePresetId = forceSourceId;
+    }
+
     // Sync input controls with current global settings
+    if (pocketSettingPlanSource) {
+      pocketSettingPlanSource.value = selectedRoutePresetId || "custom";
+    }
     if (pocketSettingDate && selectedCheckinDate) {
       pocketSettingDate.value = selectedCheckinDate;
     }
@@ -4391,16 +4415,25 @@ document.addEventListener("DOMContentLoaded", () => {
       pocketSettingGuests.value = String(selectedGuestCount);
     }
 
-    // Use current itinerary or fallback to sample items if empty
-    let planItems = itineraryList;
+    // Determine plan items based on current active route preset or custom user plan
+    let planItems = [];
     let isFallback = false;
+    let activePreset = null;
+
+    if (selectedRoutePresetId && selectedRoutePresetId !== "custom") {
+      activePreset = ROUTE_PRESETS_DATA.find(p => p.id === selectedRoutePresetId);
+      planItems = getRouteItems();
+    } else {
+      planItems = itineraryList;
+    }
+
     if (!planItems || planItems.length === 0) {
       isFallback = true;
       planItems = [
-        { id: "sensoji", title: "วัดเซ็นโซจิ (Sensoji Temple)", japanese: "浅草寺", tag: "วัด & วัฒนธรรม", cost: "ฟรี" },
-        { id: "skytree", title: "โตเกียวสกายทรี (Tokyo Skytree)", japanese: "東京スカイツリー", tag: "แลนด์มาร์ก & ชมวิว", cost: "¥2,100" },
-        { id: "shibuya", title: "ห้าแยกชิบูย่า & ฮาจิโกะ", japanese: "渋谷スクランブル交差点", tag: "ช้อปปิ้ง & ไลฟ์สไตล์", cost: "ฟรี" },
-        { id: "usj", title: "ยูนิเวอร์แซล สตูดิโอส์ เจแปน (USJ)", japanese: "ユニバーサル・スタジオ・ジャパン", tag: "สวนสนุกระดับโลก", cost: "¥8,600" }
+        { id: "sensoji", title: "วัดเซ็นโซจิ (Sensoji Temple)", japanese: "浅草寺", tag: "วัด & วัฒนธรรม", cost: "ฟรี", day: 1 },
+        { id: "skytree", title: "โตเกียวสกายทรี (Tokyo Skytree)", japanese: "東京スカイツリー", tag: "แลนด์มาร์ก & ชมวิว", cost: "¥2,100", day: 1 },
+        { id: "shibuya", title: "ห้าแยกชิบูย่า & ฮาจิโกะ", japanese: "渋谷スクランブル交差点", tag: "ช้อปปิ้ง & ไลฟ์สไตล์", cost: "ฟรี", day: 2 },
+        { id: "usj", title: "ยูนิเวอร์แซล สตูดิโอส์ เจแปน (USJ)", japanese: "ユニバーサル・スタジオ・ジャパン", tag: "สวนสนุกระดับโลก", cost: "¥8,600", day: 3 }
       ];
     }
 
@@ -4597,9 +4630,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="pocket-header-banner">
           <div>
             <div class="pocket-brand-title">
-              <span>⛩️</span> NIPPON TRAVEL POCKET ITINERARY
+              <span>⛩️</span> ${activePreset ? activePreset.title : 'NIPPON TRAVEL POCKET ITINERARY'}
             </div>
-            <div class="pocket-brand-sub">สรุปแผนการเดินทาง & ข้อมูลสำคัญท่องเที่ยวญี่ปุ่น 2026</div>
+            <div class="pocket-brand-sub">
+              ${activePreset ? activePreset.description : 'สรุปแผนการเดินทาง & ข้อมูลสำคัญท่องเที่ยวญี่ปุ่น 2026'}
+            </div>
           </div>
           <div class="pocket-meta-pill-group">
             <span class="pocket-meta-pill highlight">🗓️ ${formattedCheckin} - ${formattedCheckout}</span>
@@ -4820,6 +4855,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Live Quick Customizer Handlers inside Pocket Export Modal
+  if (pocketSettingPlanSource) {
+    pocketSettingPlanSource.addEventListener("change", (e) => {
+      selectedRoutePresetId = e.target.value;
+      selectedPocketHotelName = ""; // Auto reset to best budget hotel for selected route's region
+      openPocketExportModal();
+      renderRouteSimulator();
+    });
+  }
+
   if (pocketSettingDate) {
     pocketSettingDate.addEventListener("change", (e) => {
       selectedCheckinDate = e.target.value;
