@@ -5465,7 +5465,8 @@ document.addEventListener("DOMContentLoaded", () => {
               const station = (fullData.transport && fullData.transport !== "สถานีใกล้เคียง" && fullData.transport !== "จากการค้นหา")
                 ? fullData.transport.split('(')[0].replace('สถานี', '').trim()
                 : (smartMeta.station && smartMeta.station !== "สถานีใกล้เคียง" ? smartMeta.station : (item.station && item.station !== "สถานีใกล้เคียง" ? item.station : 'ใจกลางเมือง'));
-              const tTime = item.time ? `${item.time} น.` : (dayTimes[idx % dayTimes.length] + ' น.');
+              const defaultTime = dayTimes[idx % dayTimes.length];
+              const rawTime = item.time || defaultTime;
               const num = sheetGlobalCounter++;
               const jpName = smartMeta.japanese || fullData.japanese || item.japanese || item.title;
 
@@ -5496,7 +5497,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
               return `
                 <div class="pocket-timeline-row">
-                  <div class="pocket-time-col"><span>⏰</span> <span>${tTime}</span></div>
+                  <div class="pocket-time-col">
+                    <span style="font-size: 0.85rem;">⏰</span>
+                    <input type="time" class="pocket-item-time-input" data-id="${item.id}" value="${rawTime}" title="คลิกเพื่อปรับเวลา">
+                  </div>
                   <div class="pocket-info-col">
                     <div class="pocket-place-content-row">
                       <div style="flex: 1; min-width: 0;">
@@ -5803,10 +5807,35 @@ document.addEventListener("DOMContentLoaded", () => {
         const item = itineraryList.find(i => i.id === id);
         if (item) {
           item.day = newDay;
+          sortItineraryList();
           localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
           openPocketExportModal();
           updateItineraryUI();
           renderRouteSimulator();
+        }
+      });
+    });
+
+    // Attach Time change listener inside the pocket sheet cards
+    pocketSheetRenderTarget.querySelectorAll(".pocket-item-time-input").forEach(input => {
+      input.addEventListener("change", (e) => {
+        const id = e.target.getAttribute("data-id");
+        const newTime = e.target.value;
+        const item = itineraryList.find(i => i.id === id);
+        if (item) {
+          item.time = newTime;
+          sortItineraryList();
+          localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+          openPocketExportModal();
+          updateItineraryUI();
+          renderRouteSimulator();
+        } else {
+          const customItem = customPlacesStore.find(i => i.id === id);
+          if (customItem) {
+            customItem.time = newTime;
+            localStorage.setItem("nippon_custom_places", JSON.stringify(customPlacesStore));
+          }
+          openPocketExportModal();
         }
       });
     });
@@ -5834,13 +5863,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const hiddenCtrls = target.querySelectorAll(".pocket-card-day-ctrl, .pocket-hotel-select-wrap, .pocket-custom-hotel-inputs, .pocket-hotel-actions-row");
     hiddenCtrls.forEach(el => el.style.display = "none");
 
+    // Replace <input type="time"> with elegant plain text for crisp image rendering
+    const timeInputs = target.querySelectorAll(".pocket-item-time-input");
+    const tempSpans = [];
+    timeInputs.forEach(inp => {
+      const span = document.createElement("span");
+      span.className = "temp-export-time-text";
+      span.textContent = `${inp.value} น.`;
+      span.style.fontWeight = "800";
+      span.style.color = "#1e3a8a";
+      span.style.fontSize = "0.82rem";
+      inp.style.display = "none";
+      inp.parentNode.appendChild(span);
+      tempSpans.push({ inp, span });
+    });
+
+    const cleanupImageExport = () => {
+      hiddenCtrls.forEach(el => el.style.display = "");
+      tempSpans.forEach(({ inp, span }) => {
+        inp.style.display = "";
+        if (span.parentNode) span.parentNode.removeChild(span);
+      });
+    };
+
     html2canvas(target, {
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false
     }).then(canvas => {
-      hiddenCtrls.forEach(el => el.style.display = "");
+      cleanupImageExport();
       const link = document.createElement("a");
       link.download = `nippon_trip_plan_${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -5851,7 +5903,7 @@ document.addEventListener("DOMContentLoaded", () => {
         exportActionImgBtn.disabled = false;
       }
     }).catch(err => {
-      hiddenCtrls.forEach(el => el.style.display = "");
+      cleanupImageExport();
       console.error("Error generating image:", err);
       alert("เกิดข้อผิดพลาดในการสร้างรูปภาพ กรุณาลองใหม่อีกครั้งหรือใช้ปุ่มพิมพ์ PDF ครับ");
       if (exportActionImgBtn) {
