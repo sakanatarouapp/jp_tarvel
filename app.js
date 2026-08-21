@@ -6457,9 +6457,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ================= 20. Smart Trip Plan Wizard (3-Step AI Auto Generator) =================
+  // ================= 20. Smart Trip Plan Wizard (Season-Aware AI Auto Generator) =================
   let wizardSelectedDays = 5;
   let wizardSelectedRegion = "tokyo";
+  let wizardSelectedSeason = "all";
   let wizardSelectedStyle = "landmarks";
 
   const smartWizardModal = document.getElementById("smart-wizard-modal");
@@ -6489,13 +6490,20 @@ document.addEventListener("DOMContentLoaded", () => {
       golden: "Golden Route (โตเกียว + ฟูจิ + เกียวโต + โอซาก้า)",
       hokkaido: "Hokkaido (ซัปโปโร โอตารุ หิมะ อาหารทะเล)"
     };
+    const seasonNames = {
+      all: "เที่ยวได้ทุกฤดู (All Year)",
+      spring: "🌸 ใบไม้ผลิ • ซากุระ",
+      summer: "☀️ ฤดูร้อน • มัตสึริ",
+      autumn: "🍁 ใบไม้ร่วง • เปลี่ยนสี",
+      winter: "❄️ ฤดูหนาว • หิมะ & ออนเซ็น"
+    };
     const styleNames = {
       landmarks: "ไฮไลต์ & ถ่ายรูปเช็กอิน",
       foodie: "สายกิน & คาเฟ่",
       shopping: "ช้อปปิ้ง & อนิเมะ",
       parks: "สวนสนุก & ครอบครัว"
     };
-    wizardSummaryPreview.innerHTML = `💡 สรุป: ทริป <strong>${wizardSelectedDays} วัน</strong> • โซน <strong>${regionNames[wizardSelectedRegion] || wizardSelectedRegion}</strong> • สไตล์ <strong>${styleNames[wizardSelectedStyle] || wizardSelectedStyle}</strong>`;
+    wizardSummaryPreview.innerHTML = `💡 สรุป: ทริป <strong>${wizardSelectedDays} วัน</strong> • โซน <strong>${regionNames[wizardSelectedRegion] || wizardSelectedRegion}</strong> • ฤดู <strong>${seasonNames[wizardSelectedSeason] || wizardSelectedSeason}</strong> • สไตล์ <strong>${styleNames[wizardSelectedStyle] || wizardSelectedStyle}</strong>`;
   }
 
   // Bind Wizard Option Buttons
@@ -6523,6 +6531,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const wizardSeasonOptions = document.getElementById("wizard-season-options");
+  if (wizardSeasonOptions) {
+    wizardSeasonOptions.querySelectorAll(".wizard-opt-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        wizardSeasonOptions.querySelectorAll(".wizard-opt-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        wizardSelectedSeason = btn.getAttribute("data-season") || "all";
+        updateWizardSummary();
+      });
+    });
+  }
+
   const wizardStyleOptions = document.getElementById("wizard-style-options");
   if (wizardStyleOptions) {
     wizardStyleOptions.querySelectorAll(".wizard-opt-btn").forEach(btn => {
@@ -6544,94 +6564,124 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (wizardGenerateBtn) {
     wizardGenerateBtn.addEventListener("click", () => {
-      generateSmartItinerary(wizardSelectedDays, wizardSelectedRegion, wizardSelectedStyle);
+      generateSmartItinerary(wizardSelectedDays, wizardSelectedRegion, wizardSelectedSeason, wizardSelectedStyle);
       closeSmartWizard();
       const routeSec = document.getElementById("route-simulator");
       if (routeSec) routeSec.scrollIntoView({ behavior: "smooth" });
     });
   }
 
-  function generateSmartItinerary(days, region, style) {
-    const curatedPlaces = [];
-    const timeSlots = ["09:00", "11:30", "14:30", "18:00"];
-
-    // 1. Curate items based on Region and Style
-    let pool = [];
-
-    if (region === "tokyo") {
-      if (style === "foodie") {
-        pool = ["tokyo-tsukiji-market", "tokyo-shibuya-sky", "tokyo-sensoji", "tokyo-teamlab-planets", "tokyo-shinjuku-kabukicho", "kanto-kamakura-daibutsu", "tokyo-meiji-jingu", "tokyo-tokyo-tower"];
-      } else if (style === "shopping") {
-        pool = ["tokyo-shibuya-sky", "tokyo-shinjuku-kabukicho", "tokyo-sensoji", "tokyo-tokyo-tower", "tokyo-teamlab-planets", "kanto-kamakura-daibutsu", "tokyo-meiji-jingu", "tokyo-tsukiji-market"];
-      } else if (style === "parks") {
-        pool = ["tokyo-disneyland-guide", "tokyo-disneysea-guide", "tokyo-shibuya-sky", "tokyo-sensoji", "tokyo-teamlab-planets", "tokyo-tokyo-tower", "kanto-hakone-lake-ashi"];
-      } else {
-        // landmarks default
-        pool = ["tokyo-sensoji", "tokyo-shibuya-sky", "tokyo-tokyo-tower", "tokyo-meiji-jingu", "tokyo-shinjuku-kabukicho", "kanto-kamakura-daibutsu", "kanto-hakone-lake-ashi", "tokyo-tsukiji-market", "tokyo-teamlab-planets"];
-      }
-    } else if (region === "kansai") {
-      if (style === "foodie") {
-        pool = ["osaka-kuromon-market", "osaka-dotonbori", "kyoto-nishiki-market", "kyoto-fushimi-inari", "osaka-castle", "kyoto-kiyomizudera", "osaka-katsuoji", "kansai-nara-park"];
-      } else if (style === "shopping") {
-        pool = ["osaka-dotonbori", "osaka-umeda-sky", "osaka-castle", "kyoto-fushimi-inari", "osaka-kuromon-market", "kyoto-gion-kiyomizu", "osaka-usj", "kansai-nara-park"];
-      } else if (style === "parks") {
-        pool = ["osaka-usj", "osaka-castle", "osaka-dotonbori", "kansai-nara-park", "kyoto-fushimi-inari", "osaka-katsuoji", "kyoto-arashiyama"];
-      } else {
-        // landmarks default
-        pool = ["osaka-dotonbori", "osaka-castle", "kyoto-fushimi-inari", "kyoto-kiyomizudera", "kyoto-kinkakuji", "kyoto-arashiyama", "osaka-katsuoji", "kansai-nara-park", "osaka-usj"];
-      }
-    } else if (region === "golden") {
-      pool = [
-        "tokyo-sensoji", "tokyo-shibuya-sky", "tokyo-tokyo-tower", // Day 1
-        "tokyo-tsukiji-market", "tokyo-shinjuku-kabukicho", "tokyo-meiji-jingu", // Day 2
-        "kanto-hakone-lake-ashi", "chubu-lake-kawaguchiko", // Day 3
-        "kyoto-fushimi-inari", "kyoto-kiyomizudera", "kyoto-kinkakuji", // Day 4
-        "osaka-castle", "osaka-dotonbori", "osaka-kuromon-market", // Day 5
-        "osaka-usj", "kansai-nara-park", // Day 6
-        "osaka-katsuoji", "osaka-umeda-sky" // Day 7
-      ];
-    } else if (region === "hokkaido") {
-      pool = ["hokkaido-sapporo-snowfest", "hokkaido-otaru-canal", "hokkaido-noboribetsu-jigokudani", "hokkaido-hakodate-nightview", "tokyo-sensoji", "tokyo-shibuya-sky"];
-    }
-
-    // Limit places to fit days
+  function generateSmartItinerary(days, region, season = "all", style = "landmarks") {
+    const timeSlots = ["09:00", "13:00", "17:30"];
     const placesPerDay = 3;
     const totalNeeded = days * placesPerDay;
-    const selectedIds = pool.slice(0, Math.min(pool.length, totalNeeded));
 
-    // If pool has fewer items, cycle through
-    while (selectedIds.length < totalNeeded && pool.length > 0) {
-      selectedIds.push(pool[selectedIds.length % pool.length]);
-    }
+    // Combine standard JAPAN_DATA and saved custom places
+    const availablePool = [...JAPAN_DATA, ...customPlacesStore];
 
+    // Score all candidate attractions based on Region, Season, and Style
+    const scored = availablePool.map(item => {
+      let score = 0;
+
+      // 1. Region Affinity
+      const r = (item.region || "").toLowerCase();
+      if (region === "tokyo") {
+        if (r === "tokyo") score += 500;
+        else if (r === "kanto" || r === "chubu") score += 300;
+        else score += 40;
+      } else if (region === "kansai") {
+        if (r === "osaka" || r === "kyoto" || r === "kansai") score += 500;
+        else if (r === "kobe" || r === "nara") score += 400;
+        else score += 40;
+      } else if (region === "golden") {
+        if (["tokyo", "kanto", "chubu", "kyoto", "osaka", "kansai"].includes(r)) score += 500;
+        else score += 80;
+      } else if (region === "hokkaido") {
+        if (r === "hokkaido") score += 600;
+        else score += 40;
+      }
+
+      // 2. Season Affinity
+      const itemSeasons = Array.isArray(item.seasons) ? item.seasons : ["all_year"];
+      if (season !== "all") {
+        if (itemSeasons.includes(season)) {
+          score += 250; // Strong match for season highlights
+        } else if (itemSeasons.includes("all_year")) {
+          score += 90;  // Good all year round
+        } else {
+          score -= 120; // Deprioritize off-season
+        }
+      } else {
+        score += 100;
+      }
+
+      // 3. Style Affinity
+      const cat = (item.category || "").toLowerCase();
+      const tag = (item.tag || "").toLowerCase();
+      const title = (item.title || "").toLowerCase();
+      const desc = (item.description || "").toLowerCase();
+      const foodTips = (item.foodTips || "").toLowerCase();
+
+      if (style === "foodie") {
+        if (cat === "food" || tag.includes("ตลาด") || tag.includes("สตรีทฟู้ด") || tag.includes("ของกิน") || desc.includes("อาหาร") || foodTips.length > 5) score += 180;
+      } else if (style === "shopping") {
+        if (tag.includes("ช้อปปิ้ง") || tag.includes("แฟชั่น") || tag.includes("อนิเมะ") || title.includes("ชินไซบาชิ") || title.includes("ชิบูย่า") || title.includes("ดงกิ") || title.includes("ชินเซไก")) score += 180;
+      } else if (style === "parks") {
+        if (cat === "theme_park" || tag.includes("สวนสนุก") || tag.includes("อควาเรียม") || title.includes("USJ") || title.includes("Disney") || title.includes("สวนสัตว์")) score += 200;
+      } else {
+        // landmarks default
+        if (cat === "attraction" || tag.includes("แลนด์มาร์ก") || tag.includes("วัด") || tag.includes("ปราสาท") || tag.includes("หอคอย") || tag.includes("ชมวิว")) score += 140;
+      }
+
+      return { item, score };
+    });
+
+    // Sort descending by score
+    scored.sort((a, b) => b.score - a.score);
+
+    // Guaranteed ZERO duplicates: track used baseIds
+    const usedIds = new Set();
     const newItinerary = [];
-    selectedIds.forEach((id, idx) => {
-      const item = JAPAN_DATA.find(p => p.id === id);
-      if (item) {
-        const dayNum = Math.floor(idx / placesPerDay) + 1;
-        const timeSlot = timeSlots[idx % placesPerDay] || "10:00";
+
+    for (let idx = 0; idx < scored.length && newItinerary.length < totalNeeded; idx++) {
+      const candidate = scored[idx].item;
+      const baseId = candidate.baseId || (candidate.id ? candidate.id.split('_')[0] : candidate.id);
+      
+      if (!usedIds.has(baseId)) {
+        usedIds.add(baseId);
+        const dayNum = Math.floor(newItinerary.length / placesPerDay) + 1;
+        const timeSlot = timeSlots[newItinerary.length % placesPerDay] || "10:00";
         newItinerary.push({
-          id: item.id + (newItinerary.some(x => x.id === item.id) ? `_d${dayNum}` : ""),
-          title: item.title,
-          japanese: item.japanese,
-          region: item.region,
-          tag: item.tag,
-          cost: item.estimatedCost,
+          id: candidate.id,
+          baseId: baseId,
+          title: candidate.title,
+          japanese: candidate.japanese,
+          region: candidate.region,
+          tag: candidate.tag,
+          cost: candidate.estimatedCost || candidate.cost || "ฟรี",
+          station: candidate.station,
+          stayHours: candidate.stayHours,
+          icon: candidate.icon || "📍",
           day: dayNum,
           time: timeSlot
         });
       }
-    });
+    }
 
     itineraryList = newItinerary;
     sortItineraryList();
     localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
 
+    // Reset Route Simulator preset to custom to view new plan
+    selectedRoutePresetId = "custom";
+
     updateItineraryUI();
     renderCards();
     renderRouteSimulator();
+    if (typeof updateProfileHubUI === "function") updateProfileHubUI();
 
-    alert(`🎉 จัดทริปเที่ยว ${days} วัน (${region.toUpperCase()}) ให้เรียบร้อยแล้ว!\nระบบได้กำหนดวันและเวลาให้พร้อมเที่ยว คุณสามารถปรับเปลี่ยนเวลาหรือสลับลำดับได้ตามสะดวกครับ`);
+    const seasonLabel = season === "spring" ? "ฤดูใบไม้ผลิ (ซากุระ)" : (season === "summer" ? "ฤดูร้อน (มัตสึริ)" : (season === "autumn" ? "ฤดูใบไม้ร่วง (ใบไม้เปลี่ยนสี)" : (season === "winter" ? "ฤดูหนาว (หิมะ/ออนเซ็น)" : "ทุกฤดู")));
+    alert(`🎉 AI จัดทริปเที่ยว ${days} วัน (${region.toUpperCase()}) ช่วง${seasonLabel} ให้เรียบร้อยแล้ว!\n✨ ทุกสถานที่ทั้ง ${newItinerary.length} แห่งไม่ซ้ำกัน จัดวันและเวลาให้ครบถ้วนพร้อมเที่ยวครับ`);
   }
 
   // ================= 21. On-Trip Live Travel Mode Logic =================
