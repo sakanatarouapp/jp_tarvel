@@ -633,6 +633,34 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  function generateAgodaAreaSearchUrl(areaName, region, checkinDateStr, nights = 2, guests = 2) {
+    if (!checkinDateStr) {
+      const d = new Date();
+      d.setDate(d.getDate() + 14);
+      checkinDateStr = d.toISOString().split('T')[0];
+    }
+    const parts = checkinDateStr.split('-');
+    const inD = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    const outD = new Date(inD);
+    outD.setDate(outD.getDate() + (nights || 2));
+
+    const inY = inD.getFullYear();
+    const inM = String(inD.getMonth() + 1).padStart(2, '0');
+    const inDay = String(inD.getDate()).padStart(2, '0');
+    const outY = outD.getFullYear();
+    const outM = String(outD.getMonth() + 1).padStart(2, '0');
+    const outDay = String(outD.getDate()).padStart(2, '0');
+
+    let destination = areaName || "Osaka";
+    if (region === "osaka") destination = "Osaka Namba";
+    else if (region === "tokyo") destination = "Tokyo Shinjuku";
+    else if (region === "kyoto") destination = "Kyoto Station";
+    else if (region === "hokkaido") destination = "Sapporo";
+    else if (region === "chubu") destination = "Takayama";
+
+    return `https://www.agoda.com/search?text=${encodeURIComponent(destination)}&checkIn=${inY}-${inM}-${inDay}&checkOut=${outY}-${outM}-${outDay}&rooms=1&adults=${guests || 2}&sort=priceLowToHigh`;
+  }
+
   function getSeasonalHotelMultiplier(season) {
     switch (season) {
       case "spring":
@@ -4577,20 +4605,35 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sort by price ascending: Best budget & value options first!
     candidateHotels.sort((a, b) => a.priceJPY - b.priceJPY);
 
-    if (!selectedPocketHotelName || !candidateHotels.some(h => h.name === selectedPocketHotelName)) {
-      selectedPocketHotelName = candidateHotels[0]?.name || "Hotel Universal Port Vita";
-    }
-
-    const sampleHotel = candidateHotels.find(h => h.name === selectedPocketHotelName) || candidateHotels[0] || {
-      name: "Hotel Universal Port Vita",
-      japanese: "ホテル ユニバーサル ポート ヴィータ",
-      priceJPY: 6550,
-      priceRange: "¥6,550 - ¥13,500 / คืน",
-      distance: "เดิน 3 นาทีถึงสถานี Universal City",
-      type: "โรงแรมบัดเจ็ทคุ้มค่าทำเลทอง"
+    let userCustomHotel = JSON.parse(localStorage.getItem("nippon_user_custom_hotel") || 'null') || {
+      name: "โรงแรมที่จองเอง (Custom Hotel)",
+      japanese: "宿泊先ホテル",
+      type: "โรงแรมที่จองส่วนตัว",
+      distance: "ใกล้สถานีรถไฟหลัก",
+      priceJPY: 4500
     };
 
+    let isCustomHotel = (selectedPocketHotelName === "__custom__");
+    let sampleHotel = null;
+
+    if (isCustomHotel) {
+      sampleHotel = userCustomHotel;
+    } else {
+      if (!selectedPocketHotelName || !candidateHotels.some(h => h.name === selectedPocketHotelName)) {
+        selectedPocketHotelName = candidateHotels[0]?.name || "Toyoko Inn Osaka Namba";
+      }
+      sampleHotel = candidateHotels.find(h => h.name === selectedPocketHotelName) || candidateHotels[0] || {
+        name: "Toyoko Inn Osaka Namba",
+        japanese: "東横INN大阪なんば",
+        priceJPY: 5800,
+        priceRange: "¥5,200 - ¥8,000 / คืน",
+        distance: "เดิน 4 นาทีถึงสถานี Namba",
+        type: "โรงแรมบัดเจ็ทคุ้มค่า (ฟรีอาหารเช้า)"
+      };
+    }
+
     const hotelPricing = calculateDateAwareHotelPricing(sampleHotel, selectedCheckinDate, selectedStayNights, selectedGuestCount);
+    const agodaSmartAreaUrl = generateAgodaAreaSearchUrl(sampleHotel.distance || regionNameTh, dominantRegion, selectedCheckinDate, selectedStayNights, selectedGuestCount);
 
     if (pocketHolidayBadge) {
       if (hotelPricing.isHoliday) {
@@ -4622,7 +4665,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const formattedCheckin = `${inDate.getDate()} ${thaiMonths[inDate.getMonth()]} ${inDate.getFullYear()}`;
     const formattedCheckout = `${outDate.getDate()} ${thaiMonths[outDate.getMonth()]} ${outDate.getFullYear()}`;
 
-    const regionNameTh = dominantRegion === "osaka" ? "โอซาก้า / คันไซ" : (dominantRegion === "kyoto" ? "เกียวโต" : (dominantRegion === "tokyo" ? "โตเกียว" : dominantRegion.toUpperCase()));
+    const regionNameTh = dominantRegion === "osaka" ? "โอซาก้า / คันไซ" : (dominantRegion === "kyoto" ? "เกียวโต" : (dominantRegion === "tokyo" ? "โตเกียว" : (dominantRegion === "hokkaido" ? "ฮอกไกโด" : dominantRegion.toUpperCase())));
 
     pocketSheetRenderTarget.innerHTML = `
       <div class="pocket-itinerary-card" id="pocket-itinerary-sheet">
@@ -4666,35 +4709,66 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="pocket-hotel-select-wrap">
               <select class="pocket-hotel-select" id="pocket-hotel-select" title="เลือกเปลี่ยนโรงแรมที่ต้องการ">
                 ${candidateHotels.map(h => {
-                  const tagIcon = h.priceJPY <= 9000 ? '💰' : (h.priceJPY <= 16000 ? '♨️' : '👑');
+                  let tagIcon = '💰';
+                  if (h.name.toLowerCase().includes('capsule') || h.type.includes('แคปซูล') || h.priceJPY < 3500) tagIcon = '🛌';
+                  else if (h.priceJPY <= 9000) tagIcon = '💰';
+                  else if (h.priceJPY <= 16000) tagIcon = '♨️';
+                  else tagIcon = '👑';
                   return `
-                    <option value="${h.name}" ${h.name === sampleHotel.name ? 'selected' : ''}>
+                    <option value="${h.name}" ${h.name === sampleHotel.name && !isCustomHotel ? 'selected' : ''}>
                       ${tagIcon} ${h.name} (~¥${h.priceJPY.toLocaleString()}/คืน)
                     </option>
                   `;
                 }).join("")}
+                <option value="__custom__" ${isCustomHotel ? 'selected' : ''}>
+                  ✏️ ระบุโรงแรมที่ฉันจองเอง (Custom Hotel)...
+                </option>
               </select>
             </div>
 
-            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; line-height: 1.3; margin-top: 0.35rem;">
-              ${sampleHotel.name}
-            </div>
-            <div style="font-size: 0.75rem; color: #16a34a; font-family: var(--font-jp); margin-bottom: 0.3rem;">
-              ${sampleHotel.japanese || ''}
-            </div>
-            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.25rem;">
-              🏷️ สไตล์: <strong>${sampleHotel.type}</strong>
-            </div>
-            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.25rem;">
-              📍 ทำเล: ${sampleHotel.distance || 'ใกล้สถานีรถไฟหลัก'}
-            </div>
-            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.35rem;">
+            ${isCustomHotel ? `
+              <div class="pocket-custom-hotel-inputs" style="margin-top: 0.4rem; background: #f8fafc; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: #1e3a8a; margin-bottom: 0.35rem;">
+                  📝 ระบุข้อมูลโรงแรมที่คุณจอง (ระบบจะคำนวณงบและใส่ในใบ ตม. ให้อัตโนมัติ):
+                </div>
+                <div style="display: flex; gap: 6px; margin-bottom: 0.35rem;">
+                  <input type="text" id="pocket-custom-hotel-name-input" placeholder="ชื่อโรงแรมภาษาอังกฤษ (เช่น APA Hotel Namba)" value="${sampleHotel.name}" style="flex: 1.3; padding: 0.3rem 0.5rem; font-size: 0.78rem; border-radius: 6px; border: 1px solid #94a3b8; font-family: inherit;">
+                  <input type="number" id="pocket-custom-hotel-price-input" placeholder="ราคาต่อคืน (เยน JPY)" value="${sampleHotel.priceJPY}" style="flex: 0.9; padding: 0.3rem 0.5rem; font-size: 0.78rem; border-radius: 6px; border: 1px solid #94a3b8; font-family: inherit;">
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <input type="text" id="pocket-custom-hotel-jp-input" placeholder="ชื่อภาษาญี่ปุ่น (ถ้ามี เช่น アパホテル)" value="${sampleHotel.japanese || ''}" style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.78rem; border-radius: 6px; border: 1px solid #94a3b8; font-family: inherit;">
+                  <input type="text" id="pocket-custom-hotel-dist-input" placeholder="ทำเล/สถานี (เช่น เดิน 2 นาทีจากสถานี)" value="${sampleHotel.distance || ''}" style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.78rem; border-radius: 6px; border: 1px solid #94a3b8; font-family: inherit;">
+                </div>
+              </div>
+            ` : `
+              <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; line-height: 1.3; margin-top: 0.35rem;">
+                ${sampleHotel.name}
+              </div>
+              <div style="font-size: 0.75rem; color: #16a34a; font-family: var(--font-jp); margin-bottom: 0.3rem;">
+                ${sampleHotel.japanese || ''}
+              </div>
+              <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.25rem;">
+                🏷️ สไตล์: <strong>${sampleHotel.type}</strong>
+              </div>
+              <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.25rem;">
+                📍 ทำเล: ${sampleHotel.distance || 'ใกล้สถานีรถไฟหลัก'}
+              </div>
+            `}
+
+            <div style="font-size: 0.76rem; color: #475569; margin-top: 0.3rem; margin-bottom: 0.35rem;">
               🗓️ เข้าพัก: <strong>${formattedCheckin}</strong> – <strong>${formattedCheckout}</strong> (${hotelPricing.nights} คืน, ${hotelPricing.guests} ท่าน)
             </div>
-            <div style="font-size: 0.82rem; font-weight: 800; color: #dc2626; margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-              <span>💳 รวม ${hotelPricing.nights} คืน: ~¥${hotelPricing.totalJPY.toLocaleString()} เยน (~${hotelPricing.totalTHB.toLocaleString()} บาท)</span>
-              <a href="${hotelPricing.agodaUrl}" target="_blank" rel="noopener noreferrer" class="pocket-hotel-book-link" style="font-size: 0.73rem; color: #0284c7; font-weight: 700; text-decoration: underline;">
-                🏨 จองผ่าน Agoda ↗
+            <div style="font-size: 0.82rem; font-weight: 800; color: #dc2626; margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px dashed #cbd5e1;">
+              💳 รวม ${hotelPricing.nights} คืน: ~¥${hotelPricing.totalJPY.toLocaleString()} เยน (~${hotelPricing.totalTHB.toLocaleString()} บาท)
+            </div>
+
+            <!-- Two Action Buttons for Booking & Smart Area Filter -->
+            <div class="pocket-hotel-actions-row">
+              <a href="${hotelPricing.agodaUrl}" target="_blank" rel="noopener noreferrer" class="pocket-hotel-btn agoda-direct-btn">
+                🏨 จองโรงแรมนี้บน Agoda ↗
+              </a>
+              <a href="${agodaSmartAreaUrl}" target="_blank" rel="noopener noreferrer" class="pocket-hotel-btn agoda-deals-btn">
+                🔍 ส่องดีลราคาถูกย่านนี้ (>100+ แห่ง) ↗
               </a>
             </div>
           </div>
@@ -4725,6 +4799,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (hotelSelectEl) {
       hotelSelectEl.addEventListener("change", (e) => {
         selectedPocketHotelName = e.target.value;
+        openPocketExportModal();
+      });
+    }
+
+    // Custom hotel input change handlers
+    const customNameInput = pocketSheetRenderTarget.querySelector("#pocket-custom-hotel-name-input");
+    const customPriceInput = pocketSheetRenderTarget.querySelector("#pocket-custom-hotel-price-input");
+    const customJpInput = pocketSheetRenderTarget.querySelector("#pocket-custom-hotel-jp-input");
+    const customDistInput = pocketSheetRenderTarget.querySelector("#pocket-custom-hotel-dist-input");
+
+    const saveCustomHotel = () => {
+      const updated = {
+        name: (customNameInput?.value || "โรงแรมที่จองเอง").trim(),
+        priceJPY: parseInt(customPriceInput?.value, 10) || 4500,
+        japanese: (customJpInput?.value || "").trim(),
+        distance: (customDistInput?.value || "ใกล้สถานีรถไฟหลัก").trim(),
+        type: "โรงแรมที่จองส่วนตัว"
+      };
+      localStorage.setItem("nippon_user_custom_hotel", JSON.stringify(updated));
+    };
+
+    if (customNameInput) customNameInput.addEventListener("input", saveCustomHotel);
+    if (customJpInput) customJpInput.addEventListener("input", saveCustomHotel);
+    if (customDistInput) customDistInput.addEventListener("input", saveCustomHotel);
+    if (customPriceInput) {
+      customPriceInput.addEventListener("change", () => {
+        saveCustomHotel();
         openPocketExportModal();
       });
     }
@@ -4764,8 +4865,8 @@ document.addEventListener("DOMContentLoaded", () => {
       exportActionImgBtn.disabled = true;
     }
 
-    // Temporarily hide interactive day controls & hotel select dropdown for clean picture capture
-    const hiddenCtrls = target.querySelectorAll(".pocket-card-day-ctrl, .pocket-hotel-select-wrap");
+    // Temporarily hide interactive day controls, hotel select dropdown, custom inputs & action buttons for clean picture capture
+    const hiddenCtrls = target.querySelectorAll(".pocket-card-day-ctrl, .pocket-hotel-select-wrap, .pocket-custom-hotel-inputs, .pocket-hotel-actions-row");
     hiddenCtrls.forEach(el => el.style.display = "none");
 
     html2canvas(target, {

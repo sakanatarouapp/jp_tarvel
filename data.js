@@ -20,6 +20,39 @@ const JAPAN_DATA = [
     mustTry: ["ถ่ายรูปกับโคมแดงยักษ์", "เสี่ยงเซียมซี (Omikuji)", "เดินชิมขนมถนนนากามิเซะ"],
     nearbyHotels: [
       {
+        name: "Nine Hours Asakusa (9h Capsule)",
+        japanese: "ナインアワーズ浅草",
+        type: "แคปซูลดีไซน์มินิมอลติดถนนคนเดิน",
+        distance: "เดิน 2 นาทีถึงวัดเซนโซจิ",
+        priceJPY: 2800,
+        priceRange: "¥2,500 - ¥4,500 / คืน",
+        rating: 4.6,
+        highlight: "แคปซูลสไตล์นอร์ดิก สะอาด ปลอดภัย มีคาเฟ่ Fuglen ชั้นล่าง เหมาะสำหรับสายประหยัด",
+        searchQuery: "Nine Hours Asakusa Tokyo"
+      },
+      {
+        name: "Toyoko Inn Tokyo Asakusa Sensoji",
+        japanese: "東横INN浅草千束",
+        type: "โรงแรมบัดเจ็ทมาตรฐานญี่ปุ่น (ฟรีอาหารเช้า)",
+        distance: "เดิน 5 นาทีถึงประตูหลังวัดเซนโซจิ",
+        priceJPY: 5800,
+        priceRange: "¥5,200 - ¥7,800 / คืน",
+        rating: 4.6,
+        highlight: "ราคาประหยัด คุ้มค่า บริการอาหารเช้าฟรีทุกวัน มีอุปกรณ์อำนวยความสะดวกครบครัน",
+        searchQuery: "Toyoko Inn Tokyo Asakusa"
+      },
+      {
+        name: "APA Hotel Asakusa Ekimae",
+        japanese: "アパホテル〈浅草駅前〉",
+        type: "บัดเจ็ทคุ้มค่าติดสถานี",
+        distance: "เดิน 1 นาทีจากสถานี Asakusa ทางออก A1",
+        priceJPY: 9500,
+        priceRange: "¥8,500 - ¥13,000 / คืน",
+        rating: 4.5,
+        highlight: "ทำเลดีเลิศเดินทางสะดวก เตียงนอนนุ่มสบาย เดินไปวัดเซนโซจิเพียง 3 นาที",
+        searchQuery: "APA Hotel Asakusa Ekimae"
+      },
+      {
         name: "The Gate Hotel Asakusa Kaminarimon by Hulic",
         japanese: "ザ・ゲートホテル雷門 by HULIC",
         type: "โรงแรมหรูวิววัด & สกายทรี",
@@ -40,17 +73,6 @@ const JAPAN_DATA = [
         rating: 4.7,
         highlight: "ปูเสื่อทาทามิทั้งอาคาร บ่อออนเซ็นน้ำแร่ดำธรรมชาติแท้ เสิร์ฟราเมงฟรีรอบดึก",
         searchQuery: "Onyado Nono Asakusa Natural Hot Spring"
-      },
-      {
-        name: "APA Hotel Asakusa Ekimae",
-        japanese: "アパホテル〈浅草駅前〉",
-        type: "บัดเจ็ทคุ้มค่าติดสถานี",
-        distance: "เดิน 1 นาทีจากสถานี Asakusa ทางออก A1",
-        priceJPY: 9500,
-        priceRange: "¥8,500 - ¥13,000 / คืน",
-        rating: 4.5,
-        highlight: "ทำเลดีเลิศเดินทางสะดวก เตียงนอนนุ่มสบาย เดินไปวัดเซนโซจิเพียง 3 นาที",
-        searchQuery: "APA Hotel Asakusa Ekimae"
       }
     ]
   },
@@ -1413,6 +1435,50 @@ const JAPAN_DATA = [
     estimatedCost: "งบช้อปปิ้งของเล่น/ฟิกเกอร์ 2,000 - 15,000 เยน",
     mustTry: ["ส่องร้านฟิกเกอร์มือสองหายากที่ Animate & Mandarake", "หมุนตู้กาชาปองยักษ์กว่า 500 ตู้", "สัมผัสประสบการณ์เมดคาเฟ่ญี่ปุ่นดั้งเดิม"],
     nearbyHotels: [
+      {
+        name: "Nine Hours Shin-Osaka (9h Capsule)",
+        japanese: "ナインアワーズ新大阪",
+        type: "แคปซูลดีไซน์ล้ำติดสถานีรถไฟใหญ่",
+        distance: "ติดสถานี Shin-Osaka ทางออก East (เดิน 1 นาที)",
+        priceJPY: 2800,
+        priceRange: "¥2,500 - ¥4,200 / คืน",
+        rating: 4.6,
+        highlight: "แคปซูลทันสมัยสไตล์ไซไฟ สะอาดมาก มีห้องอาบน้ำและล็อกเกอร์ส่วนตัว เหมาะสำหรับสายประหยัดคนเดียว",
+        searchQuery: "Nine Hours Shin Osaka Capsule"
+      },
+      {
+        name: "First Cabin Midosuji Namba",
+        japanese: "ファーストキャビン 御堂筋難波",
+        type: "แคปซูลหรูสไตล์เฟิร์สคลาสบนเครื่องบิน",
+        distance: "เชื่อมตรงสถานี Namba ทางออก 13 (เดิน 3 นาทีถึงเด็นเด็นทาวน์)",
+        priceJPY: 3900,
+        priceRange: "¥3,500 - ¥5,800 / คืน",
+        rating: 4.7,
+        highlight: "แคปซูลเพดานสูงยืนแต่งตัวได้ มีบ่อน้ำแช่รวมขนาดใหญ่ ซาวน่า และสิ่งอำนวยความสะดวกเทียบเท่าโรงแรม 4 ดาว",
+        searchQuery: "First Cabin Midosuji Namba Osaka"
+      },
+      {
+        name: "Hotel Livemax Osaka Namba",
+        japanese: "ホテルリブマックス大阪なんば",
+        type: "โรงแรมบัดเจ็ทเชนราคาประหยัดที่สุด",
+        distance: "เดิน 6 นาทีถึงสถานี Namba / เด็นเด็นทาวน์",
+        priceJPY: 4200,
+        priceRange: "¥3,800 - ¥6,500 / คืน",
+        rating: 4.4,
+        highlight: "ห้องพักส่วนตัวพร้อมห้องน้ำในตัว เตียงนุ่ม แอร์ ทีวี ตู้เย็น ไมโครเวฟครบ ในราคาประหยัดเงินในกระเป๋า",
+        searchQuery: "Hotel Livemax Osaka Namba"
+      },
+      {
+        name: "Toyoko Inn Osaka Namba",
+        japanese: "東横INN大阪なんば",
+        type: "โรงแรมบัดเจ็ทมาตรฐานญี่ปุ่น (ฟรีอาหารเช้า)",
+        distance: "เดิน 4 นาทีถึงสถานี Namba / เดิน 3 นาทีถึงเด็นเด็นทาวน์",
+        priceJPY: 5800,
+        priceRange: "¥5,200 - ¥8,000 / คืน",
+        rating: 4.7,
+        highlight: "เครือโรงแรมธุรกิจยอดนิยม สะอาด ปลอดภัย มีบริการอาหารเช้าข้าวปั้น/ซุปมิโซะฟรีทุกเช้า!",
+        searchQuery: "Toyoko Inn Osaka Namba"
+      },
       {
         name: "Dormy Inn Premium Namba (Natural Hot Spring)",
         japanese: "ドーミーイン プレミアム なんば",
