@@ -1723,7 +1723,7 @@ const JAPAN_DATA = [
     tag: "บ้านไม้โบราณยุคเอโดะ / เนื้อฮิดะ A5",
     rating: 4.9,
     keyword: "takayama old town sanmachi suji hida beef sushi japan",
-    image: "https://images.unsplash.com/photo-1764672277000-5b30f1067b99?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=1200&q=80",
     description: "เมืองโบราณยุคเอโดะที่ได้รับการอนุรักษ์ไว้อย่างสมบูรณ์แบบ เดินชิมซูชิเนื้อฮิดะวากิว A5 เบิร์นไฟบนแผ่นเซมเบ้ และชิมสาเกญี่ปุ่นในโรงกลั่นอายุกว่า 200 ปี",
     transport: "🚆 นั่งรถไฟ JR Limited Express Hida จากสถานี Nagoya มาลง Takayama Station (2 ชม. 20 นาที)",
     bestTime: "09:30 - 15:30 น. ช่วงที่ร้านค้าโบราณและโรงกลั่นสาเกเปิดให้บริการ",
