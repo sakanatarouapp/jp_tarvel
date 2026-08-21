@@ -22,6 +22,12 @@
         </div>
       </a>
       <div class="header-right-actions">
+        <button type="button" class="wizard-header-btn" id="open-smart-wizard-top-btn" title="ให้ AI ช่วยจัดแผนเที่ยวให้อัตโนมัติใน 3 ขั้นตอน">
+          <span>🪄</span> <span class="btn-text-full">จัดทริปด่วน 3 วิ</span><span class="btn-text-short">จัดทริป</span>
+        </button>
+        <button type="button" class="ontrip-header-btn" id="open-ontrip-modal-top-btn" title="เปิดโหมดใช้งานจริงขณะเดินเที่ยวในญี่ปุ่น (นำทาง + สายรถไฟ + ภาษาญี่ปุ่น)">
+          <span>🎯</span> <span class="btn-text-full">โหมดเที่ยวจริง</span><span class="btn-text-short">เที่ยวจริง</span>
+        </button>
         <button type="button" class="immigration-header-btn" id="open-immigration-modal-top-btn" title="คู่มือผ่าน ตม. ญี่ปุ่น & การ์ดสรุปข้อมูลยื่น ตม.">
           <span>🛂</span> <span class="btn-text-full">คู่มือผ่าน ตม. 🔊</span><span class="btn-text-short">ตม.</span>
         </button>
@@ -103,6 +109,20 @@
             <button class="pill" data-region="hokkaido">❄️ ฮอกไกโด (Hokkaido)</button>
             <button class="pill" data-region="fukuoka">🍜 ฟุกุโอกะ (Fukuoka)</button>
           </div>
+        </div>
+
+        <!-- Smart Trip Plan Wizard Banner -->
+        <div class="smart-wizard-hero-card" id="open-smart-wizard-hero-btn">
+          <div class="wizard-hero-left">
+            <span class="wizard-wand-icon">🪄</span>
+            <div>
+              <div class="wizard-hero-title">วางแผนไม่ถูก? ให้ AI ช่วยจัดทริปเที่ยวญี่ปุ่นใน 3 คลิก (Smart Trip Wizard)</div>
+              <div class="wizard-hero-desc">เลือกจำนวนวัน ➔ เมืองหลัก ➔ สไตล์ที่ชอบ ระบบจะจัดตาราง Day 1-Day 7 พร้อมเวลาและรถไฟให้เสร็จสรรพ</div>
+            </div>
+          </div>
+          <button type="button" class="btn-wizard-launch">
+            ⚡ จัดทริปให้อัตโนมัติ &rarr;
+          </button>
         </div>
       </div>
     </div>
@@ -345,6 +365,12 @@
                 <span style="font-size: 0.8rem; color: var(--text-muted);">สามารถลากสลับหรือกด ⬆️ ⬇️ เพื่อปรับลำดับ</span>
               </div>
               <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                <button class="btn" id="open-ontrip-modal-route-btn" style="background: #dc2626; color: white; padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 800; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);" title="เปิดหน้าจอช่วยเที่ยวนำทางจริงในญี่ปุ่น">
+                  🎯 โหมดเที่ยวจริง 🔊
+                </button>
+                <button class="btn" id="open-smart-wizard-route-btn" style="background: #7c3aed; color: white; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;" title="ให้ AI จัดทริปอัตโนมัติ">
+                  🪄 AI จัดทริป
+                </button>
                 <button class="btn" id="open-export-modal-btn-route" style="background: #1e3a8a; color: white; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
                   📥 บันทึกแผนเที่ยว (PDF/รูป)
                 </button>
@@ -1336,13 +1362,235 @@
     </div>
   </div>
 
+  <!-- Smart Trip Plan Wizard Modal (3-Step AI Auto Generator) -->
+  <div class="modal-backdrop" id="smart-wizard-modal" style="display: none;">
+    <div class="modal-container wizard-modal-box">
+      <div class="wizard-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 2rem;">🪄</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem; color: #5b21b6; font-weight: 800;">Smart Trip Wizard — จัดทริปเที่ยวญี่ปุ่นอัตโนมัติ</h3>
+            <p style="margin: 0; font-size: 0.82rem; color: var(--text-muted);">เลือก 3 ขั้นตอนง่ายๆ ระบบจะวางแผน Day 1-Day 7 จัดเวลา และเชื่อมสายรถไฟให้ทันที</p>
+          </div>
+        </div>
+        <button type="button" class="wizard-close-btn" id="close-smart-wizard-modal-btn">&times;</button>
+      </div>
+
+      <div class="wizard-steps-container">
+        <!-- Step 1: Days -->
+        <div class="wizard-step-card">
+          <div class="wizard-step-title">
+            <span class="step-num-circle">1</span>
+            <h4>คุณวางแผนไปเที่ยวกี่วัน? (Trip Duration)</h4>
+          </div>
+          <div class="wizard-options-grid" id="wizard-days-options">
+            <button type="button" class="wizard-opt-btn" data-days="3">
+              <span class="opt-icon">⚡</span>
+              <div class="opt-text">
+                <strong>3 วัน 2 คืน</strong>
+                <span>ทริปสั้น / วันหยุดยาว</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn active" data-days="5">
+              <span class="opt-icon">🌟</span>
+              <div class="opt-text">
+                <strong>5 วัน 4 คืน</strong>
+                <span>ยอดนิยม / พอดี 1 สัปดาห์</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-days="7">
+              <span class="opt-icon">🏆</span>
+              <div class="opt-text">
+                <strong>7 วัน 6 คืน</strong>
+                <span>ทริปเต็มอิ่ม เที่ยวข้ามโซน</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-days="10">
+              <span class="opt-icon">👑</span>
+              <div class="opt-text">
+                <strong>10 วันขึ้นไป</strong>
+                <span>Grand Tour ทั่วญี่ปุ่น</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Main Region -->
+        <div class="wizard-step-card">
+          <div class="wizard-step-title">
+            <span class="step-num-circle">2</span>
+            <h4>เลือกโซนเมืองหลักที่คุณอยากไป (Main Destination):</h4>
+          </div>
+          <div class="wizard-options-grid" id="wizard-region-options">
+            <button type="button" class="wizard-opt-btn active" data-region="tokyo">
+              <span class="opt-icon">🗼</span>
+              <div class="opt-text">
+                <strong>Tokyo & Kanto</strong>
+                <span>โตเกียว ชินจูกุ ชิบูย่า ฟูจิ</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-region="kansai">
+              <span class="opt-icon">🏯</span>
+              <div class="opt-text">
+                <strong>Kansai (Osaka & Kyoto)</strong>
+                <span>โอซาก้า เกียวโต นารา USJ</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-region="golden">
+              <span class="opt-icon">🚅</span>
+              <div class="opt-text">
+                <strong>Golden Route</strong>
+                <span>โตเกียว + ฟูจิ + เกียวโต + โอซาก้า</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-region="hokkaido">
+              <span class="opt-icon">❄️</span>
+              <div class="opt-text">
+                <strong>Hokkaido</strong>
+                <span>ซัปโปโร โอตารุ หิมะ & อาหารทะเล</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Travel Style -->
+        <div class="wizard-step-card">
+          <div class="wizard-step-title">
+            <span class="step-num-circle">3</span>
+            <h4>สไตล์การท่องเที่ยวที่คุณชอบ (Travel Vibe):</h4>
+          </div>
+          <div class="wizard-options-grid" id="wizard-style-options">
+            <button type="button" class="wizard-opt-btn active" data-style="landmarks">
+              <span class="opt-icon">📸</span>
+              <div class="opt-text">
+                <strong>ไฮไลต์ & ถ่ายรูปเช็กอิน</strong>
+                <span>วัดดัง จุดชมวิว ปราสาท ถ่ายรูปสวย</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-style="foodie">
+              <span class="opt-icon">🍜</span>
+              <div class="opt-text">
+                <strong>สายกิน & คาเฟ่</strong>
+                <span>ตลาดปลา สตรีทฟู้ด วากิว ราเมง</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-style="shopping">
+              <span class="opt-icon">🛍️</span>
+              <div class="opt-text">
+                <strong>ช้อปปิ้ง & อนิเมะ</strong>
+                <span>ดองกี้ ชิบูย่า อากิฮาบาระ แฟชั่น</span>
+              </div>
+            </button>
+            <button type="button" class="wizard-opt-btn" data-style="parks">
+              <span class="opt-icon">🎢</span>
+              <div class="opt-text">
+                <strong>สวนสนุก & ครอบครัว</strong>
+                <span>USJ, Tokyo Disney, สวนสัตว์</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-modal-footer">
+        <div class="wizard-summary-preview" id="wizard-summary-preview">
+          💡 สรุป: ทริป <strong>5 วัน</strong> • โซน <strong>Tokyo & Kanto</strong> • สไตล์ <strong>ไฮไลต์ & ถ่ายรูป</strong>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn" id="wizard-cancel-btn" style="background: #f1f5f9; color: var(--text-main); font-weight: 700;">ยกเลิก</button>
+          <button type="button" class="btn primary" id="wizard-generate-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: white; font-weight: 800; padding: 0.65rem 1.4rem; border-radius: 20px; font-size: 0.92rem; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);">
+            ⚡ สร้างแผนเที่ยวนี้เลย!
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- On-Trip Live Travel Mode Modal (Fullscreen Travel Companion for Walking in Japan) -->
+  <div class="modal-backdrop ontrip-backdrop" id="ontrip-modal" style="display: none;">
+    <div class="ontrip-container">
+      <!-- Top Navigation & Live Clock Header -->
+      <div class="ontrip-top-bar">
+        <div class="ontrip-badge-wrap">
+          <span class="ontrip-live-pulse"></span>
+          <span class="ontrip-mode-label">🎯 ON-TRIP MODE • โหมดเที่ยวจริง</span>
+        </div>
+        <div class="ontrip-clocks-wrap">
+          <span class="clock-item">🇯🇵 <strong id="ontrip-clock-jst">12:00</strong> JST</span>
+          <span class="clock-divider">|</span>
+          <span class="clock-item">🇹🇭 <span id="ontrip-clock-ict">10:00</span> ICT</span>
+        </div>
+        <button type="button" class="ontrip-close-btn" id="close-ontrip-modal-btn">✕ ปิดโหมดเที่ยว</button>
+      </div>
+
+      <!-- Day Selector Capsule Bar -->
+      <div class="ontrip-day-selector" id="ontrip-day-selector">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Main Focus: Hero Current Destination Card -->
+      <div class="ontrip-main-viewport" id="ontrip-main-viewport">
+        <!-- Injected dynamically via JavaScript -->
+      </div>
+
+      <!-- Transit Leg to Next Stop -->
+      <div class="ontrip-transit-box" id="ontrip-transit-box">
+        <!-- Injected dynamically via JavaScript -->
+      </div>
+
+      <!-- Bottom Quick Travel Tools Toolbar -->
+      <div class="ontrip-bottom-toolbar">
+        <div class="ontrip-nav-buttons">
+          <button type="button" class="ontrip-nav-btn" id="ontrip-prev-stop-btn" title="จุดก่อนหน้า">◀ ก่อนหน้า</button>
+          <span class="ontrip-stop-counter" id="ontrip-stop-counter">จุดที่ 1 / 4</span>
+          <button type="button" class="ontrip-nav-btn primary" id="ontrip-next-stop-btn" title="จุดถัดไป">ถัดไป ▶</button>
+        </div>
+        <div class="ontrip-quick-tools">
+          <button type="button" class="ontrip-tool-btn" id="ontrip-tool-calc-btn" title="เครื่องคำนวณเงินเยนด่วน">
+            <span>💴</span> แปลงเงินเยน
+          </button>
+          <button type="button" class="ontrip-tool-btn" id="ontrip-tool-taxi-btn" title="เปิดการ์ดยื่นให้คนขับแท็กซี่ดู">
+            <span>🚖</span> การ์ดยื่นแท็กซี่
+          </button>
+          <button type="button" class="ontrip-tool-btn" id="ontrip-tool-sos-btn" title="การ์ดขอความช่วยเหลือฉุกเฉิน">
+            <span>🚨</span> SOS
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Giant Show-to-Local / Taxi Card Modal -->
+  <div class="modal-backdrop" id="show-to-local-modal" style="display: none;">
+    <div class="modal-container show-to-local-box">
+      <div class="show-local-header">
+        <h4>🚖 การ์ดแสดงต่อคนญี่ปุ่น / คนขับแท็กซี่ (Show to Local)</h4>
+        <button type="button" class="show-local-close" id="close-show-local-modal-btn">&times;</button>
+      </div>
+      <div class="show-local-body" id="show-local-body">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="show-local-footer">
+        <button type="button" class="btn primary" id="show-local-speak-btn" style="background: #1e3a8a; color: white; width: 100%; font-weight: 800; font-size: 1rem; padding: 0.75rem; border-radius: 12px;">
+          🔊 กดออกเสียงภาษาญี่ปุ่นให้ฟัง
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Mobile Floating Quick Dock (Bottom Bar for Touch Users) -->
   <div class="mobile-floating-dock" id="mobile-floating-dock">
+    <button type="button" class="mobile-dock-btn dock-ontrip-btn" id="mobile-dock-ontrip-btn" style="background: #dc2626; color: white; font-weight: 800;">
+      <span>🎯</span> เที่ยวจริง
+    </button>
+    <button type="button" class="mobile-dock-btn dock-wizard-btn" id="mobile-dock-wizard-btn" style="background: #7c3aed; color: white; font-weight: 800;">
+      <span>🪄</span> จัดทริป AI
+    </button>
     <button type="button" class="mobile-dock-btn dock-imm-btn" id="mobile-dock-imm-btn">
-      <span>🛂</span> ตม. ญี่ปุ่น
+      <span>🛂</span> ตม.
     </button>
     <button type="button" class="mobile-dock-btn dock-plan-btn" id="mobile-dock-plan-btn">
-      <span>📋</span> แผนเที่ยว (<span id="mobile-dock-badge">0</span>)
+      <span>📋</span> แผน (<span id="mobile-dock-badge">0</span>)
     </button>
     <button type="button" class="mobile-dock-btn dock-top-btn" id="mobile-dock-top-btn" title="กลับขึ้นด้านบน">
       <span>⬆️</span>

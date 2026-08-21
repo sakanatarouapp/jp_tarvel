@@ -6231,6 +6231,497 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ================= 20. Smart Trip Plan Wizard (3-Step AI Auto Generator) =================
+  let wizardSelectedDays = 5;
+  let wizardSelectedRegion = "tokyo";
+  let wizardSelectedStyle = "landmarks";
+
+  const smartWizardModal = document.getElementById("smart-wizard-modal");
+  const openSmartWizardTopBtn = document.getElementById("open-smart-wizard-top-btn");
+  const openSmartWizardHeroBtn = document.getElementById("open-smart-wizard-hero-btn");
+  const openSmartWizardRouteBtn = document.getElementById("open-smart-wizard-route-btn");
+  const mobileDockWizardBtn = document.getElementById("mobile-dock-wizard-btn");
+  const closeSmartWizardModalBtn = document.getElementById("close-smart-wizard-modal-btn");
+  const wizardCancelBtn = document.getElementById("wizard-cancel-btn");
+  const wizardGenerateBtn = document.getElementById("wizard-generate-btn");
+  const wizardSummaryPreview = document.getElementById("wizard-summary-preview");
+
+  function openSmartWizard() {
+    if (smartWizardModal) smartWizardModal.style.display = "flex";
+    updateWizardSummary();
+  }
+
+  function closeSmartWizard() {
+    if (smartWizardModal) smartWizardModal.style.display = "none";
+  }
+
+  function updateWizardSummary() {
+    if (!wizardSummaryPreview) return;
+    const regionNames = {
+      tokyo: "Tokyo & Kanto (โตเกียว ชินจูกุ ชิบูย่า ฟูจิ)",
+      kansai: "Kansai (โอซาก้า เกียวโต นารา USJ)",
+      golden: "Golden Route (โตเกียว + ฟูจิ + เกียวโต + โอซาก้า)",
+      hokkaido: "Hokkaido (ซัปโปโร โอตารุ หิมะ อาหารทะเล)"
+    };
+    const styleNames = {
+      landmarks: "ไฮไลต์ & ถ่ายรูปเช็กอิน",
+      foodie: "สายกิน & คาเฟ่",
+      shopping: "ช้อปปิ้ง & อนิเมะ",
+      parks: "สวนสนุก & ครอบครัว"
+    };
+    wizardSummaryPreview.innerHTML = `💡 สรุป: ทริป <strong>${wizardSelectedDays} วัน</strong> • โซน <strong>${regionNames[wizardSelectedRegion] || wizardSelectedRegion}</strong> • สไตล์ <strong>${styleNames[wizardSelectedStyle] || wizardSelectedStyle}</strong>`;
+  }
+
+  // Bind Wizard Option Buttons
+  const wizardDaysOptions = document.getElementById("wizard-days-options");
+  if (wizardDaysOptions) {
+    wizardDaysOptions.querySelectorAll(".wizard-opt-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        wizardDaysOptions.querySelectorAll(".wizard-opt-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        wizardSelectedDays = parseInt(btn.getAttribute("data-days"), 10) || 5;
+        updateWizardSummary();
+      });
+    });
+  }
+
+  const wizardRegionOptions = document.getElementById("wizard-region-options");
+  if (wizardRegionOptions) {
+    wizardRegionOptions.querySelectorAll(".wizard-opt-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        wizardRegionOptions.querySelectorAll(".wizard-opt-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        wizardSelectedRegion = btn.getAttribute("data-region");
+        updateWizardSummary();
+      });
+    });
+  }
+
+  const wizardStyleOptions = document.getElementById("wizard-style-options");
+  if (wizardStyleOptions) {
+    wizardStyleOptions.querySelectorAll(".wizard-opt-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        wizardStyleOptions.querySelectorAll(".wizard-opt-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        wizardSelectedStyle = btn.getAttribute("data-style");
+        updateWizardSummary();
+      });
+    });
+  }
+
+  if (openSmartWizardTopBtn) openSmartWizardTopBtn.addEventListener("click", openSmartWizard);
+  if (openSmartWizardHeroBtn) openSmartWizardHeroBtn.addEventListener("click", openSmartWizard);
+  if (openSmartWizardRouteBtn) openSmartWizardRouteBtn.addEventListener("click", openSmartWizard);
+  if (mobileDockWizardBtn) mobileDockWizardBtn.addEventListener("click", openSmartWizard);
+  if (closeSmartWizardModalBtn) closeSmartWizardModalBtn.addEventListener("click", closeSmartWizard);
+  if (wizardCancelBtn) wizardCancelBtn.addEventListener("click", closeSmartWizard);
+
+  if (wizardGenerateBtn) {
+    wizardGenerateBtn.addEventListener("click", () => {
+      generateSmartItinerary(wizardSelectedDays, wizardSelectedRegion, wizardSelectedStyle);
+      closeSmartWizard();
+      const routeSec = document.getElementById("route-simulator");
+      if (routeSec) routeSec.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  function generateSmartItinerary(days, region, style) {
+    const curatedPlaces = [];
+    const timeSlots = ["09:00", "11:30", "14:30", "18:00"];
+
+    // 1. Curate items based on Region and Style
+    let pool = [];
+
+    if (region === "tokyo") {
+      if (style === "foodie") {
+        pool = ["tokyo-tsukiji-market", "tokyo-shibuya-sky", "tokyo-sensoji", "tokyo-teamlab-planets", "tokyo-shinjuku-kabukicho", "kanto-kamakura-daibutsu", "tokyo-meiji-jingu", "tokyo-tokyo-tower"];
+      } else if (style === "shopping") {
+        pool = ["tokyo-shibuya-sky", "tokyo-shinjuku-kabukicho", "tokyo-sensoji", "tokyo-tokyo-tower", "tokyo-teamlab-planets", "kanto-kamakura-daibutsu", "tokyo-meiji-jingu", "tokyo-tsukiji-market"];
+      } else if (style === "parks") {
+        pool = ["tokyo-disneyland-guide", "tokyo-disneysea-guide", "tokyo-shibuya-sky", "tokyo-sensoji", "tokyo-teamlab-planets", "tokyo-tokyo-tower", "kanto-hakone-lake-ashi"];
+      } else {
+        // landmarks default
+        pool = ["tokyo-sensoji", "tokyo-shibuya-sky", "tokyo-tokyo-tower", "tokyo-meiji-jingu", "tokyo-shinjuku-kabukicho", "kanto-kamakura-daibutsu", "kanto-hakone-lake-ashi", "tokyo-tsukiji-market", "tokyo-teamlab-planets"];
+      }
+    } else if (region === "kansai") {
+      if (style === "foodie") {
+        pool = ["osaka-kuromon-market", "osaka-dotonbori", "kyoto-nishiki-market", "kyoto-fushimi-inari", "osaka-castle", "kyoto-kiyomizudera", "osaka-katsuoji", "kansai-nara-park"];
+      } else if (style === "shopping") {
+        pool = ["osaka-dotonbori", "osaka-umeda-sky", "osaka-castle", "kyoto-fushimi-inari", "osaka-kuromon-market", "kyoto-gion-kiyomizu", "osaka-usj", "kansai-nara-park"];
+      } else if (style === "parks") {
+        pool = ["osaka-usj", "osaka-castle", "osaka-dotonbori", "kansai-nara-park", "kyoto-fushimi-inari", "osaka-katsuoji", "kyoto-arashiyama"];
+      } else {
+        // landmarks default
+        pool = ["osaka-dotonbori", "osaka-castle", "kyoto-fushimi-inari", "kyoto-kiyomizudera", "kyoto-kinkakuji", "kyoto-arashiyama", "osaka-katsuoji", "kansai-nara-park", "osaka-usj"];
+      }
+    } else if (region === "golden") {
+      pool = [
+        "tokyo-sensoji", "tokyo-shibuya-sky", "tokyo-tokyo-tower", // Day 1
+        "tokyo-tsukiji-market", "tokyo-shinjuku-kabukicho", "tokyo-meiji-jingu", // Day 2
+        "kanto-hakone-lake-ashi", "chubu-lake-kawaguchiko", // Day 3
+        "kyoto-fushimi-inari", "kyoto-kiyomizudera", "kyoto-kinkakuji", // Day 4
+        "osaka-castle", "osaka-dotonbori", "osaka-kuromon-market", // Day 5
+        "osaka-usj", "kansai-nara-park", // Day 6
+        "osaka-katsuoji", "osaka-umeda-sky" // Day 7
+      ];
+    } else if (region === "hokkaido") {
+      pool = ["hokkaido-sapporo-snowfest", "hokkaido-otaru-canal", "hokkaido-noboribetsu-jigokudani", "hokkaido-hakodate-nightview", "tokyo-sensoji", "tokyo-shibuya-sky"];
+    }
+
+    // Limit places to fit days
+    const placesPerDay = 3;
+    const totalNeeded = days * placesPerDay;
+    const selectedIds = pool.slice(0, Math.min(pool.length, totalNeeded));
+
+    // If pool has fewer items, cycle through
+    while (selectedIds.length < totalNeeded && pool.length > 0) {
+      selectedIds.push(pool[selectedIds.length % pool.length]);
+    }
+
+    const newItinerary = [];
+    selectedIds.forEach((id, idx) => {
+      const item = JAPAN_DATA.find(p => p.id === id);
+      if (item) {
+        const dayNum = Math.floor(idx / placesPerDay) + 1;
+        const timeSlot = timeSlots[idx % placesPerDay] || "10:00";
+        newItinerary.push({
+          id: item.id + (newItinerary.some(x => x.id === item.id) ? `_d${dayNum}` : ""),
+          title: item.title,
+          japanese: item.japanese,
+          region: item.region,
+          tag: item.tag,
+          cost: item.estimatedCost,
+          day: dayNum,
+          time: timeSlot
+        });
+      }
+    });
+
+    itineraryList = newItinerary;
+    sortItineraryList();
+    localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+
+    updateItineraryUI();
+    renderCards();
+    renderRouteSimulator();
+
+    alert(`🎉 จัดทริปเที่ยว ${days} วัน (${region.toUpperCase()}) ให้เรียบร้อยแล้ว!\nระบบได้กำหนดวันและเวลาให้พร้อมเที่ยว คุณสามารถปรับเปลี่ยนเวลาหรือสลับลำดับได้ตามสะดวกครับ`);
+  }
+
+  // ================= 21. On-Trip Live Travel Mode Logic =================
+  let onTripActiveDay = 1;
+  let onTripActiveStopIndex = 0;
+  let onTripClockTimer = null;
+
+  const ontripModal = document.getElementById("ontrip-modal");
+  const openOntripModalTopBtn = document.getElementById("open-ontrip-modal-top-btn");
+  const openOntripModalRouteBtn = document.getElementById("open-ontrip-modal-route-btn");
+  const mobileDockOntripBtn = document.getElementById("mobile-dock-ontrip-btn");
+  const closeOntripModalBtn = document.getElementById("close-ontrip-modal-btn");
+  const ontripDaySelector = document.getElementById("ontrip-day-selector");
+  const ontripMainViewport = document.getElementById("ontrip-main-viewport");
+  const ontripTransitBox = document.getElementById("ontrip-transit-box");
+  const ontripStopCounter = document.getElementById("ontrip-stop-counter");
+  const ontripPrevStopBtn = document.getElementById("ontrip-prev-stop-btn");
+  const ontripNextStopBtn = document.getElementById("ontrip-next-stop-btn");
+  const ontripClockJst = document.getElementById("ontrip-clock-jst");
+  const ontripClockIct = document.getElementById("ontrip-clock-ict");
+
+  // Show-to-Local Taxi Card Modal Elements
+  const showToLocalModal = document.getElementById("show-to-local-modal");
+  const closeShowLocalModalBtn = document.getElementById("close-show-local-modal-btn");
+  const showLocalBody = document.getElementById("show-local-body");
+  const showLocalSpeakBtn = document.getElementById("show-local-speak-btn");
+  let currentShowLocalItem = null;
+
+  function openOnTripModal() {
+    if (ontripModal) ontripModal.style.display = "flex";
+    onTripActiveStopIndex = 0;
+    startOnTripClocks();
+    renderOnTripMode();
+  }
+
+  function closeOnTripModal() {
+    if (ontripModal) ontripModal.style.display = "none";
+    if (onTripClockTimer) clearInterval(onTripClockTimer);
+  }
+
+  function startOnTripClocks() {
+    if (onTripClockTimer) clearInterval(onTripClockTimer);
+    const update = () => {
+      const now = new Date();
+      // JST is UTC+9
+      const jstHours = (now.getUTCHours() + 9) % 24;
+      const jstMins = now.getUTCMinutes().toString().padStart(2, '0');
+      if (ontripClockJst) ontripClockJst.textContent = `${jstHours.toString().padStart(2, '0')}:${jstMins}`;
+
+      // ICT is UTC+7
+      const ictHours = (now.getUTCHours() + 7) % 24;
+      const ictMins = now.getUTCMinutes().toString().padStart(2, '0');
+      if (ontripClockIct) ontripClockIct.textContent = `${ictHours.toString().padStart(2, '0')}:${ictMins}`;
+    };
+    update();
+    onTripClockTimer = setInterval(update, 1000);
+  }
+
+  function getOnTripRouteItems() {
+    const rawList = getRouteItems();
+    return rawList.map((item, idx) => ({
+      ...item,
+      day: parseInt(item.day, 10) || 1,
+      time: item.time || ""
+    }));
+  }
+
+  function renderOnTripMode() {
+    const allStops = getOnTripRouteItems();
+    if (allStops.length === 0) {
+      if (ontripMainViewport) {
+        ontripMainViewport.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1rem; color: #94a3b8;">
+            <div style="font-size: 3rem; margin-bottom: 0.75rem;">🗺️</div>
+            <h3 style="color: white; font-size: 1.2rem; margin-bottom: 0.5rem;">ยังไม่มีสถานที่ในแผนการเดินทาง</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">กดปุ่ม <strong>"🪄 จัดทริป AI"</strong> หรือเลือกสถานที่ท่องเที่ยวเพื่อเริ่มใช้งานโหมดเที่ยวจริง</p>
+            <button type="button" class="btn primary" id="ontrip-empty-wizard-btn" style="background: #7c3aed; color: white; padding: 0.6rem 1.25rem; border-radius: 20px; font-weight: 800;">
+              🪄 ให้ AI ช่วยจัดทริป 3 วินาที
+            </button>
+          </div>
+        `;
+        const emptyWizardBtn = document.getElementById("ontrip-empty-wizard-btn");
+        if (emptyWizardBtn) {
+          emptyWizardBtn.addEventListener("click", () => {
+            closeOnTripModal();
+            openSmartWizard();
+          });
+        }
+      }
+      if (ontripTransitBox) ontripTransitBox.style.display = "none";
+      if (ontripStopCounter) ontripStopCounter.textContent = "0 / 0";
+      return;
+    }
+
+    // Extract unique days
+    const uniqueDays = [...new Set(allStops.map(s => s.day))].sort((a, b) => a - b);
+    if (!uniqueDays.includes(onTripActiveDay)) {
+      onTripActiveDay = uniqueDays[0] || 1;
+    }
+
+    // Render Day Selector
+    if (ontripDaySelector) {
+      ontripDaySelector.innerHTML = uniqueDays.map(d => `
+        <button type="button" class="ontrip-day-btn ${d === onTripActiveDay ? 'active' : ''}" data-day="${d}">
+          DAY ${d}
+        </button>
+      `).join("");
+
+      ontripDaySelector.querySelectorAll(".ontrip-day-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          onTripActiveDay = parseInt(btn.getAttribute("data-day"), 10);
+          onTripActiveStopIndex = 0;
+          renderOnTripMode();
+        });
+      });
+    }
+
+    // Filter stops for the active day
+    const dayStops = allStops.filter(s => s.day === onTripActiveDay);
+    if (dayStops.length === 0) {
+      onTripActiveDay = uniqueDays[0];
+      return renderOnTripMode();
+    }
+
+    if (onTripActiveStopIndex >= dayStops.length) {
+      onTripActiveStopIndex = dayStops.length - 1;
+    }
+    if (onTripActiveStopIndex < 0) {
+      onTripActiveStopIndex = 0;
+    }
+
+    const currentStop = dayStops[onTripActiveStopIndex];
+    const nextStop = dayStops[onTripActiveStopIndex + 1] || null;
+
+    const baseId = currentStop.id.split('_')[0];
+    const meta = ROUTE_SIMULATION_META[baseId] || {
+      station: "สถานีรถไฟใจกลางเมือง",
+      city: "ญี่ปุ่น",
+      region: currentStop.region || "tokyo",
+      lat: 35.6895,
+      lng: 139.6917,
+      stayHours: "2 ชม.",
+      bestTimeOfDay: "ช่วงเช้า-บ่าย",
+      icon: "📍",
+      mapsName: currentStop.title
+    };
+
+    if (ontripStopCounter) {
+      ontripStopCounter.textContent = `จุดที่ ${onTripActiveStopIndex + 1} / ${dayStops.length}`;
+    }
+
+    // Render Hero Card
+    if (ontripMainViewport) {
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(meta.mapsName || currentStop.title)}`;
+      ontripMainViewport.innerHTML = `
+        <div class="ontrip-hero-card">
+          <div class="ontrip-hero-top">
+            <span class="ontrip-stop-badge">ลำดับที่ ${onTripActiveStopIndex + 1} (DAY ${onTripActiveDay})</span>
+            <span class="ontrip-time-tag">⏰ ${currentStop.time ? currentStop.time + ' น.' : 'ไม่ระบุเวลา'}</span>
+          </div>
+
+          <div class="ontrip-place-name-th">${meta.icon} ${currentStop.title}</div>
+          <div class="ontrip-place-name-jp">${currentStop.japanese || meta.mapsName || ''}</div>
+
+          <div class="ontrip-hero-meta-grid">
+            <div class="ontrip-meta-item">
+              <span>🚉 สถานีใกล้ที่สุด:</span><br>
+              <strong>${meta.station}</strong>
+            </div>
+            <div class="ontrip-meta-item">
+              <span>⏳ เวลาแวะแนะนำ:</span><br>
+              <strong>${meta.stayHours}</strong> (${meta.bestTimeOfDay})
+            </div>
+          </div>
+
+          <div class="ontrip-hero-actions-row">
+            <a href="${mapsUrl}" target="_blank" rel="noopener" class="ontrip-action-btn ontrip-maps-btn">
+              <span>🗺️</span> นำทางด้วย Google Maps
+            </a>
+            <button type="button" class="ontrip-action-btn ontrip-taxi-btn" id="ontrip-open-taxi-card-btn">
+              <span>🚖</span> การ์ดยื่นคนญี่ปุ่น / แท็กซี่ 🔊
+            </button>
+          </div>
+        </div>
+      `;
+
+      const taxiBtn = document.getElementById("ontrip-open-taxi-card-btn");
+      if (taxiBtn) {
+        taxiBtn.addEventListener("click", () => {
+          openShowToLocalModal(currentStop, meta);
+        });
+      }
+    }
+
+    // Render Transit Leg to Next Stop
+    if (ontripTransitBox) {
+      if (nextStop) {
+        ontripTransitBox.style.display = "block";
+        const nextBaseId = nextStop.id.split('_')[0];
+        const nextMeta = ROUTE_SIMULATION_META[nextBaseId] || { city: "ญี่ปุ่น", station: "สถานีถัดไป" };
+        const transitInfo = calculateTransitLeg(currentStop, nextStop);
+        ontripTransitBox.innerHTML = `
+          <div class="transit-next-header">➔ จุดหมายถัดไป: <strong>${nextStop.title}</strong> (${nextStop.time ? nextStop.time + ' น.' : 'ช่วงบ่าย'})</div>
+          <div class="transit-route-detail">🚇 ${transitInfo.mode} (${transitInfo.duration}) • ค่าโดยสาร ~¥${transitInfo.fareJPY.toLocaleString()}</div>
+        `;
+      } else {
+        ontripTransitBox.style.display = "block";
+        ontripTransitBox.innerHTML = `
+          <div class="transit-next-header" style="color: #22c55e;">🎉 นี่คือจุดหมายสุดท้ายของ DAY ${onTripActiveDay}</div>
+          <div class="transit-route-detail" style="color: #cbd5e1; font-size: 0.85rem;">เดินทางกลับโรงแรมที่พัก หรือแวะช้อปปิ้งตามอัธยาศัย</div>
+        `;
+      }
+    }
+  }
+
+  // Next / Prev Stop Handlers
+  if (ontripPrevStopBtn) {
+    ontripPrevStopBtn.addEventListener("click", () => {
+      if (onTripActiveStopIndex > 0) {
+        onTripActiveStopIndex--;
+        renderOnTripMode();
+      }
+    });
+  }
+
+  if (ontripNextStopBtn) {
+    ontripNextStopBtn.addEventListener("click", () => {
+      const allStops = getOnTripRouteItems().filter(s => s.day === onTripActiveDay);
+      if (onTripActiveStopIndex < allStops.length - 1) {
+        onTripActiveStopIndex++;
+        renderOnTripMode();
+      }
+    });
+  }
+
+  // Bottom Tools Handlers
+  const ontripToolCalcBtn = document.getElementById("ontrip-tool-calc-btn");
+  if (ontripToolCalcBtn) {
+    ontripToolCalcBtn.addEventListener("click", () => {
+      closeOnTripModal();
+      const currSec = document.getElementById("currency-calc");
+      if (currSec) currSec.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  const ontripToolTaxiBtn = document.getElementById("ontrip-tool-taxi-btn");
+  if (ontripToolTaxiBtn) {
+    ontripToolTaxiBtn.addEventListener("click", () => {
+      const allStops = getOnTripRouteItems().filter(s => s.day === onTripActiveDay);
+      const cur = allStops[onTripActiveStopIndex];
+      if (cur) {
+        const baseId = cur.id.split('_')[0];
+        const meta = ROUTE_SIMULATION_META[baseId] || {};
+        openShowToLocalModal(cur, meta);
+      } else {
+        alert("กรุณาเลือกสถานที่ก่อนเปิดการ์ดยื่นแท็กซี่ครับ");
+      }
+    });
+  }
+
+  const ontripToolSosBtn = document.getElementById("ontrip-tool-sos-btn");
+  if (ontripToolSosBtn) {
+    ontripToolSosBtn.addEventListener("click", () => {
+      closeOnTripModal();
+      const sosSec = document.getElementById("emergency-sos");
+      if (sosSec) sosSec.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  if (openOntripModalTopBtn) openOntripModalTopBtn.addEventListener("click", openOnTripModal);
+  if (openOntripModalRouteBtn) openOntripModalRouteBtn.addEventListener("click", openOnTripModal);
+  if (mobileDockOntripBtn) mobileDockOntripBtn.addEventListener("click", openOnTripModal);
+  if (closeOntripModalBtn) closeOntripModalBtn.addEventListener("click", closeOnTripModal);
+
+  // ================= 22. Show-to-Local & Taxi Card Modal Logic =================
+  function openShowToLocalModal(item, meta) {
+    currentShowLocalItem = { item, meta };
+    if (!showLocalBody || !showToLocalModal) return;
+
+    const jpTitle = item.japanese || item.title;
+    const station = meta.station || "สถานีรถไฟ";
+
+    showLocalBody.innerHTML = `
+      <div class="show-local-phrase">すみません、ここに行きたいです。</div>
+      <div style="font-size: 0.85rem; color: #475569;">(ขอโทษนะคะ/ครับ อยากจะไปที่นี่ครับ)</div>
+      
+      <div class="show-local-jp-big">
+        【 ${jpTitle} 】
+      </div>
+
+      <div style="background: #f1f5f9; padding: 0.75rem 1rem; border-radius: 10px; text-align: left; margin-bottom: 0.5rem;">
+        <div style="font-size: 0.8rem; color: #64748b; font-weight: 700;">🚉 สถานีรถไฟที่ใกล้ที่สุด:</div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">${station}</div>
+      </div>
+      <div class="show-local-sub">
+        🇹🇭 ภาษาไทย: ${item.title}
+      </div>
+    `;
+
+    showToLocalModal.style.display = "flex";
+  }
+
+  function closeShowToLocalModal() {
+    if (showToLocalModal) showToLocalModal.style.display = "none";
+  }
+
+  if (closeShowLocalModalBtn) closeShowLocalModalBtn.addEventListener("click", closeShowToLocalModal);
+  if (showLocalSpeakBtn) {
+    showLocalSpeakBtn.addEventListener("click", () => {
+      if (currentShowLocalItem && currentShowLocalItem.item) {
+        const textToSpeak = `すみません、${currentShowLocalItem.item.japanese || currentShowLocalItem.item.title} に行きたいです。`;
+        playJapaneseSpeech(textToSpeak);
+      }
+    });
+  }
+
   // Initial Render
   checkUrlShareParams();
   updateCounts();
