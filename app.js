@@ -4263,55 +4263,63 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================= Event Listeners =================
 
   // Search & Clear
-  searchInput.addEventListener("input", (e) => {
-    searchQuery = e.target.value;
-    clearSearchBtn.style.display = searchQuery ? "block" : "none";
-    currentCardPage = 1;
-    renderCards();
-  });
+  if (searchInput && clearSearchBtn) {
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      clearSearchBtn.style.display = searchQuery ? "block" : "none";
+      currentCardPage = 1;
+      renderCards();
+    });
 
-  clearSearchBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    searchQuery = "";
-    clearSearchBtn.style.display = "none";
-    currentCardPage = 1;
-    renderCards();
-  });
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      searchQuery = "";
+      clearSearchBtn.style.display = "none";
+      currentCardPage = 1;
+      renderCards();
+    });
+  }
 
   // Season Filter Pills
-  seasonPills.querySelectorAll(".pill").forEach(pill => {
-    pill.addEventListener("click", (e) => {
-      seasonPills.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
-      e.currentTarget.classList.add("active");
-      currentSeason = e.currentTarget.getAttribute("data-season");
-      selectedHotelSeason = currentSeason;
-      currentCardPage = 1;
-      renderCards();
-      renderHotelGuide();
+  if (seasonPills) {
+    seasonPills.querySelectorAll(".pill").forEach(pill => {
+      pill.addEventListener("click", (e) => {
+        seasonPills.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+        e.currentTarget.classList.add("active");
+        currentSeason = e.currentTarget.getAttribute("data-season");
+        selectedHotelSeason = currentSeason;
+        currentCardPage = 1;
+        renderCards();
+        renderHotelGuide();
+      });
     });
-  });
+  }
 
   // Region Filter Pills
-  regionPills.querySelectorAll(".pill").forEach(pill => {
-    pill.addEventListener("click", (e) => {
-      regionPills.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
-      e.currentTarget.classList.add("active");
-      currentRegion = e.currentTarget.getAttribute("data-region");
-      currentCardPage = 1;
-      renderCards();
+  if (regionPills) {
+    regionPills.querySelectorAll(".pill").forEach(pill => {
+      pill.addEventListener("click", (e) => {
+        regionPills.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+        e.currentTarget.classList.add("active");
+        currentRegion = e.currentTarget.getAttribute("data-region");
+        currentCardPage = 1;
+        renderCards();
+      });
     });
-  });
+  }
 
   // Category Tabs
-  categoryTabs.forEach(tab => {
-    tab.addEventListener("click", (e) => {
-      categoryTabs.forEach(t => t.classList.remove("active"));
-      e.currentTarget.classList.add("active");
-      currentCategory = e.currentTarget.getAttribute("data-category");
-      currentCardPage = 1;
-      renderCards();
+  if (categoryTabs) {
+    categoryTabs.forEach(tab => {
+      tab.addEventListener("click", (e) => {
+        categoryTabs.forEach(t => t.classList.remove("active"));
+        e.currentTarget.classList.add("active");
+        currentCategory = e.currentTarget.getAttribute("data-category");
+        currentCardPage = 1;
+        renderCards();
+      });
     });
-  });
+  }
 
   // Analytics Season Tabs
   analyticsSeasonTabs.querySelectorAll(".analytics-tab-btn").forEach(btn => {
@@ -4344,25 +4352,35 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Modal Controls
-  modalCloseBtn.addEventListener("click", () => detailModal.classList.remove("active"));
-  detailModal.addEventListener("click", (e) => {
-    if (e.target === detailModal) detailModal.classList.remove("active");
-  });
+  if (modalCloseBtn && detailModal) {
+    modalCloseBtn.addEventListener("click", () => detailModal.classList.remove("active"));
+  }
+  if (detailModal) {
+    detailModal.addEventListener("click", (e) => {
+      if (e.target === detailModal) detailModal.classList.remove("active");
+    });
+  }
 
   // Drawer Controls
-  navItineraryBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    itineraryDrawer.classList.add("open");
-  });
-  drawerCloseBtn.addEventListener("click", () => itineraryDrawer.classList.remove("open"));
-  clearItineraryBtn.addEventListener("click", () => {
-    if (confirm("คุณต้องการล้างแผนการเดินทางทั้งหมดใช่หรือไม่?")) {
-      itineraryList = [];
-      localStorage.setItem("nippon_itinerary", "[]");
-      updateItineraryUI();
-      renderCards();
-    }
-  });
+  if (navItineraryBtn && itineraryDrawer) {
+    navItineraryBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      itineraryDrawer.classList.add("open");
+    });
+  }
+  if (drawerCloseBtn && itineraryDrawer) {
+    drawerCloseBtn.addEventListener("click", () => itineraryDrawer.classList.remove("open"));
+  }
+  if (clearItineraryBtn) {
+    clearItineraryBtn.addEventListener("click", () => {
+      if (confirm("คุณต้องการล้างแผนการเดินทางทั้งหมดใช่หรือไม่?")) {
+        itineraryList = [];
+        localStorage.setItem("nippon_itinerary", "[]");
+        updateItineraryUI();
+        renderCards();
+      }
+    });
+  }
 
   // ================= 11. Konbini Gourmet & Souvenirs Renderer =================
   let currentKonbiniFilter = "all";
