@@ -22,18 +22,18 @@
         </div>
       </a>
       <div class="header-right-actions">
-        <button type="button" class="wizard-header-btn" id="open-smart-wizard-top-btn" title="ให้ AI ช่วยจัดแผนเที่ยวให้อัตโนมัติใน 3 ขั้นตอน">
-          <span>🪄</span> <span class="btn-text-full">จัดทริปด่วน 3 วิ</span><span class="btn-text-short">จัดทริป</span>
+        <!-- Unified Profile & Trip Hub Button -->
+        <button type="button" class="user-profile-hub-btn" id="open-profile-hub-btn" title="เมนูการเดินทาง & โปรไฟล์ผู้ใช้">
+          <div class="profile-avatar-circle">
+            <span class="avatar-icon">🧳</span>
+            <span class="profile-live-badge" id="profile-hub-badge">0</span>
+          </div>
+          <div class="profile-btn-info">
+            <span class="profile-btn-title">ทริปของฉัน</span>
+            <span class="profile-btn-sub" id="profile-btn-sub-text">0 สถานที่</span>
+          </div>
+          <span class="profile-chevron">▾</span>
         </button>
-        <button type="button" class="ontrip-header-btn" id="open-ontrip-modal-top-btn" title="เปิดโหมดใช้งานจริงขณะเดินเที่ยวในญี่ปุ่น (นำทาง + สายรถไฟ + ภาษาญี่ปุ่น)">
-          <span>🎯</span> <span class="btn-text-full">โหมดเที่ยวจริง</span><span class="btn-text-short">เที่ยวจริง</span>
-        </button>
-        <button type="button" class="immigration-header-btn" id="open-immigration-modal-top-btn" title="คู่มือผ่าน ตม. ญี่ปุ่น & การ์ดสรุปข้อมูลยื่น ตม.">
-          <span>🛂</span> <span class="btn-text-full">คู่มือผ่าน ตม. 🔊</span><span class="btn-text-short">ตม.</span>
-        </button>
-        <a href="#itinerary" class="plan-link" id="nav-itinerary-btn">
-          <span>📋</span> <span class="btn-text-full">แผนการเดินทาง</span><span class="btn-text-short">แผน</span> <span class="badge" id="itinerary-count-badge">0</span>
-        </a>
       </div>
     </div>
 
@@ -1362,6 +1362,113 @@
     </div>
   </div>
 
+  <!-- User Profile & Travel Hub Dropdown / Bottom Sheet Modal -->
+  <div class="profile-hub-backdrop" id="profile-hub-modal" style="display: none;">
+    <div class="profile-hub-card" id="profile-hub-card">
+      <!-- Profile Header -->
+      <div class="profile-hub-header">
+        <div class="profile-user-info">
+          <div class="profile-big-avatar">⛩️</div>
+          <div>
+            <div class="profile-user-name">นักเดินทาง Nippon Explorer</div>
+            <div class="profile-user-status" id="profile-modal-trip-summary">📍 แผนปัจจุบัน: 0 สถานที่</div>
+          </div>
+        </div>
+        <button type="button" class="profile-hub-close-btn" id="close-profile-hub-btn" aria-label="ปิดเมนู">&times;</button>
+      </div>
+
+      <!-- Quick Stats Strip -->
+      <div class="profile-quick-stats">
+        <div class="stat-pill">
+          <span class="stat-label">🗓️ วันเที่ยว:</span>
+          <strong id="profile-stat-days">1 วัน</strong>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">📍 จุดแวะ:</span>
+          <strong id="profile-stat-spots">0 แห่ง</strong>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">💰 งบประมาณ:</span>
+          <strong id="profile-stat-budget">¥0</strong>
+        </div>
+      </div>
+
+      <!-- Profile Menu Items Grid / List -->
+      <div class="profile-menu-list">
+        <div class="menu-section-label">🌟 เมนูหลักการเดินทาง</div>
+        
+        <button type="button" class="profile-menu-item item-plan" id="profile-menu-plan-btn">
+          <div class="menu-item-icon">📋</div>
+          <div class="menu-item-text">
+            <strong>แผนการเดินทางของฉัน (My Itinerary)</strong>
+            <span>ดู/แก้ไขรายการ สลับวัน และกำหนดเวลาเที่ยว</span>
+          </div>
+          <span class="menu-item-badge" id="profile-menu-plan-badge">0 รายการ</span>
+        </button>
+
+        <button type="button" class="profile-menu-item item-ontrip" id="profile-menu-ontrip-btn">
+          <div class="menu-item-icon">🎯</div>
+          <div class="menu-item-text">
+            <strong>โหมดเที่ยวจริง (On-Trip Live Mode)</strong>
+            <span>ผู้ช่วยสดขณะเดินเที่ยว นำทาง Google Maps & ภาษาญี่ปุ่น</span>
+          </div>
+          <span class="menu-item-tag" style="background: #dc2626; color: white;">LIVE</span>
+        </button>
+
+        <button type="button" class="profile-menu-item item-wizard" id="profile-menu-wizard-btn">
+          <div class="menu-item-icon">🪄</div>
+          <div class="menu-item-text">
+            <strong>จัดทริปด่วน 3 วินาที (Smart AI Wizard)</strong>
+            <span>สร้างแผนเที่ยวโตเกียว-คันไซ-ฮอกไกโด อัตโนมัติ</span>
+          </div>
+          <span class="menu-item-tag" style="background: #7c3aed; color: white;">AI</span>
+        </button>
+
+        <button type="button" class="profile-menu-item item-imm" id="profile-menu-imm-btn">
+          <div class="menu-item-icon">🛂</div>
+          <div class="menu-item-text">
+            <strong>คู่มือผ่าน ตม. ญี่ปุ่น & FastPass 🔊</strong>
+            <span>การ์ดยื่น ตม. ออกเสียงญี่ปุ่น และวิธีลง Visit Japan Web</span>
+          </div>
+          <span class="menu-item-tag" style="background: #0284c7; color: white;">ตม.</span>
+        </button>
+
+        <div class="menu-section-label">🛠️ เครื่องมือและเอกสารเสริม</div>
+
+        <button type="button" class="profile-menu-item" id="profile-menu-export-btn">
+          <div class="menu-item-icon">🖨️</div>
+          <div class="menu-item-text">
+            <strong>พิมพ์แผนเที่ยว / ส่งออก PDF (Pocket Itinerary)</strong>
+            <span>สร้างแผ่นพับสรุปทริปพกพาและตารางเวลาฉบับเซฟ</span>
+          </div>
+        </button>
+
+        <button type="button" class="profile-menu-item" id="profile-menu-currency-btn">
+          <div class="menu-item-icon">💴</div>
+          <div class="menu-item-text">
+            <strong>แปลงเงินเยน & คูปองส่วนลดดองกี้ 7%</strong>
+            <span>คำนวณราคาสุทธิปลอดภาษี Tax-Free พร้อมใช้งาน</span>
+          </div>
+        </button>
+
+        <button type="button" class="profile-menu-item" id="profile-menu-sos-btn">
+          <div class="menu-item-icon">🚨</div>
+          <div class="menu-item-text">
+            <strong>เบอร์ฉุกเฉิน & ขอความช่วยเหลือ (SOS)</strong>
+            <span>ตำรวจ 110, พยาบาล 119, สถานทูตไทยโตเกียว</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Profile Modal Footer -->
+      <div class="profile-hub-footer">
+        <button type="button" class="btn-clear-plan" id="profile-clear-plan-btn">
+          🗑️ ล้างแผนเที่ยวทั้งหมด
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Smart Trip Plan Wizard Modal (3-Step AI Auto Generator) -->
   <div class="modal-backdrop" id="smart-wizard-modal" style="display: none;">
     <div class="modal-container wizard-modal-box">
@@ -1580,14 +1687,14 @@
 
   <!-- Mobile Floating Quick Dock (Bottom Bar for Touch Users) -->
   <div class="mobile-floating-dock" id="mobile-floating-dock">
+    <button type="button" class="mobile-dock-btn dock-profile-btn" id="mobile-dock-profile-btn" style="background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%); color: white; font-weight: 800;">
+      <span>🧳</span> ทริปของฉัน
+    </button>
     <button type="button" class="mobile-dock-btn dock-ontrip-btn" id="mobile-dock-ontrip-btn" style="background: #dc2626; color: white; font-weight: 800;">
       <span>🎯</span> เที่ยวจริง
     </button>
     <button type="button" class="mobile-dock-btn dock-wizard-btn" id="mobile-dock-wizard-btn" style="background: #7c3aed; color: white; font-weight: 800;">
       <span>🪄</span> จัดทริป AI
-    </button>
-    <button type="button" class="mobile-dock-btn dock-imm-btn" id="mobile-dock-imm-btn">
-      <span>🛂</span> ตม.
     </button>
     <button type="button" class="mobile-dock-btn dock-plan-btn" id="mobile-dock-plan-btn">
       <span>📋</span> แผน (<span id="mobile-dock-badge">0</span>)

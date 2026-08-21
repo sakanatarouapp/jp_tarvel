@@ -3355,6 +3355,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (drawerItemCount) drawerItemCount.textContent = `${itineraryList.length} รายการ`;
     const mobileDockBadge = document.getElementById("mobile-dock-badge");
     if (mobileDockBadge) mobileDockBadge.textContent = itineraryList.length;
+    if (typeof updateProfileHubUI === "function") updateProfileHubUI();
 
     if (!itineraryItemsList) return;
 
@@ -6913,6 +6914,135 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================= 23. User Profile & Travel Hub Menu Logic =================
+  const profileHubModal = document.getElementById("profile-hub-modal");
+  const openProfileHubBtn = document.getElementById("open-profile-hub-btn");
+  const closeProfileHubBtn = document.getElementById("close-profile-hub-btn");
+  const mobileDockProfileBtn = document.getElementById("mobile-dock-profile-btn");
+  const profileHubBadge = document.getElementById("profile-hub-badge");
+  const profileBtnSubText = document.getElementById("profile-btn-sub-text");
+  const profileModalTripSummary = document.getElementById("profile-modal-trip-summary");
+  const profileStatDays = document.getElementById("profile-stat-days");
+  const profileStatSpots = document.getElementById("profile-stat-spots");
+  const profileStatBudget = document.getElementById("profile-stat-budget");
+  const profileMenuPlanBadge = document.getElementById("profile-menu-plan-badge");
+
+  function openProfileHub() {
+    if (profileHubModal) {
+      profileHubModal.style.display = "flex";
+      updateProfileHubUI();
+    }
+  }
+
+  function closeProfileHub() {
+    if (profileHubModal) profileHubModal.style.display = "none";
+  }
+
+  function updateProfileHubUI() {
+    const totalStops = itineraryList.length;
+    const dayNumbers = [...new Set(itineraryList.map(i => parseInt(i.day, 10) || 1))];
+    const totalDays = dayNumbers.length > 0 ? Math.max(...dayNumbers) : 1;
+    const estJPY = totalStops * 5500;
+    const estTHB = Math.round(estJPY * currentExchangeRate);
+
+    if (profileHubBadge) profileHubBadge.textContent = totalStops;
+    if (profileBtnSubText) profileBtnSubText.textContent = `${totalStops} สถานที่`;
+    if (profileModalTripSummary) profileModalTripSummary.textContent = `📍 แผนปัจจุบัน: ${totalStops} สถานที่ (${totalDays} วัน)`;
+    if (profileStatDays) profileStatDays.textContent = `${totalDays} วัน`;
+    if (profileStatSpots) profileStatSpots.textContent = `${totalStops} แห่ง`;
+    if (profileStatBudget) profileStatBudget.textContent = `~¥${estJPY.toLocaleString()} (~${estTHB.toLocaleString()} บ.)`;
+    if (profileMenuPlanBadge) profileMenuPlanBadge.textContent = `${totalStops} รายการ`;
+  }
+
+  if (openProfileHubBtn) openProfileHubBtn.addEventListener("click", openProfileHub);
+  if (closeProfileHubBtn) closeProfileHubBtn.addEventListener("click", closeProfileHub);
+  if (mobileDockProfileBtn) mobileDockProfileBtn.addEventListener("click", openProfileHub);
+
+  if (profileHubModal) {
+    profileHubModal.addEventListener("click", (e) => {
+      if (e.target === profileHubModal) closeProfileHub();
+    });
+  }
+
+  // Profile Menu Items Action Bindings
+  const profileMenuPlanBtn = document.getElementById("profile-menu-plan-btn");
+  if (profileMenuPlanBtn) {
+    profileMenuPlanBtn.addEventListener("click", () => {
+      closeProfileHub();
+      if (itineraryDrawer) itineraryDrawer.classList.add("open");
+    });
+  }
+
+  const profileMenuOntripBtn = document.getElementById("profile-menu-ontrip-btn");
+  if (profileMenuOntripBtn) {
+    profileMenuOntripBtn.addEventListener("click", () => {
+      closeProfileHub();
+      openOnTripModal();
+    });
+  }
+
+  const profileMenuWizardBtn = document.getElementById("profile-menu-wizard-btn");
+  if (profileMenuWizardBtn) {
+    profileMenuWizardBtn.addEventListener("click", () => {
+      closeProfileHub();
+      openSmartWizard();
+    });
+  }
+
+  const profileMenuImmBtn = document.getElementById("profile-menu-imm-btn");
+  if (profileMenuImmBtn) {
+    profileMenuImmBtn.addEventListener("click", () => {
+      closeProfileHub();
+      openImmigrationModal();
+    });
+  }
+
+  const profileMenuExportBtn = document.getElementById("profile-menu-export-btn");
+  if (profileMenuExportBtn) {
+    profileMenuExportBtn.addEventListener("click", () => {
+      closeProfileHub();
+      openPocketExportModal();
+    });
+  }
+
+  const profileMenuCurrencyBtn = document.getElementById("profile-menu-currency-btn");
+  if (profileMenuCurrencyBtn) {
+    profileMenuCurrencyBtn.addEventListener("click", () => {
+      closeProfileHub();
+      const currSec = document.getElementById("currency-calc");
+      if (currSec) currSec.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  const profileMenuSosBtn = document.getElementById("profile-menu-sos-btn");
+  if (profileMenuSosBtn) {
+    profileMenuSosBtn.addEventListener("click", () => {
+      closeProfileHub();
+      const sosSec = document.getElementById("emergency-sos");
+      if (sosSec) sosSec.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  const profileClearPlanBtn = document.getElementById("profile-clear-plan-btn");
+  if (profileClearPlanBtn) {
+    profileClearPlanBtn.addEventListener("click", () => {
+      if (itineraryList.length === 0) {
+        alert("ยังไม่มีสถานที่ในแผนเที่ยวครับ");
+        return;
+      }
+      if (confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างแผนการเดินทางทั้งหมด?")) {
+        itineraryList = [];
+        localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+        updateItineraryUI();
+        renderCards();
+        renderRouteSimulator();
+        updateProfileHubUI();
+        closeProfileHub();
+        alert("🗑️ ล้างแผนการเดินทางเรียบร้อยแล้ว");
+      }
+    });
+  }
+
   // Initial Render
   checkUrlShareParams();
   updateCounts();
@@ -6933,6 +7063,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updateItineraryUI();
   renderCards();
   updateImmigrationFastPassData();
+  updateProfileHubUI();
 });
 
 
