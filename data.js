@@ -3427,9 +3427,9 @@ const POPULAR_HOTSPOTS_DATA = [
     desc: "เอาต์เล็ตที่ใหญ่ที่สุดในญี่ปุ่น รวมแบรนด์เนมกว่า 290 ร้าน พร้อมมุมถ่ายรูปวิวภูเขาไฟฟูจิแบบพาโนรามาสุดอลังการ"
   },
   {
-    id: "hotspot-shop-denden-town",
-    name: "Nipponbashi Denden Town (ย่านเด็นเด็นทาวน์ อนิเมะ/เกม)",
-    japanese: "日本橋でんでんタウン",
+    id: "osaka-denden-town",
+    name: "ย่านเด็นเด็นทาวน์ นิปปอนบาชิ (Nipponbashi Denden Town)",
+    japanese: "でんでんタウン (日本橋電気街)",
     category: "shopping",
     icon: "🎮",
     region: "osaka",
@@ -3441,8 +3441,8 @@ const POPULAR_HOTSPOTS_DATA = [
     desc: "อากิฮาบาระแห่งคันไซ ศูนย์รวมฟิกเกอร์ อนิเมะ โมเดลกันพลา การ์ดสะสม และเมดคาเฟ่"
   },
   {
-    id: "hotspot-shop-shinsaibashi",
-    name: "Shinsaibashi-suji & Amerikamura (ถนนช้อปปิ้งชินไซบาชิ)",
+    id: "osaka-shinsaibashi",
+    name: "ถนนช้อปปิ้งชินไซบาชิ & อเมริกามูระ (Shinsaibashi-Suji)",
     japanese: "心斎橋筋商店街 / アメリカ村",
     category: "shopping",
     icon: "🛍️",
@@ -3457,8 +3457,8 @@ const POPULAR_HOTSPOTS_DATA = [
 
   // --- ATTRACTIONS & THEME PARKS ---
   {
-    id: "hotspot-attraction-kaiyukan",
-    name: "Osaka Aquarium Kaiyukan (พิพิธภัณฑ์สัตว์น้ำไคยูคัง)",
+    id: "osaka-kaiyukan",
+    name: "พิพิธภัณฑ์สัตว์น้ำไคยูคัง (Osaka Aquarium Kaiyukan)",
     japanese: "海遊館 (かいゆうかん)",
     category: "attraction",
     icon: "🦈",
@@ -3471,8 +3471,8 @@ const POPULAR_HOTSPOTS_DATA = [
     desc: "อควาเรียมยักษ์ระดับโลก ชมฉลามวาฬแหวกว่ายในแท็งก์น้ำวน 9 เมตร และชิงช้าสวรรค์เทมโปซาน"
   },
   {
-    id: "hotspot-attraction-namba-yasaka",
-    name: "Namba Yasaka Shrine (ศาลเจ้านัมบะ ยาซากะ หัวสิงโตยักษ์)",
+    id: "osaka-namba-yasaka",
+    name: "ศาลเจ้าหัวสิงโตยักษ์ นัมบะ ยาซากะ (Namba Yasaka Shrine)",
     japanese: "難波八阪神社",
     category: "attraction",
     icon: "🦁",
@@ -3499,8 +3499,8 @@ const POPULAR_HOTSPOTS_DATA = [
     desc: "จุดชมวิวพาโนรามา 360 องศาบนตึกที่สูงที่สุดในโอซาก้า ชมพระอาทิตย์ตกและแสงสีค่ำคืนคันไซ"
   },
   {
-    id: "hotspot-attraction-disneysea",
-    name: "Tokyo DisneySea (โตเกียว ดิสนีย์ซี & โซน Fantasy Springs)",
+    id: "tokyo-disneysea-guide",
+    name: "โตเกียว ดิสนีย์ซี (Tokyo DisneySea)",
     japanese: "東京ディズニーシー (ファンタジースプリングス)",
     category: "attraction",
     icon: "🧜‍♀️",
@@ -3513,8 +3513,8 @@ const POPULAR_HOTSPOTS_DATA = [
     desc: "สวนสนุกดิสนีย์ธีมทะเลแห่งเดียวในโลก พร้อมโซนใหม่ล่าสุด Fantasy Springs (Frozen, Tangled, Peter Pan) สุดตระการตา"
   },
   {
-    id: "hotspot-attraction-disneyland",
-    name: "Tokyo Disneyland (โตเกียว ดิสนีย์แลนด์ & ปราสาทซินเดอเรลล่า)",
+    id: "tokyo-disneyland-guide",
+    name: "โตเกียว ดิสนีย์แลนด์ (Tokyo Disneyland)",
     japanese: "東京ディズニーランド",
     category: "attraction",
     icon: "🏰",
@@ -3541,8 +3541,8 @@ const POPULAR_HOTSPOTS_DATA = [
     desc: "สตูดิโอทัวร์แฮร์รี่ พอตเตอร์ในร่มที่ใหญ่ที่สุดในโลก เดินชมฉากห้องโถงใหญ่ ชานชาลา 9 ¾ ป่าต้องห้าม และตรอกไดแอกอนของจริง"
   },
   {
-    id: "hotspot-attraction-katsuoji",
-    name: "Katsuo-ji Temple (วัดคัตสึโอจิ / วัดดารุมะแห่งชัยชนะ)",
+    id: "osaka-katsuoji",
+    name: "วัดคัตสึโอจิ — วัดดารุมะแห่งชัยชนะ (Katsuo-ji Temple)",
     japanese: "勝尾寺 (かつおうじ)",
     category: "attraction",
     icon: "🏮",

@@ -730,6 +730,76 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  // Canonical Mapping of Known Synonyms & Place IDs
+  const CANONICAL_PLACE_MAP = {
+    "hotspot-shop-denden-town": "osaka-denden-town",
+    "denden-town": "osaka-denden-town",
+    "denden": "osaka-denden-town",
+    "nipponbashi-denden": "osaka-denden-town",
+    "hotspot-shop-shinsaibashi": "osaka-shinsaibashi",
+    "shinsaibashi": "osaka-shinsaibashi",
+    "hotspot-attraction-kaiyukan": "osaka-kaiyukan",
+    "kaiyukan": "osaka-kaiyukan",
+    "hotspot-attraction-namba-yasaka": "osaka-namba-yasaka",
+    "namba-yasaka": "osaka-namba-yasaka",
+    "hotspot-attraction-katsuoji": "osaka-katsuoji",
+    "katsuoji": "osaka-katsuoji",
+    "hotspot-attraction-disneyland": "tokyo-disneyland-guide",
+    "disneyland": "tokyo-disneyland-guide",
+    "hotspot-attraction-disneysea": "tokyo-disneysea-guide",
+    "disneysea": "tokyo-disneysea-guide",
+    "usj": "osaka-usj"
+  };
+
+  function getCanonicalPlaceId(id, title = "") {
+    if (!id && !title) return "";
+    const rawId = (id || "").toLowerCase().trim();
+    const rawTitle = (title || "").toLowerCase().trim();
+    
+    if (CANONICAL_PLACE_MAP[rawId]) return CANONICAL_PLACE_MAP[rawId];
+    
+    // Direct match in JAPAN_DATA
+    if (typeof JAPAN_DATA !== "undefined" && Array.isArray(JAPAN_DATA)) {
+      const direct = JAPAN_DATA.find(p => p.id === rawId || p.id === rawId.split('_')[0]);
+      if (direct) return direct.id;
+    }
+
+    // Search by keyword/alias in titles
+    if (rawId.includes("denden") || rawTitle.includes("denden") || rawTitle.includes("เด็นเด็น") || rawTitle.includes("เดนเดน") || rawTitle.includes("den den") || rawTitle.includes("nipponbashi")) {
+      return "osaka-denden-town";
+    }
+    if (rawId.includes("shinsaibashi") || rawTitle.includes("shinsaibashi") || rawTitle.includes("ชินไซบาชิ")) {
+      return "osaka-shinsaibashi";
+    }
+    if (rawId.includes("kaiyukan") || rawTitle.includes("kaiyukan") || rawTitle.includes("ไคยูคัง")) {
+      return "osaka-kaiyukan";
+    }
+    if (rawId.includes("yasaka") || rawTitle.includes("yasaka") || rawTitle.includes("หัวสิงโต")) {
+      return "osaka-namba-yasaka";
+    }
+    if (rawId.includes("katsuo") || rawTitle.includes("katsuo") || rawTitle.includes("คัตสึโอจิ") || rawTitle.includes("ดารุมะ")) {
+      return "osaka-katsuoji";
+    }
+    if (rawId.includes("disneysea") || rawTitle.includes("disneysea") || rawTitle.includes("ดิสนีย์ซี")) {
+      return "tokyo-disneysea-guide";
+    }
+    if (rawId.includes("disneyland") || rawTitle.includes("disneyland") || rawTitle.includes("ดิสนีย์แลนด์")) {
+      return "tokyo-disneyland-guide";
+    }
+    if (rawId.includes("usj") || rawTitle.includes("universal") || rawTitle.includes("ยูเอสเจ") || rawTitle.includes("ยูนิเวอร์แซล")) {
+      return "osaka-usj";
+    }
+
+    return rawId;
+  }
+
+  function arePlacesEquivalent(placeA, placeB) {
+    if (!placeA || !placeB) return false;
+    const idA = getCanonicalPlaceId(placeA.baseId || placeA.id, placeA.title || placeA.name);
+    const idB = getCanonicalPlaceId(placeB.baseId || placeB.id, placeB.title || placeB.name);
+    return idA === idB;
+  }
+
   // Load Saved Itinerary and Custom Places
   let itineraryList = JSON.parse(localStorage.getItem("nippon_itinerary") || "[]");
   let customPlacesStore = JSON.parse(localStorage.getItem("nippon_custom_places") || "[]");
@@ -755,18 +825,44 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (customPlacesStore && customPlacesStore.length > 0) {
+    const dedupedCustom = [];
+    const seenCanonicalIds = new Set();
+
     customPlacesStore.forEach(cp => {
-      const smart = resolveSmartStationAndRegion(cp.title || cp.name || cp.id, cp.lat, cp.lng);
-      if (!cp.station || cp.station === "สถานีใกล้เคียง" || cp.station === "จากการค้นหา") {
-        cp.station = smart.station;
-      }
-      cp.region = cp.region || smart.region;
-      cp.tag = (cp.tag && cp.tag !== "จากการค้นหา" && cp.tag !== "จุดหมายของฉัน") ? cp.tag : smart.tag;
-      cp.stayHours = cp.stayHours || smart.stayHours;
-      if (!cp.japanese || cp.japanese === cp.title) {
-        cp.japanese = smart.japanese || cp.title;
+      const canonicalId = getCanonicalPlaceId(cp.id, cp.title || cp.name);
+      if (!seenCanonicalIds.has(canonicalId)) {
+        seenCanonicalIds.add(canonicalId);
+        const canonInJapanData = JAPAN_DATA.find(j => j.id === canonicalId);
+        const smart = resolveSmartStationAndRegion(cp.title || cp.name || cp.id, cp.lat, cp.lng);
+
+        if (canonInJapanData) {
+          dedupedCustom.push({
+            ...cp,
+            id: canonicalId,
+            baseId: canonicalId,
+            title: canonInJapanData.title,
+            japanese: canonInJapanData.japanese,
+            region: canonInJapanData.region,
+            station: canonInJapanData.station || smart.station,
+            tag: canonInJapanData.tag || smart.tag,
+            stayHours: canonInJapanData.stayHours || smart.stayHours
+          });
+        } else {
+          dedupedCustom.push({
+            ...cp,
+            id: cp.id || canonicalId,
+            baseId: canonicalId,
+            station: (!cp.station || cp.station === "สถานีใกล้เคียง" || cp.station === "จากการค้นหา") ? smart.station : cp.station,
+            region: cp.region || smart.region,
+            tag: (cp.tag && cp.tag !== "จากการค้นหา" && cp.tag !== "จุดหมายของฉัน") ? cp.tag : smart.tag,
+            stayHours: cp.stayHours || smart.stayHours,
+            japanese: (!cp.japanese || cp.japanese === cp.title) ? (smart.japanese || cp.title) : cp.japanese
+          });
+        }
       }
     });
+
+    customPlacesStore = dedupedCustom;
     localStorage.setItem("nippon_custom_places", JSON.stringify(customPlacesStore));
   }
 
@@ -3550,7 +3646,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // Universal helper to add any place (hotspot, search, pin, form) directly into the plan
   function addCustomPlaceToPlan(placeData, targetDay = null, allowDuplicate = true) {
     const rawId = placeData.id || `custom-place-${Date.now()}`;
-    const baseId = rawId.split('_')[0];
+    const canonicalId = getCanonicalPlaceId(rawId, placeData.title || placeData.name);
+    const baseId = canonicalId || rawId.split('_')[0];
+
+    // Check if canonical destination exists in JAPAN_DATA
+    const canonInJapanData = JAPAN_DATA.find(j => j.id === baseId);
+    if (canonInJapanData) {
+      placeData.title = canonInJapanData.title;
+      placeData.japanese = canonInJapanData.japanese;
+      placeData.region = canonInJapanData.region;
+      placeData.station = canonInJapanData.station || placeData.station;
+      placeData.tag = canonInJapanData.tag || placeData.tag;
+      placeData.stayHours = canonInJapanData.stayHours || placeData.stayHours;
+    }
+
     const smart = resolveSmartStationAndRegion(placeData.title || placeData.name, placeData.lat, placeData.lng);
     const station = (placeData.station && placeData.station !== "สถานีใกล้เคียง" && placeData.station !== "จากการค้นหา") ? placeData.station : smart.station;
     const region = placeData.region || smart.region || "osaka";
@@ -3558,7 +3667,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const stayHours = placeData.stayHours || smart.stayHours || "1 - 2 ชม.";
 
     // Determine Day & Time
-    const existingVisits = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) === baseId || i.id === baseId || i.title === (placeData.title || placeData.name));
+    const existingVisits = itineraryList.filter(i => {
+      const iCanon = getCanonicalPlaceId(i.baseId || i.id, i.title || i.name);
+      return iCanon === baseId || i.title === (placeData.title || placeData.name);
+    });
     let assignedDay = targetDay ? parseInt(targetDay, 10) : (placeData.day ? parseInt(placeData.day, 10) : null);
     if (!assignedDay) {
       if (existingVisits.length > 0) {
@@ -3590,8 +3702,11 @@ document.addEventListener("DOMContentLoaded", () => {
       time: assignedTime
     };
 
-    // 1. Save to customPlacesStore if not already there
-    const existingCpIdx = customPlacesStore.findIndex(cp => cp.id === baseId || cp.title === newPlace.title);
+    // 1. Save to customPlacesStore if not already there (deduplicating by canonical ID)
+    const existingCpIdx = customPlacesStore.findIndex(cp => {
+      const cpCanon = getCanonicalPlaceId(cp.id, cp.title || cp.name);
+      return cpCanon === baseId || cp.id === baseId || cp.title === newPlace.title;
+    });
     if (existingCpIdx >= 0) {
       customPlacesStore[existingCpIdx] = { ...newPlace, id: baseId };
     } else {
@@ -6639,29 +6754,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sort descending by score
     scored.sort((a, b) => b.score - a.score);
 
-    // Guaranteed ZERO duplicates: track used baseIds
-    const usedIds = new Set();
+    // Guaranteed ZERO duplicates: track used Canonical IDs across all aliases & datasets
+    const usedCanonicalIds = new Set();
     const newItinerary = [];
 
     for (let idx = 0; idx < scored.length && newItinerary.length < totalNeeded; idx++) {
       const candidate = scored[idx].item;
-      const baseId = candidate.baseId || (candidate.id ? candidate.id.split('_')[0] : candidate.id);
+      const canonicalId = getCanonicalPlaceId(candidate.baseId || candidate.id, candidate.title || candidate.name);
       
-      if (!usedIds.has(baseId)) {
-        usedIds.add(baseId);
+      if (!usedCanonicalIds.has(canonicalId)) {
+        usedCanonicalIds.add(canonicalId);
+        const canonInJapanData = JAPAN_DATA.find(j => j.id === canonicalId);
+        const finalTitle = canonInJapanData ? canonInJapanData.title : candidate.title;
+        const finalJp = canonInJapanData ? canonInJapanData.japanese : candidate.japanese;
+        const finalRegion = canonInJapanData ? canonInJapanData.region : candidate.region;
+        const finalStation = canonInJapanData ? (canonInJapanData.station || candidate.station) : candidate.station;
+        const finalTag = canonInJapanData ? (canonInJapanData.tag || candidate.tag) : candidate.tag;
+        const finalCost = canonInJapanData ? (canonInJapanData.estimatedCost || candidate.cost || "ฟรี") : (candidate.cost || "ฟรี");
+
         const dayNum = Math.floor(newItinerary.length / placesPerDay) + 1;
         const timeSlot = timeSlots[newItinerary.length % placesPerDay] || "10:00";
+
         newItinerary.push({
           id: candidate.id,
-          baseId: baseId,
-          title: candidate.title,
-          japanese: candidate.japanese,
-          region: candidate.region,
-          tag: candidate.tag,
-          cost: candidate.estimatedCost || candidate.cost || "ฟรี",
-          station: candidate.station,
-          stayHours: candidate.stayHours,
-          icon: candidate.icon || "📍",
+          baseId: canonicalId,
+          title: finalTitle,
+          japanese: finalJp,
+          region: finalRegion,
+          tag: finalTag,
+          cost: finalCost,
+          station: finalStation,
+          stayHours: candidate.stayHours || (canonInJapanData ? canonInJapanData.stayHours : "1.5 - 2.5 ชม."),
+          icon: candidate.icon || (canonInJapanData ? canonInJapanData.icon : "📍"),
           day: dayNum,
           time: timeSlot
         });
