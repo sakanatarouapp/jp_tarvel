@@ -7459,6 +7459,46 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Shinkansen Master Guide Modal Logic
+  const shinkansenGuideModal = document.getElementById("shinkansen-guide-modal");
+  const openShinkansenGuideBtn = document.getElementById("open-shinkansen-guide-btn");
+  const closeShinkansenModalBtn = document.getElementById("close-shinkansen-modal-btn");
+  const shinkansenCloseBottomBtn = document.getElementById("shinkansen-close-bottom-btn");
+  const shinkansenCalcPassBtn = document.getElementById("shinkansen-calc-pass-btn");
+  const profileMenuShinkansenBtn = document.getElementById("profile-menu-shinkansen-btn");
+
+  function openShinkansenGuide() {
+    if (shinkansenGuideModal) shinkansenGuideModal.style.display = "flex";
+  }
+
+  function closeShinkansenGuide() {
+    if (shinkansenGuideModal) shinkansenGuideModal.style.display = "none";
+  }
+
+  if (openShinkansenGuideBtn) openShinkansenGuideBtn.addEventListener("click", openShinkansenGuide);
+  if (closeShinkansenModalBtn) closeShinkansenModalBtn.addEventListener("click", closeShinkansenGuide);
+  if (shinkansenCloseBottomBtn) shinkansenCloseBottomBtn.addEventListener("click", closeShinkansenGuide);
+  if (shinkansenGuideModal) {
+    shinkansenGuideModal.addEventListener("click", (e) => {
+      if (e.target === shinkansenGuideModal) closeShinkansenGuide();
+    });
+  }
+
+  if (shinkansenCalcPassBtn) {
+    shinkansenCalcPassBtn.addEventListener("click", () => {
+      closeShinkansenGuide();
+      const jrSec = document.getElementById("jr-pass-calc");
+      if (jrSec) jrSec.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  if (profileMenuShinkansenBtn) {
+    profileMenuShinkansenBtn.addEventListener("click", () => {
+      closeProfileHub();
+      openShinkansenGuide();
+    });
+  }
+
   const profileMenuCurrencyBtn = document.getElementById("profile-menu-currency-btn");
   if (profileMenuCurrencyBtn) {
     profileMenuCurrencyBtn.addEventListener("click", () => {

@@ -8423,6 +8423,271 @@ body {
   }
 }
 
+/* ================= 20.2 SHINKANSEN BULLET TRAIN MASTER GUIDE MODAL ================= */
+.shinkansen-modal-box {
+  max-width: 820px;
+  width: 94%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 25px 60px rgba(159, 18, 57, 0.25);
+  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shinkansen-modal-header {
+  padding: 1.15rem 1.4rem;
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border-bottom: 1px solid #fecdd3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shinkansen-close-btn {
+  background: white;
+  border: 1px solid #fecdd3;
+  color: #9f1239;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.shinkansen-close-btn:hover {
+  background: #f43f5e;
+  color: white;
+}
+
+.shinkansen-modal-body {
+  padding: 1.25rem 1.4rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  background: #fcfcfd;
+}
+
+.shinkansen-section-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.shinkansen-section-card.highlight-fuji {
+  border-color: #cbd5e1;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.shinkansen-section-card.alert-baggage {
+  border-color: #fed7aa;
+  background: #fffaf5;
+}
+
+.shinkansen-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shinkansen-routes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.shinkansen-route-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #edf2f7;
+  flex-wrap: wrap;
+}
+
+.route-line-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.route-line-badge.tokaido { background: #0284c7; }
+.route-line-badge.sanyo { background: #e11d48; }
+.route-line-badge.hokuriku { background: #d97706; }
+.route-line-badge.tohoku { background: #059669; }
+
+.route-main-info {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.route-main-info strong {
+  font-size: 0.84rem;
+  color: #1e293b;
+}
+
+.route-main-info span {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.route-price-tag {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #a7f3d0;
+}
+
+.fuji-hack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.fuji-hack-box {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+
+.fuji-direction {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 3px;
+}
+
+.fuji-seat {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #be123c;
+  margin-bottom: 4px;
+}
+
+.fuji-hack-box p {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.smartex-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.step-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.82rem;
+  color: #1e293b;
+}
+
+.step-badge {
+  background: #0284c7;
+  color: white;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.baggage-info-content {
+  font-size: 0.82rem;
+  color: #1e293b;
+  line-height: 1.45;
+}
+
+.baggage-action-rule {
+  background: #ffedd5;
+  border: 1px solid #fed7aa;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  color: #9a3412;
+  margin: 0.45rem 0;
+}
+
+.food-on-train-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.food-train-item {
+  display: flex;
+  gap: 0.65rem;
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #edf2f7;
+}
+
+.food-train-icon {
+  font-size: 1.5rem;
+}
+
+.food-train-item strong {
+  font-size: 0.84rem;
+  color: #0f172a;
+}
+
+.food-train-item p {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+  line-height: 1.35;
+}
+
+.shinkansen-modal-footer {
+  padding: 0.85rem 1.4rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .shinkansen-modal-footer button {
+    width: 100%;
+  }
+}
+
+
 
 
 

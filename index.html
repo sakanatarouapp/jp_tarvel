@@ -721,6 +721,20 @@
       </div>
 
       <div class="jrpass-calculator-card">
+        <!-- Direct Shinkansen Guide Hub Entry Banner -->
+        <div style="background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border: 1.5px solid #fecdd3; border-radius: var(--radius-lg); padding: 0.95rem 1.25rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 2rem;">🚅</span>
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: #9f1239; margin-bottom: 2px;">ต้องการดูคู่มือขึ้น Shinkansen, ทริคดูวิวฟูจิ & จอง SmartEX?</h4>
+              <p style="font-size: 0.8rem; color: #be123c; margin: 0;">รวมสายรถไฟยอดนิยม, วิธีเลือกที่นั่งฝั่งฟูจิ, กฎกระเป๋าเดินทางขนาดใหญ่, และของกินบนรถไฟ</p>
+            </div>
+          </div>
+          <button type="button" class="btn primary" id="open-shinkansen-guide-btn" style="background: #e11d48; color: white; padding: 0.55rem 1.15rem; font-weight: 700; border-radius: 20px; font-size: 0.82rem; white-space: nowrap; box-shadow: 0 3px 10px rgba(225, 29, 72, 0.25);">
+            🚅 เปิดคู่มือ Shinkansen ➔
+          </button>
+        </div>
+
         <div class="jrpass-controls-row">
           <div class="jrpass-pass-choice">
             <label>เลือกตั๋ว JR Pass ที่ต้องการเทียบ:</label>
@@ -1443,6 +1457,15 @@
           </div>
         </button>
 
+        <button type="button" class="profile-menu-item" id="profile-menu-shinkansen-btn">
+          <div class="menu-item-icon">🚅</div>
+          <div class="menu-item-text">
+            <strong>คู่มือรถไฟชินคันเซ็น & ทริคเลือกที่นั่ง (Shinkansen Guide)</strong>
+            <span>วิธีจอง SmartEX, ทริคดูวิวฟูจิ และกฎกระเป๋าใบใหญ่ 2026</span>
+          </div>
+          <span class="menu-item-tag" style="background: #e11d48; color: white;">คู่มือ</span>
+        </button>
+
         <button type="button" class="profile-menu-item" id="profile-menu-currency-btn">
           <div class="menu-item-icon">💴</div>
           <div class="menu-item-text">
@@ -1762,6 +1785,151 @@
       <div class="show-local-footer">
         <button type="button" class="btn primary" id="show-local-speak-btn" style="background: #1e3a8a; color: white; width: 100%; font-weight: 800; font-size: 1rem; padding: 0.75rem; border-radius: 12px;">
           🔊 กดออกเสียงภาษาญี่ปุ่นให้ฟัง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shinkansen Bullet Train Master Guide Modal -->
+  <div class="modal-backdrop" id="shinkansen-guide-modal" style="display: none;">
+    <div class="modal-container shinkansen-modal-box">
+      <div class="shinkansen-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 2.2rem;">🚅</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem; color: #9f1239; font-weight: 800;">คู่มือรถไฟความเร็วสูง Shinkansen & ทริคการเดินทาง 2026</h3>
+            <p style="margin: 0; font-size: 0.82rem; color: var(--text-muted);">東海道・山陽・東北新幹線 • วิธีจองตั๋ว SmartEX, ทริคเลือกที่นั่งชมวิวฟูจิ, และกฎกระเป๋าใบใหญ่</p>
+          </div>
+        </div>
+        <button type="button" class="shinkansen-close-btn" id="close-shinkansen-modal-btn">&times;</button>
+      </div>
+
+      <div class="shinkansen-modal-body">
+        <!-- 1. Key Routes & Times -->
+        <div class="shinkansen-section-card">
+          <div class="shinkansen-card-title">
+            <span>🚅</span> 1. เส้นทางยอดนิยม & เวลาเดินทาง (Popular Lines)
+          </div>
+          <div class="shinkansen-routes-list">
+            <div class="shinkansen-route-item">
+              <div class="route-line-badge tokaido">Tokaido Shinkansen</div>
+              <div class="route-main-info">
+                <strong>โตเกียว (Tokyo) ↔ เกียวโต / ชินโอซาก้า (Kyoto / Shin-Osaka)</strong>
+                <span>⏱️ ใช้เวลาเพียง <strong>2 ชม. 15 นาที</strong> (ขบวน Nozomi) หรือ 2 ชม. 40 นาที (ขบวน Hikari)</span>
+              </div>
+              <div class="route-price-tag">~¥14,720 / เที่ยว</div>
+            </div>
+            <div class="shinkansen-route-item">
+              <div class="route-line-badge sanyo">Sanyo Shinkansen</div>
+              <div class="route-main-info">
+                <strong>ชินโอซาก้า (Shin-Osaka) ↔ ฮิโรชิม่า (Hiroshima) / ฮากาตะ (Fukuoka)</strong>
+                <span>⏱️ ใช้เวลาเพียง <strong>1 ชม. 25 นาที</strong> ถึงฮิโรชิม่า (ขบวน Sakura / Nozomi)</span>
+              </div>
+              <div class="route-price-tag">~¥10,630 / เที่ยว</div>
+            </div>
+            <div class="shinkansen-route-item">
+              <div class="route-line-badge hokuriku">Hokuriku Shinkansen</div>
+              <div class="route-main-info">
+                <strong>โตเกียว (Tokyo) ↔ คารุอิซาวะ / คานาซาว่า (Karuizawa / Kanazawa)</strong>
+                <span>⏱️ ใช้เวลาเพียง <strong>2 ชม. 30 นาที</strong> (ขบวน Kagayaki)</span>
+              </div>
+              <div class="route-price-tag">~¥14,380 / เที่ยว</div>
+            </div>
+            <div class="shinkansen-route-item">
+              <div class="route-line-badge tohoku">Tohoku / Hokkaido</div>
+              <div class="route-main-info">
+                <strong>โตเกียว (Tokyo) ↔ เซนได / ฮาโกดาเตะ ฮอกไกโด (Hakodate)</strong>
+                <span>⏱️ ใช้เวลา <strong>1 ชม. 30 นาที</strong> ถึงเซนได / 4 ชม. ถึงฮาโกดาเตะ (ขบวน Hayabusa วิ่ง 320 กม./ชม.)</span>
+              </div>
+              <div class="route-price-tag">~¥11,410 - ¥23,430</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Fuji View Seat Hacks -->
+        <div class="shinkansen-section-card highlight-fuji">
+          <div class="shinkansen-card-title">
+            <span>🗻</span> 2. ทริคเลือกที่นั่งชมวิวภูเขาไฟฟูจิ (Fuji View Seat Hack)
+          </div>
+          <div class="fuji-hack-grid">
+            <div class="fuji-hack-box">
+              <div class="fuji-direction">🚅 ขาไป (Tokyo ➔ Kyoto / Osaka):</div>
+              <div class="fuji-seat">เลือกที่นั่ง <strong>ฝั่งขวา (แถว E)</strong></div>
+              <p>รถไฟจะวิ่งผ่านสถานี Shin-Fuji ประมาณนาทีที่ 40-45 หลังออกจากโตเกียว มองเห็นฟูจิซังริมหน้าต่างเต็มตา</p>
+            </div>
+            <div class="fuji-hack-box">
+              <div class="fuji-direction">🚅 ขากลับ (Osaka / Kyoto ➔ Tokyo):</div>
+              <div class="fuji-seat">เลือกที่นั่ง <strong>ฝั่งซ้าย (แถว A)</strong></div>
+              <p>ชมวิวฟูจิก่อนเข้าสู่โตเกียว แนะนำช่วงบ่าย-เย็นที่แสงอาทิตย์กระทบยอดภูเขาไฟอย่างงดงาม</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. SmartEX & Booking -->
+        <div class="shinkansen-section-card">
+          <div class="shinkansen-card-title">
+            <span>📱</span> 3. วิธีจองตั๋วล่วงหน้าผ่านแอป SmartEX (ไม่ต้องต่อคิวที่สถานี)
+          </div>
+          <div class="smartex-steps-list">
+            <div class="step-row">
+              <span class="step-badge">1</span>
+              <div>ดาวน์โหลดแอป <strong>SmartEX (JR Tokaido Sanyo Shinkansen)</strong> รองรับภาษาอังกฤษ</div>
+            </div>
+            <div class="step-row">
+              <span class="step-badge">2</span>
+              <div>เลือกขบวน เวลา และเลือกที่นั่งบนแผนผังที่นั่งได้เองล่วงหน้าถึง 1 เดือน</div>
+            </div>
+            <div class="step-row">
+              <span class="step-badge">3</span>
+              <div>ผูกหมายเลขบัตรแตะ <strong>Suica / Pasmo / ICOCA</strong> หรือ Apple Wallet เข้ากับตั๋ว แล้วแตะบัตรเข้าเกตชินคันเซ็นได้ทันที!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Oversized Baggage Rule -->
+        <div class="shinkansen-section-card alert-baggage">
+          <div class="shinkansen-card-title">
+            <span>🧳</span> 4. กฎสัมภาระขนาดใหญ่ (Oversized Baggage Rules)
+          </div>
+          <div class="baggage-info-content">
+            <p><strong>ขนาดกระเป๋า:</strong> หากผลรวม กว้าง + ยาว + สูง อยู่ระหว่าง <strong>160 - 250 ซม.</strong> (กระเป๋าเดินทางขนาด 28 - 32 นิ้ว)</p>
+            <div class="baggage-action-rule">
+              ⚠️ <strong>ต้องจองที่นั่งประเภท "Reserved Seat with Oversized Baggage Area"</strong> (ที่นั่งแถวหลังสุดของตู้) ล่วงหน้าผ่านแอปหรือเคาน์เตอร์ โดยไม่มีค่าธรรมเนียมเพิ่ม (หากไม่จองแล้วนำขึ้นรถไฟจะมีค่าปรับ 1,000 เยน และต้องย้ายที่วาง)
+            </div>
+            <small style="color: #64748b;">* กระเป๋าขนาดมาตรฐานต่ำกว่า 28 นิ้ว (รวมไม่เกิน 160 ซม.) สามารถยกวางบนชั้นวางเหนือศีรษะได้ฟรีตามปกติ</small>
+          </div>
+        </div>
+
+        <!-- 5. Food on Train -->
+        <div class="shinkansen-section-card">
+          <div class="shinkansen-card-title">
+            <span>🍱</span> 5. ของกินห้ามพลาดบนชินคันเซ็น (Ekiben & Super Hard Ice Cream)
+          </div>
+          <div class="food-on-train-grid">
+            <div class="food-train-item">
+              <span class="food-train-icon">🍱</span>
+              <div>
+                <strong>ข้าวกล่องสถานีรถไฟ (Ekiben):</strong>
+                <p>ซื้อที่ร้าน Ekiben Matsuri ในสถานี Tokyo หรือบนชานชาลา มีทั้งข้าวหน้าเนื้อวากิว, ข้าวหน้าปลาดิบ, และข้าวกล่องรูปหัวรถไฟชินคันเซ็น</p>
+              </div>
+            </div>
+            <div class="food-train-item">
+              <span class="food-train-icon">🍦</span>
+              <div>
+                <strong>ไอศกรีมแข็งในตำนาน (Sujata Super Hard Ice Cream):</strong>
+                <p>ไอศกรีมวานิลลาเข้มข้นที่แช่แข็งด้วยน้ำแข็งแห้งจนแข็งโป๊ก ต้องรอประมาณ 10-15 นาทีกว่าจะตักทานได้ ซื้อได้จากตู้กดบนชานชาลาชินคันเซ็น</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shinkansen-modal-footer">
+        <button type="button" class="btn" id="shinkansen-calc-pass-btn" style="background: #0284c7; color: white; font-weight: 700; border-radius: 10px; padding: 0.65rem 1.3rem;">
+          🎫 ไปที่เครื่องคำนวณ JR Pass vs รายเที่ยว
+        </button>
+        <button type="button" class="btn" id="shinkansen-close-bottom-btn" style="background: #f1f5f9; color: var(--text-main); font-weight: 700; border-radius: 10px; padding: 0.65rem 1.2rem;">
+          ปิดหน้าต่าง
         </button>
       </div>
     </div>
