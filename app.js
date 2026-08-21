@@ -9,7 +9,20 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   // ================= SMART PROXIMITY & LOCATION RESOLUTION ENGINE =================
   const KNOWN_JAPAN_PLACES_DICTIONARY = [
-    // Osaka
+    // Osaka & Kansai
+    {
+      aliases: ["katsuoji", "katsuo-ji", "katsuojitemple", "วัดคัตสึโอจิ", "คัตสึโอจิ", "วัดดารุมะ", "ดารุมะ", "勝尾寺", "かつおうじ", "วัดคัทสึโอจิ", "katsuo"],
+      id: "osaka-katsuoji",
+      title: "วัดคัตสึโอจิ — วัดดารุมะแห่งชัยชนะ (Katsuo-ji Temple)",
+      japanese: "勝尾寺 (かつおうじ)",
+      station: "สถานี Minoh-kayano (M06) ต่อรถบัส Hankyu Bus 15 นาที",
+      region: "osaka",
+      tag: "วัดดารุมะ / ขอพรชัยชนะ & ธุรกิจรุ่งเรือง",
+      icon: "🏮",
+      stayHours: "1.5 - 2.5 ชม.",
+      lat: 34.8658,
+      lng: 135.4912
+    },
     {
       aliases: ["denden", "dendentown", "dendenstreet", "nipponbashi", "เด็นเด็น", "เดนเดน", "นิปปอนบาชิ", "日本橋", "でんでんタウン"],
       id: "osaka-denden-town",
@@ -18,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Ebisucho (K18) / Nippombashi (K17) เดิน 2 นาที",
       region: "osaka",
       tag: "อนิเมะ / เกม / ฟิกเกอร์ & อิเล็กทรอนิกส์",
+      icon: "🎮",
       stayHours: "2 - 3 ชม.",
       lat: 34.6590,
       lng: 135.5058
@@ -30,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Shin-Imamiya / Dobutsuen-mae / Ebisucho เดิน 3 นาที",
       region: "osaka",
       tag: "ย่านเรโทร / สตรีทฟู้ดคุชิคัตสึ",
+      icon: "🗼",
       stayHours: "2 - 3 ชม.",
       lat: 34.6525,
       lng: 135.5063
@@ -42,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Osakako (C11 ทางออก 1 เดิน 5 นาที)",
       region: "osaka",
       tag: "อควาเรียมระดับโลก / ฉลามวาฬยักษ์",
+      icon: "🦈",
       stayHours: "2.5 - 3.5 ชม.",
       lat: 34.6545,
       lng: 135.4289
@@ -54,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Namba ทางออก 5 หรือ 6 (เดิน 6 นาที)",
       region: "osaka",
       tag: "ศาลเจ้าหัวสิงโตยักษ์ / ปัดเป่าโชคร้าย",
+      icon: "🦁",
       stayHours: "45 นาที - 1 ชม.",
       lat: 34.6628,
       lng: 135.4965
@@ -66,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Shinsaibashi (M19 ทางออก 5/6 เชื่อมตรง)",
       region: "osaka",
       tag: "ถนนช้อปปิ้งในร่ม / แฟชั่น & สตรีทฟู้ด",
+      icon: "🛍️",
       stayHours: "2.5 - 4 ชม.",
       lat: 34.6710,
       lng: 135.5010
@@ -78,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Tennoji (JR/M23) / Osaka-Abenobashi เชื่อมตรงใต้ตึก",
       region: "osaka",
       tag: "ตึกระฟ้า 300 เมตร / วิวพาโนรามา 360 องศา",
+      icon: "✨",
       stayHours: "1.5 - 2 ชม.",
       lat: 34.6458,
       lng: 135.5140
@@ -90,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Minoh (Hankyu Minoh Line เดินเลียบน้ำตก 30 นาที)",
       region: "osaka",
       tag: "ธรรมชาติ / น้ำตกใบไม้เปลี่ยนสี & ใบเมเปิ้ลทอด",
+      icon: "🍁",
       stayHours: "2.5 - 3.5 ชม.",
       lat: 34.8500,
       lng: 135.4740
@@ -102,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Namba (M20 ทางออก 14) / Nippombashi เดิน 3 นาที",
       region: "osaka",
       tag: "แลนด์มาร์ก / สตรีทฟู้ด & ช้อปปิ้ง",
+      icon: "🏃",
       stayHours: "2 - 3 ชม.",
       lat: 34.6687,
       lng: 135.5013
@@ -114,6 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Osakajokoen (JR Loop Line) / Tanimachi 4-chome เดิน 5 นาที",
       region: "osaka",
       tag: "ประวัติศาสตร์ / แลนด์มาร์กหลัก",
+      icon: "🏯",
       stayHours: "2 - 2.5 ชม.",
       lat: 34.6873,
       lng: 135.5262
@@ -126,6 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Universal City (JR Yumesaki Line เดิน 2 นาที)",
       region: "osaka",
       tag: "สวนสนุกระดับโลก / มาริโอ้ & แฮร์รี่ พอตเตอร์",
+      icon: "🎢",
       stayHours: "6 - 8 ชม.",
       lat: 34.6654,
       lng: 135.4323
@@ -138,10 +161,65 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Nippombashi (K17/S17 ทางออก 10 เดิน 1 นาที)",
       region: "osaka",
       tag: "ตลาดปลาสด / ซูชิ & เนื้อย่าง A5",
+      icon: "🦀",
       stayHours: "1.5 - 2 ชม.",
       lat: 34.6659,
       lng: 135.5070
     },
+    {
+      aliases: ["umedasky", "umeda", "floatinggarden", "อุเมดะ", "อุเมดะสกาย", "梅田スカイビル"],
+      id: "osaka-umeda-sky",
+      title: "จุดชมวิวตึกระฟ้า อุเมดะ สกาย บิลดิ้ง (Umeda Sky Building)",
+      japanese: "梅田スカイビル 空中庭園展望台",
+      station: "สถานี Osaka / Umeda เดิน 9 นาที",
+      region: "osaka",
+      tag: "จุดชมวิวเชื่อมสองตึก / พระอาทิตย์ตก",
+      icon: "🌉",
+      stayHours: "1.5 - 2 ชม.",
+      lat: 34.7053,
+      lng: 135.4897
+    },
+    {
+      aliases: ["sumiyoshi", "sumiyoshitaisha", "ศาลเจ้าสุมิโยชิ", "สุมิโยชิ", "住吉大社"],
+      id: "osaka-sumiyoshi",
+      title: "ศาลเจ้าสุมิโยชิ ไทฉะ & สะพานโค้งสีแดง (Sumiyoshi Taisha)",
+      japanese: "住吉大社 (すみよしたいしゃ)",
+      station: "สถานี Sumiyoshtaitaisha (Nankai Line เดิน 2 นาที)",
+      region: "osaka",
+      tag: "ศาลเจ้าโบราณ / สะพานกลองสีแดงโซริฮาชิ",
+      icon: "⛩️",
+      stayHours: "1 - 1.5 ชม.",
+      lat: 34.6133,
+      lng: 135.4930
+    },
+    {
+      aliases: ["himeji", "himejicastle", "ปราสาทฮิเมจิ", "ฮิเมจิ", "姫路城"],
+      id: "osaka-himeji-castle",
+      title: "ปราสาทฮิเมจิ มรดกโลก ปราสาทนกกระสาขาว (Himeji Castle)",
+      japanese: "姫路城 (ひめじじょう)",
+      station: "สถานี JR Himeji (เดิน 15 นาที หรือนั่งรถบัส 5 นาที)",
+      region: "osaka",
+      tag: "มรดกโลก UNESCO / ปราสาทดั้งเดิม",
+      icon: "🏯",
+      stayHours: "2.5 - 3.5 ชม.",
+      lat: 34.8394,
+      lng: 134.6939
+    },
+    {
+      aliases: ["nara", "narapark", "todaiji", "สวนกวางนารา", "นารา", "กวางนารา", "วัดโทไดจิ", "奈良公園", "東大寺"],
+      id: "kansai-nara-park",
+      title: "สวนกวางนารา & วัดหลวงพ่อโตโทไดจิ (Nara Deer Park & Todai-ji)",
+      japanese: "奈良公園 & 東大寺 (大仏殿)",
+      station: "สถานี Kintetsu-Nara เดิน 5 นาที / JR Nara เดิน 15 นาที",
+      region: "osaka",
+      tag: "สวนกวางแสนรู้ / พระใหญ่ไดบุตสึไม้ที่ใหญ่ที่สุด",
+      icon: "🦌",
+      stayHours: "3 - 4 ชม.",
+      lat: 34.6851,
+      lng: 135.8430
+    },
+
+    // Kyoto
     {
       aliases: ["fushimiinari", "fushimi", "inari", "เสาโทริอิ", "ฟูชิมิอินาริ", "ศาลเจ้าจิ้งจอก", "伏見稲荷大社"],
       id: "kyoto-fushimi-inari",
@@ -150,6 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Fushimi-Inari (Keihan Line) / Inari (JR Nara Line เดิน 1 นาที)",
       region: "kyoto",
       tag: "วัด & วัฒนธรรม / เสาโทริอิพันต้น",
+      icon: "⛩️",
       stayHours: "2 - 3 ชม.",
       lat: 34.9671,
       lng: 135.7727
@@ -162,10 +241,78 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Saga-Arashiyama (JR) / Arashiyama (Hankyu/Keifuku เดิน 5 นาที)",
       region: "kyoto",
       tag: "ธรรมชาติ & วัฒนธรรม / ป่าไผ่โบราณ",
+      icon: "🎋",
       stayHours: "3 - 4 ชม.",
       lat: 35.0166,
       lng: 135.6713
     },
+    {
+      aliases: ["kiyomizu", "kiyomizudera", "วัดน้ำใส", "คิโยมิสุเดระ", "ซันเนนซากะ", "清水寺"],
+      id: "kyoto-kiyomizudera",
+      title: "วัดน้ำใสคิโยมิสุเดระ & ถนนคนเดินโบราณ (Kiyomizu-dera)",
+      japanese: "清水寺 & 産寧坂 (三年坂)",
+      station: "นั่งรถบัส Kyoto City Bus สาย 206 หรือ 100 ลงป้าย Gojozaka / Kiyomizu-michi",
+      region: "kyoto",
+      tag: "มรดกโลก UNESCO / ระเบียงไม้ไร้ตะปู",
+      icon: "⛩️",
+      stayHours: "2 - 3 ชม.",
+      lat: 34.9949,
+      lng: 135.7850
+    },
+    {
+      aliases: ["kinkakuji", "goldenpavilion", "วัดทอง", "คินคะคุจิ", "金閣寺"],
+      id: "kyoto-kinkakuji",
+      title: "วัดทองคินคะคุจิ (Kinkaku-ji Golden Pavilion)",
+      japanese: "金閣寺 (鹿苑寺)",
+      station: "นั่งรถบัส Kyoto City Bus สาย 12 หรือ 205 ลงป้าย Kinkakuji-michi",
+      region: "kyoto",
+      tag: "มรดกโลก / ศาลาทองคำสะท้อนผืนน้ำ",
+      icon: "✨",
+      stayHours: "1 - 1.5 ชม.",
+      lat: 35.0394,
+      lng: 135.7292
+    },
+    {
+      aliases: ["ginkakuji", "silverpavilion", "วัดเงิน", "กิงคะคุจิ", "ทางเดินสายปรัชญา", "銀閣寺"],
+      id: "kyoto-ginkakuji",
+      title: "วัดเงินกิงคะคุจิ & ทางเดินสายปรัชญา (Ginkaku-ji)",
+      japanese: "銀閣寺 (慈照寺)",
+      station: "นั่งรถบัส Kyoto City Bus สาย 5, 17, 100 ลงป้าย Ginkakuji-michi",
+      region: "kyoto",
+      tag: "วัด & สวนทรายเซน / ทางเดินสายปรัชญา",
+      icon: "🍃",
+      stayHours: "1 - 1.5 ชม.",
+      lat: 35.0272,
+      lng: 135.7982
+    },
+    {
+      aliases: ["nishiki", "nishikimarket", "ตลาดนิชิกิ", "ครัวเกียวโต", "錦市場"],
+      id: "kyoto-nishiki-market",
+      title: "ตลาดนิชิกิ — ครัวแห่งเกียวโต (Nishiki Market)",
+      japanese: "錦市場 (にしきいちば)",
+      station: "สถานี Shijo (Karama Line) / Kyoto-kawaramachi (Hankyu Line เดิน 3 นาที)",
+      region: "kyoto",
+      tag: "สตรีทฟู้ดโบราณ / อาหารเกียวโตแท้",
+      icon: "🍢",
+      stayHours: "1.5 - 2 ชม.",
+      lat: 35.0050,
+      lng: 135.7650
+    },
+    {
+      aliases: ["byodoin", "uji", "วัดเบียวโดอิน", "อุจิ", "ชาเขียวอุจิ", "平等院"],
+      id: "kyoto-byodoin",
+      title: "วัดเบียวโดอิน & เมืองชาเขียวอุจิ (Byodoin Temple & Uji)",
+      japanese: "平等院 鳳凰堂 & 宇治",
+      station: "สถานี JR Uji / Keihan Uji (เดิน 10 นาที)",
+      region: "kyoto",
+      tag: "วิหารหงส์บนเหรียญ 10 เยน / มรดกโลก & ชาเขียว",
+      icon: "🍵",
+      stayHours: "2 - 3 ชม.",
+      lat: 34.8893,
+      lng: 135.8078
+    },
+
+    // Tokyo & Kanto
     {
       aliases: ["sensoji", "asakusa", "วัดเซนโซจิ", "วัดอาซากุสะ", "โคมแดง", "浅草寺"],
       id: "tokyo-sensoji",
@@ -174,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Asakusa (G19/A18 ทางออก 1 เดิน 3 นาที)",
       region: "tokyo",
       tag: "วัด & วัฒนธรรม / โคมแดงยักษ์",
+      icon: "⛩️",
       stayHours: "1.5 - 2 ชม.",
       lat: 35.7148,
       lng: 135.7968
@@ -186,6 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Shibuya (JY20/G01 ทางออก Hachiko เชื่อมตรงตึก)",
       region: "tokyo",
       tag: "แลนด์มาร์ก / วิวมุมสูง 360°",
+      icon: "🗼",
       stayHours: "2 - 2.5 ชม.",
       lat: 35.6580,
       lng: 139.7016
@@ -198,10 +347,158 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Tokyo Skytree (Tobu Line) / Oshiage (Z14/A20 เชื่อมตรง)",
       region: "tokyo",
       tag: "แลนด์มาร์ก & ชมวิว 360°",
+      icon: "🗼",
       stayHours: "2 - 3 ชม.",
       lat: 35.7100,
       lng: 139.8107
     },
+    {
+      aliases: ["tokyotower", "โตเกียวทาวเวอร์", "หอคอยโตเกียว", "東京タワー"],
+      id: "tokyo-tower",
+      title: "โตเกียวทาวเวอร์ (Tokyo Tower)",
+      japanese: "東京タワー",
+      station: "สถานี Akabanebashi (Oedo Line เดิน 5 นาที) / Kamiyacho",
+      region: "tokyo",
+      tag: "แลนด์มาร์กคลาสสิกสีส้มขาว / วิวมุมสูง",
+      icon: "🗼",
+      stayHours: "1.5 - 2 ชม.",
+      lat: 35.6586,
+      lng: 139.7454
+    },
+    {
+      aliases: ["tsukiji", "toyosu", "ตลาดปลา", "ตลาดปลาสึกิจิ", "โทโยสึ", "築地市場", "豊洲市場"],
+      id: "tokyo-tsukiji-food",
+      title: "ตลาดปลาสึกิจิ & โทโยสึ (Tsukiji Outer Market)",
+      japanese: "築地場外市場 & 豊洲市場",
+      station: "สถานี Tsukiji (H10) / Tsukijishijo (E18 เดิน 1 นาที)",
+      region: "tokyo",
+      tag: "สตรีทฟู้ดซีฟู้ด / ซูชิต้นตำรับ & ไข่หวานย่าง",
+      icon: "🍣",
+      stayHours: "1.5 - 2 ชม.",
+      lat: 35.6655,
+      lng: 139.7708
+    },
+    {
+      aliases: ["shinjukugyoen", "shinjuku", "สวนชินจูกุ", "ชินจูกุเกียวเอน", "新宿御苑"],
+      id: "tokyo-shinjuku-gyoen",
+      title: "สวนชินจูกุเกียวเอน (Shinjuku Gyoen National Garden)",
+      japanese: "新宿御苑 (しんじゅくぎょえん)",
+      station: "สถานี Shinjuku-gyoemmae (M09 ทางออก 1 เดิน 5 นาที)",
+      region: "tokyo",
+      tag: "สวนธรรมชาติ / จุดชมซากุระ & ใบไม้เปลี่ยนสี",
+      icon: "🌸",
+      stayHours: "2 - 2.5 ชม.",
+      lat: 35.6852,
+      lng: 139.7101
+    },
+    {
+      aliases: ["teamlabplanets", "teamlab", "ทีมแล็บ", "แพลเน็ตส์", "チームラボプラネッツ"],
+      id: "tokyo-teamlab-planets",
+      title: "พิพิธภัณฑ์ศิลปะดิจิทัล teamLab Planets โตเกียว (Toyosu)",
+      japanese: "teamLab Planets TOKYO (チームラボプラネッツ 豊洲)",
+      station: "สถานี Shin-Toyosu (Yurikamome Line เดิน 1 นาที)",
+      region: "tokyo",
+      tag: "ดิจิทัลอาร์ตระดับโลก / ลุยน้ำ & สวนดอกไม้กระจก",
+      icon: "✨",
+      stayHours: "2 - 2.5 ชม.",
+      lat: 35.6514,
+      lng: 139.7897
+    },
+    {
+      aliases: ["teamlabborderless", "borderless", "azabudai", "บอร์เดอร์เลส", "อาซาบุได", "麻布台ヒルズ"],
+      id: "tokyo-teamlab-borderless",
+      title: "teamLab Borderless ดิจิทัลอาร์ต อาซาบุได ฮิลส์ (Azabudai Hills)",
+      japanese: "teamLab Borderless (麻布台ヒルズ)",
+      station: "สถานี Kamiyacho (Hibiya Line เชื่อมตรงใต้ตึก)",
+      region: "tokyo",
+      tag: "พิพิธภัณฑ์ศิลปะดิจิทัลระดับโลก",
+      icon: "✨",
+      stayHours: "2.5 - 3 ชม.",
+      lat: 35.6608,
+      lng: 139.7431
+    },
+    {
+      aliases: ["disney", "disneyland", "disneysea", "โตเกียวดิสนีย์แลนด์", "ดิสนีย์แลนด์", "ดิสนีย์ซี", "ディズニーランド", "ディズニーシー"],
+      id: "tokyo-disney",
+      title: "โตเกียวดิสนีย์แลนด์ & ดิสนีย์ซี (Tokyo Disney Resort)",
+      japanese: "東京ディズニーリゾート (TDL & TDS)",
+      station: "สถานี JR Maihama (Keiyo Line เชื่อมต่อ Disney Resort Line)",
+      region: "tokyo",
+      tag: "อาณาจักรเวทมนตร์ / Fantasy Springs",
+      icon: "🏰",
+      stayHours: "8 - 10 ชม.",
+      lat: 35.6329,
+      lng: 139.8804
+    },
+    {
+      aliases: ["kamakura", "enoshima", "daibutsu", "พระใหญ่คามาคุระ", "คามาคุระ", "เอโนชิมะ", "鎌倉大仏", "江の島"],
+      id: "kanto-kamakura-daibutsu",
+      title: "พระใหญ่ไดบุตสึ & เมืองเก่าริมทะเลคามาคุระ (Kamakura & Enoshima)",
+      japanese: "鎌倉大仏 (高徳院) & 江の島",
+      station: "สถานี Hase (Enoden Line เดิน 5 นาที) / Kamakura (JR Yokosuka Line)",
+      region: "tokyo",
+      tag: "พระใหญ่กลางแจ้ง / รถไฟโบราณ Enoden เลียบทะเล",
+      icon: "🧘",
+      stayHours: "4 - 5 ชม.",
+      lat: 35.3168,
+      lng: 139.5357
+    },
+    {
+      aliases: ["hakone", "lakeashi", "owakudani", "ฮาโกเนะ", "ทะเลสาบอาชิ", "โอวากุดานิ", "ไข่ดำ", "箱根", "芦ノ湖", "大涌谷"],
+      id: "kanto-hakone-lake-ashi",
+      title: "ล่องเรือโจรสลัดทะเลสาบอาชิ & ฮาโกเนะออนเซ็น (Hakone Lake Ashi)",
+      japanese: "箱根海賊船 (芦ノ湖) & 大涌谷温泉",
+      station: "สถานี Hakone-Yumoto (Odakyu Romancecar ต่อ Hakone Tozan Railway)",
+      region: "tokyo",
+      tag: "ล่องเรือชมวิวฟูจิ / ไข่ดำโอวากุดานิ & แช่ออนเซ็น",
+      icon: "🚢",
+      stayHours: "5 - 7 ชม.",
+      lat: 35.2045,
+      lng: 139.0223
+    },
+
+    // Chubu & Fuji
+    {
+      aliases: ["kawaguchiko", "fuji", "chureito", "คาวากุจิโกะ", "ฟูจิ", "เจดีย์ชูเรโตะ", "ภูเขาไฟฟูจิ", "河口湖", "新倉山浅間公園"],
+      id: "fuji-kawaguchiko",
+      title: "ทะเลสาบคาวากุจิโกะ & เจดีย์ชูเรโตะ (Lake Kawaguchiko & Chureito Pagoda)",
+      japanese: "富士河口湖 & 新倉山浅間公園 (忠霊塔)",
+      station: "สถานี Kawaguchiko (Fujikyu Railway) / Shimoyoshida เดิน 15 นาที",
+      region: "chubu",
+      tag: "วิวฟูจิยอดฮิตอันดับ 1 / เจดีย์แดง 5 ชั้น",
+      icon: "🗻",
+      stayHours: "4 - 6 ชม.",
+      lat: 35.5015,
+      lng: 138.7562
+    },
+    {
+      aliases: ["shirakawago", "shirakawa", "ชิราคาวาโกะ", "หมู่บ้านมรดกโลก", "บ้านทรงพนมมือ", "白川郷"],
+      id: "chubu-shirakawago",
+      title: "หมู่บ้านมรดกโลก ชิราคาวาโกะ (Shirakawa-go Village)",
+      japanese: "白川郷 合掌造り集落",
+      station: "สถานี Shirakawa-go Bus Terminal (นั่งบัสจาก Takayama/Kanazawa 50 นาที)",
+      region: "chubu",
+      tag: "มรดกโลก UNESCO / บ้านกัสโชซึคุริหิมะขาว",
+      icon: "🏘️",
+      stayHours: "3 - 4 ชม.",
+      lat: 36.2562,
+      lng: 136.9064
+    },
+    {
+      aliases: ["takayama", "sanmachi", "ทาคายามะ", "เมืองเก่าทาคายามะ", "เนื้อฮิดะ", "飛騨高山"],
+      id: "chubu-takayama-oldtown",
+      title: "เมืองเก่าทาคายามะ ซันมาจิ ซูจิ & วากิวฮิดะ (Takayama Sanmachi)",
+      japanese: "飛騨高山 古い町並み (三町通り) & 飛騨牛",
+      station: "สถานี JR Takayama (Takayama Main Line เดิน 8 นาที)",
+      region: "chubu",
+      tag: "เมืองเก่าเอโดะ / ข้าวปั้นซูชิเนื้อฮิดะวากิว A5",
+      icon: "🥩",
+      stayHours: "3 - 4 ชม.",
+      lat: 36.1408,
+      lng: 137.2588
+    },
+
+    // Hokkaido
     {
       aliases: ["otaru", "otarucanal", "โอตารุ", "คลองโอตารุ", "小樽運河"],
       id: "hokkaido-otaru-canal",
@@ -210,6 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Otaru (JR Hakodate Line เดิน 8 นาที)",
       region: "hokkaido",
       tag: "คลองโบราณ & บรรยากาศโรแมนติก",
+      icon: "❄️",
       stayHours: "2.5 - 4 ชม.",
       lat: 43.1907,
       lng: 140.9947
@@ -222,9 +520,66 @@ document.addEventListener("DOMContentLoaded", () => {
       station: "สถานี Susukino (Namboku Line ทางออก 3 เดิน 2 นาที)",
       region: "hokkaido",
       tag: "สตรีทฟู้ด / มิโซะราเมงฮอกไกโด",
+      icon: "🍜",
       stayHours: "1 - 1.5 ชม.",
       lat: 43.0556,
       lng: 141.3533
+    },
+    {
+      aliases: ["hakodate", "mounthakodate", "ฮาโกดาเตะ", "ยอดเขาฮาโกดาเตะ", "函館山"],
+      id: "hokkaido-hakodate-night",
+      title: "จุดชมวิวกลางคืนยอดเขาฮาโกดาเตะ & ตลาดเช้า (Mount Hakodate)",
+      japanese: "函館山ロープウェイ & 函館朝市",
+      station: "สถานี Hakodate (JR) / นั่งกระเช้า Mt. Hakodate Ropeway",
+      region: "hokkaido",
+      tag: "วิวกลางคืน 1 ใน 3 ที่สวยที่สุดในโลก",
+      icon: "🌃",
+      stayHours: "3 - 4 ชม.",
+      lat: 41.7588,
+      lng: 140.7042
+    },
+
+    // Fukuoka & Kyushu
+    {
+      aliases: ["nakasu", "yatai", "fukuoka", "นากาสุ", "ยาไต", "ฟุกุโอกะ", "中洲屋台"],
+      id: "fukuoka-yatai-nakasu",
+      title: "ร้านสตรีทฟู้ดแผงลอยยาไต ย่านนากาสุ (Nakasu Yatai Stalls)",
+      japanese: "中洲屋台街 (なかす やたいがい)",
+      station: "สถานี Nakasu-Kawabata (Kuko Line ทางออก 1 เดิน 5 นาที)",
+      region: "fukuoka",
+      tag: "วัฒนธรรมกินดื่มริมแม่น้ำ / ฮากาตะทงคตสึราเมง",
+      icon: "🍜",
+      stayHours: "2 - 3 ชม.",
+      lat: 33.5902,
+      lng: 130.4078
+    },
+    {
+      aliases: ["dazaifu", "dazaifutenmangu", "ดาไซฟุ", "ศาลเจ้าดาไซฟุ", "ขนมบ๊วยย่าง", "太宰府天満宮"],
+      id: "fukuoka-dazaifu",
+      title: "ศาลเจ้าดาไซฟุ เทนมันกุ & ขนมบ๊วยย่าง (Dazaifu Tenmangu Shrine)",
+      japanese: "太宰府天満宮 & 梅ヶ枝餅",
+      station: "สถานี Dazaifu (Nishitetsu Dazaifu Line เดิน 5 นาที)",
+      region: "fukuoka",
+      tag: "ขอพรการเรียน & การสอบ / ต้นบ๊วยศักดิ์สิทธิ์",
+      icon: "⛩️",
+      stayHours: "2 - 3 ชม.",
+      lat: 33.5215,
+      lng: 130.5349
+    },
+
+    // Hiroshima & Chugoku
+    {
+      aliases: ["miyajima", "itsukushima", "มิยาจิมะ", "ศาลเจ้าลอยน้ำ", "เสาโทริอิกลางทะเล", "厳島神社", "宮島"],
+      id: "hiroshima-miyajima",
+      title: "ศาลเจ้าลอยน้ำมิยาจิมะ & เสาโทริอิกลางทะเล (Miyajima Itsukushima Shrine)",
+      japanese: "宮島 厳島神社 (大鳥居)",
+      station: "สถานี Miyajimaguchi (JR) แล้วนั่งเรือเฟอร์รี่ JR Miyajima Ferry 10 นาที",
+      region: "hiroshima",
+      tag: "มรดกโลก UNESCO / เสาโทริอิสีแดงลอยน้ำ",
+      icon: "⛩️",
+      stayHours: "3 - 5 ชม.",
+      lat: 34.2960,
+      lng: 132.3198
     }
   ];
 
@@ -3133,7 +3488,70 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // OpenStreetMap Nominatim Auto-Search & Google Maps URL Parser
+  // Thai to English/Japanese Geocoding Translation Dictionary
+  const THAI_TO_EN_GEO_MAP = [
+    { th: "วัดคัตสึโอจิ", en: "Katsuo-ji Temple Minoh Osaka" },
+    { th: "คัตสึโอจิ", en: "Katsuo-ji Temple Minoh Osaka" },
+    { th: "วัดดารุมะ", en: "Katsuo-ji Temple" },
+    { th: "วัดคิโยมิสุเดระ", en: "Kiyomizu-dera Kyoto" },
+    { th: "วัดคิโยมิสุ", en: "Kiyomizu-dera Kyoto" },
+    { th: "วัดน้ำใส", en: "Kiyomizu-dera Kyoto" },
+    { th: "วัดทอง", en: "Kinkaku-ji Kyoto" },
+    { th: "คินคะคุจิ", en: "Kinkaku-ji Kyoto" },
+    { th: "วัดเงิน", en: "Ginkaku-ji Kyoto" },
+    { th: "กิงคะคุจิ", en: "Ginkaku-ji Kyoto" },
+    { th: "วัดเซนโซจิ", en: "Senso-ji Asakusa Tokyo" },
+    { th: "วัดอาซากุสะ", en: "Senso-ji Asakusa Tokyo" },
+    { th: "ปราสาทโอซาก้า", en: "Osaka Castle" },
+    { th: "ปราสาทฮิเมจิ", en: "Himeji Castle" },
+    { th: "ปราสาทคุมาโมโตะ", en: "Kumamoto Castle" },
+    { th: "ปราสาทนิโจ", en: "Nijo Castle Kyoto" },
+    { th: "โตเกียวทาวเวอร์", en: "Tokyo Tower" },
+    { th: "โตเกียวสกายทรี", en: "Tokyo Skytree" },
+    { th: "ดิสนีย์แลนด์", en: "Tokyo Disneyland" },
+    { th: "ดิสนีย์ซี", en: "Tokyo DisneySea" },
+    { th: "ยูนิเวอร์แซล", en: "Universal Studios Japan" },
+    { th: "ชิราคาวาโกะ", en: "Shirakawa-go Gifu" },
+    { th: "คาวากุจิโกะ", en: "Lake Kawaguchiko" },
+    { th: "เจดีย์ชูเรโตะ", en: "Chureito Pagoda Fujiyoshida" },
+    { th: "ฮาโกเนะ", en: "Hakone Kanagawa" },
+    { th: "โอตารุ", en: "Otaru Canal Hokkaido" },
+    { th: "สวนกวางนารา", en: "Nara Park Todai-ji" },
+    { th: "วัดโทไดจิ", en: "Todai-ji Temple Nara" },
+    { th: "ศาลเจ้าสุมิโยชิ", en: "Sumiyoshi Taisha Osaka" },
+    { th: "ศาลเจ้าดาไซฟุ", en: "Dazaifu Tenmangu Fukuoka" },
+    { th: "ศาลเจ้ามิยาจิมะ", en: "Itsukushima Shrine Miyajima Hiroshima" },
+    { th: "ป่าไผ่อาราชิยามะ", en: "Arashiyama Bamboo Grove Kyoto" },
+    { th: "ตลาดคุโรมง", en: "Kuromon Ichiba Market Osaka" },
+    { th: "ตลาดนิชิกิ", en: "Nishiki Market Kyoto" },
+    { th: "ตลาดปลาสึกิจิ", en: "Tsukiji Outer Market Tokyo" },
+    { th: "ทีมแล็บ", en: "teamLab Planets Tokyo" }
+  ];
+
+  function translateThaiSearchQuery(q) {
+    let clean = q.trim();
+    for (const item of THAI_TO_EN_GEO_MAP) {
+      if (clean.includes(item.th)) {
+        return item.en;
+      }
+    }
+    let mapped = clean
+      .replace(/วัด/g, " Temple ")
+      .replace(/ศาลเจ้า/g, " Shrine ")
+      .replace(/ปราสาท/g, " Castle ")
+      .replace(/ตลาด/g, " Market ")
+      .replace(/สวนสนุก/g, " Theme Park ")
+      .replace(/สวน/g, " Park ")
+      .replace(/สถานี/g, " Station ")
+      .replace(/โรงแรม/g, " Hotel ")
+      .replace(/หอคอย/g, " Tower ")
+      .replace(/น้ำตก/g, " Falls ")
+      .replace(/ยอดเขา/g, " Mount ")
+      .replace(/ทะเลสาบ/g, " Lake ");
+    return mapped.trim();
+  }
+
+  // OpenStreetMap Nominatim Auto-Search & Instant Local Smart Resolution Engine
   async function performCustomPlaceSearch(query) {
     if (!query || query.trim().length < 2) {
       if (customSearchResults) customSearchResults.style.display = "none";
@@ -3141,8 +3559,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const trimmed = query.trim();
+    const cleanQ = trimmed.toLowerCase().replace(/[\s\-_.,()'"/]+/g, '');
 
-    // 1. Check if input contains raw coordinates e.g. "35.6938, 139.7034" or "@35.6938,139.7034"
+    // 1. Direct Coordinate Match (e.g. "34.8658, 135.4912" or "@35.6895,139.6917")
     const coordMatch = trimmed.match(/@?(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
     if (coordMatch) {
       const lat = parseFloat(coordMatch[1]);
@@ -3160,22 +3579,16 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
           customSearchResults.style.display = "block";
           customSearchResults.querySelector(".custom-search-item")?.addEventListener("click", () => {
-            let reg = "tokyo";
-            if (lat > 34.4 && lat < 35.2 && lon > 135.0 && lon < 136.0) reg = "osaka";
-            else if (lat > 34.8 && lat < 35.3 && lon > 135.5 && lon < 136.0) reg = "kyoto";
-            else if (lat > 42.0) reg = "hokkaido";
-            else if (lat < 34.0) reg = "fukuoka";
-            else if (lat > 35.0 && lat < 36.5 && lon < 138.5) reg = "chubu";
-
+            const smart = resolveSmartStationAndRegion(`พิกัด ${lat.toFixed(3)}, ${lon.toFixed(3)}`, lat, lon);
             addCustomPlaceToPlan({
               id: `custom-coord-${Date.now()}`,
               title: `จุดปักหมุด (${lat.toFixed(3)}, ${lon.toFixed(3)})`,
               japanese: `GPS: ${lat.toFixed(3)}, ${lon.toFixed(3)}`,
-              region: reg,
+              region: smart.region,
               tag: "พิกัดปักหมุด",
               icon: "📍",
               category: "spot",
-              station: "ตำแหน่งระบุ",
+              station: smart.station,
               stayHours: "1 - 2 ชม.",
               lat: lat,
               lng: lon
@@ -3188,68 +3601,223 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 2. Clean URL if pasted from Google Maps
-    let cleanQuery = trimmed;
-    if (cleanQuery.includes("google.com/maps/place/")) {
-      const placeMatch = cleanQuery.match(/place\/([^\/]+)/);
-      if (placeMatch) cleanQuery = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+    let cleanSearchStr = trimmed;
+    if (cleanSearchStr.includes("google.com/maps/place/")) {
+      const placeMatch = cleanSearchStr.match(/place\/([^\/]+)/);
+      if (placeMatch) cleanSearchStr = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+    }
+
+    // 3. Instant Local Smart Search (0ms) from KNOWN_JAPAN_PLACES_DICTIONARY, JAPAN_DATA & HOTSPOTS
+    const localMatches = [];
+
+    // A. Check KNOWN_JAPAN_PLACES_DICTIONARY
+    KNOWN_JAPAN_PLACES_DICTIONARY.forEach(item => {
+      const matchAlias = item.aliases && item.aliases.some(a => {
+        const cleanA = a.toLowerCase().replace(/[\s\-_.,()'"/]+/g, '');
+        return cleanQ.includes(cleanA) || cleanA.includes(cleanQ);
+      });
+      const matchTitle = item.title.toLowerCase().replace(/[\s\-_.,()'"/]+/g, '').includes(cleanQ);
+      const matchJp = item.japanese && item.japanese.includes(trimmed);
+      if (matchAlias || matchTitle || matchJp) {
+        if (!localMatches.some(m => m.id === item.id || m.title === item.title)) {
+          localMatches.push({
+            id: item.id,
+            title: item.title,
+            japanese: item.japanese,
+            region: item.region,
+            station: item.station,
+            tag: item.tag,
+            icon: item.icon || "⛩️",
+            stayHours: item.stayHours || "1.5 - 2 ชม.",
+            lat: item.lat,
+            lng: item.lng,
+            source: "⚡ แนะนำตรงเป๊ะ (Smart Database)"
+          });
+        }
+      }
+    });
+
+    // B. Check JAPAN_DATA
+    if (typeof JAPAN_DATA !== "undefined") {
+      JAPAN_DATA.forEach(card => {
+        const cleanTitle = card.title.toLowerCase().replace(/[\s\-_.,()'"/]+/g, '');
+        const cleanKw = (card.keyword || '').toLowerCase();
+        if (cleanTitle.includes(cleanQ) || cleanKw.includes(cleanQ) || (card.japanese && card.japanese.includes(trimmed))) {
+          if (!localMatches.some(m => m.id === card.id || m.title === card.title)) {
+            const meta = (typeof ROUTE_SIMULATION_META !== "undefined" && ROUTE_SIMULATION_META[card.id]) ? ROUTE_SIMULATION_META[card.id] : {};
+            localMatches.push({
+              id: card.id,
+              title: card.title,
+              japanese: card.japanese || card.title,
+              region: card.region,
+              station: meta.station || (card.transport ? card.transport.split(" (")[0].replace("🚶", "").replace("🚇", "").replace("🚆", "").trim() : "สถานีใกล้เคียง"),
+              tag: card.tag || "สถานที่ท่องเที่ยว",
+              icon: meta.icon || "🗾",
+              stayHours: meta.stayHours || "2 - 3 ชม.",
+              lat: meta.lat || 34.68,
+              lng: meta.lng || 135.50,
+              source: "🗾 สถานที่ในคู่มือ (Japan Guide)"
+            });
+          }
+        }
+      });
+    }
+
+    // C. Check POPULAR_HOTSPOTS_DATA
+    if (typeof POPULAR_HOTSPOTS_DATA !== "undefined") {
+      POPULAR_HOTSPOTS_DATA.forEach(h => {
+        const cleanHName = h.name.toLowerCase().replace(/[\s\-_.,()'"/]+/g, '');
+        if (cleanHName.includes(cleanQ) || (h.japanese && h.japanese.includes(trimmed))) {
+          if (!localMatches.some(m => m.id === h.id || m.title === h.name)) {
+            localMatches.push({
+              id: h.id,
+              title: h.name,
+              japanese: h.japanese,
+              region: h.region,
+              station: h.station,
+              tag: h.tag,
+              icon: h.icon || "📍",
+              stayHours: h.stayHours || "1.5 - 2 ชม.",
+              lat: h.lat,
+              lng: h.lng,
+              source: "🌟 จุดยอดนิยม (Hotspot)"
+            });
+          }
+        }
+      });
+    }
+
+    // Render Immediate Local Results if found
+    let initialHtml = "";
+    if (localMatches.length > 0) {
+      initialHtml = `
+        <div style="padding: 4px 8px; font-size: 0.72rem; font-weight: 800; color: #059669; background: #ecfdf5; border-radius: 6px; margin-bottom: 6px;">
+          ⚡ พบสถานที่ตรงกับคำค้นหาทันที (${localMatches.length} จุดหมาย):
+        </div>
+        ${localMatches.map((item, idx) => `
+          <div class="custom-search-item local-match-item" data-local-idx="${idx}">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="custom-search-item-title">${item.icon} ${item.title}</div>
+              <button type="button" class="hotspot-add-btn" style="padding: 2px 8px; font-size: 0.72rem; background: #059669;">+ เพิ่มเข้าทริป</button>
+            </div>
+            <div class="custom-search-item-address">
+              <span style="color: #059669; font-weight: 700;">${item.source}</span> • ${item.japanese} • 📍 ${item.station}
+            </div>
+          </div>
+        `).join("")}
+      `;
+    } else {
+      initialHtml = `<div style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">🔄 กำลังค้นหาพิกัดบนแผนที่ญี่ปุ่น...</div>`;
     }
 
     if (customSearchResults) {
-      customSearchResults.innerHTML = `<div style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">🔄 กำลังค้นหาตำแหน่งในญี่ปุ่น...</div>`;
+      customSearchResults.innerHTML = initialHtml;
       customSearchResults.style.display = "block";
+
+      // Attach click listeners for instant local matches
+      customSearchResults.querySelectorAll(".local-match-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const lIdx = parseInt(el.getAttribute("data-local-idx"), 10);
+          const sel = localMatches[lIdx];
+          if (sel) {
+            addCustomPlaceToPlan({
+              id: sel.id,
+              title: sel.title,
+              japanese: sel.japanese,
+              region: sel.region,
+              tag: sel.tag,
+              icon: sel.icon,
+              station: sel.station,
+              stayHours: sel.stayHours,
+              lat: sel.lat,
+              lng: sel.lng
+            });
+            closeCustomPlaceModal();
+          }
+        });
+      });
     }
 
+    // 4. Parallel OpenStreetMap Nominatim Live Geocoding with Thai-to-EN query translation
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanQuery)}&countrycodes=jp&limit=6&addressdetails=1`;
+      const translatedQuery = translateThaiSearchQuery(cleanSearchStr);
+      const queryToUse = (translatedQuery && translatedQuery !== cleanSearchStr) ? translatedQuery : cleanSearchStr;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryToUse)}&countrycodes=jp&limit=5&addressdetails=1`;
+      
       const resp = await fetch(url, { headers: { "Accept-Language": "en,ja,th" } });
       const data = await resp.json();
 
-      if (!data || data.length === 0) {
-        if (customSearchResults) {
-          customSearchResults.innerHTML = `
-            <div style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
-              ❌ ไม่พบพิกัดโดยตรง — คุณสามารถสลับไปที่แท็บ "กรอกพิกัดเอง" ได้ครับ
-            </div>
-          `;
-        }
-        return;
+      let externalHtml = "";
+      if (data && data.length > 0) {
+        externalHtml = `
+          <div style="padding: 6px 8px 2px; font-size: 0.72rem; font-weight: 800; color: #0284c7; border-top: 1px dashed #cbd5e1; margin-top: 6px;">
+            🌐 ผลการค้นหาพิกัดแผนที่ (OpenStreetMap Japan):
+          </div>
+          ${data.map((item, idx) => {
+            const placeTitle = item.name || item.display_name.split(",")[0];
+            const placeAddr = item.display_name;
+            return `
+              <div class="custom-search-item osm-match-item" data-osm-idx="${idx}">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="custom-search-item-title">📍 ${placeTitle}</div>
+                  <button type="button" class="hotspot-add-btn" style="padding: 2px 8px; font-size: 0.72rem;">+ เพิ่มทันที</button>
+                </div>
+                <div class="custom-search-item-address">${placeAddr}</div>
+              </div>
+            `;
+          }).join("")}
+        `;
       }
 
       if (customSearchResults) {
-        customSearchResults.innerHTML = data.map((item, idx) => {
-          const placeTitle = item.name || item.display_name.split(",")[0];
-          const placeAddr = item.display_name;
-          return `
-            <div class="custom-search-item" data-idx="${idx}">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="custom-search-item-title">📍 ${placeTitle}</div>
-                <button type="button" class="hotspot-add-btn" style="padding: 2px 8px; font-size: 0.72rem;">+ เพิ่มทันที</button>
-              </div>
-              <div class="custom-search-item-address">${placeAddr}</div>
+        if (localMatches.length === 0 && (!data || data.length === 0)) {
+          customSearchResults.innerHTML = `
+            <div style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+              ❌ ไม่พบพิกัดโดยตรง — คุณสามารถสลับไปที่แท็บ "✍️ กรอกพิกัดเอง" ได้ครับ
             </div>
           `;
-        }).join("");
+          return;
+        }
 
-        customSearchResults.querySelectorAll(".custom-search-item").forEach(itemEl => {
+        // Combine local results + OSM results
+        customSearchResults.innerHTML = (localMatches.length > 0 ? initialHtml : "") + externalHtml;
+
+        // Re-attach local listeners
+        customSearchResults.querySelectorAll(".local-match-item").forEach(el => {
+          el.addEventListener("click", () => {
+            const lIdx = parseInt(el.getAttribute("data-local-idx"), 10);
+            const sel = localMatches[lIdx];
+            if (sel) {
+              addCustomPlaceToPlan({
+                id: sel.id,
+                title: sel.title,
+                japanese: sel.japanese,
+                region: sel.region,
+                tag: sel.tag,
+                icon: sel.icon,
+                station: sel.station,
+                stayHours: sel.stayHours,
+                lat: sel.lat,
+                lng: sel.lng
+              });
+              closeCustomPlaceModal();
+            }
+          });
+        });
+
+        // Attach OSM listeners
+        customSearchResults.querySelectorAll(".osm-match-item").forEach(itemEl => {
           itemEl.addEventListener("click", () => {
-            const idx = parseInt(itemEl.getAttribute("data-idx"), 10);
+            const idx = parseInt(itemEl.getAttribute("data-osm-idx"), 10);
             const selected = data[idx];
             if (selected) {
               const placeTitle = selected.name || selected.display_name.split(",")[0];
               const lat = parseFloat(selected.lat);
               const lon = parseFloat(selected.lon);
 
-              // Auto detect region
-              const fullText = (selected.display_name + " " + JSON.stringify(selected.address || {})).toLowerCase();
-              let reg = "tokyo";
-              if (fullText.includes("kyoto")) reg = "kyoto";
-              else if (fullText.includes("osaka") || fullText.includes("nara") || fullText.includes("kobe")) reg = "osaka";
-              else if (fullText.includes("fuji") || fullText.includes("yamanashi") || fullText.includes("nagoya") || fullText.includes("gifu") || fullText.includes("takayama") || fullText.includes("shirakawa")) reg = "chubu";
-              else if (fullText.includes("hokkaido") || fullText.includes("sapporo") || fullText.includes("otaru") || fullText.includes("furano") || fullText.includes("hakodate")) reg = "hokkaido";
-              else if (fullText.includes("fukuoka") || fullText.includes("hakata") || fullText.includes("kyushu")) reg = "fukuoka";
-              else if (fullText.includes("hiroshima") || fullText.includes("miyajima")) reg = "hiroshima";
+              const smart = resolveSmartStationAndRegion(placeTitle, lat, lon);
 
-              let station = "สถานีใกล้เคียง";
+              let station = smart.station;
               if (selected.address && (selected.address.subway || selected.address.railway || selected.address.station)) {
                 station = `สถานี ${selected.address.subway || selected.address.railway || selected.address.station}`;
               }
@@ -3258,7 +3826,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 id: `custom-search-${Date.now()}`,
                 title: placeTitle,
                 japanese: placeTitle,
-                region: reg,
+                region: smart.region,
                 tag: "จากการค้นหา",
                 icon: "📍",
                 category: "spot",
@@ -3275,10 +3843,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     } catch (err) {
-      console.error("Geocoding search failed:", err);
-      if (customSearchResults) {
-        customSearchResults.innerHTML = `<div style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">กรอกชื่อและเลือกเมืองในแท็บกรอกพิกัดเองได้เลยครับ</div>`;
-      }
+      console.warn("Geocoding external fetch note:", err);
+      // If local matches exist, they remain visible!
     }
   }
 

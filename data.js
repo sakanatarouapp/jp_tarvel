@@ -1711,6 +1711,48 @@ const JAPAN_DATA = [
       }
     ]
   },
+  {
+    id: "osaka-katsuoji",
+    title: "วัดคัตสึโอจิ — วัดดารุมะแห่งชัยชนะ (Katsuo-ji Temple)",
+    japanese: "勝尾寺 (かつおうじ)",
+    region: "osaka",
+    category: "attraction",
+    seasons: ["all_year", "autumn", "spring"],
+    tag: "วัดดารุมะ / ขอพรชัยชนะ & ธุรกิจรุ่งเรือง",
+    rating: 4.9,
+    keyword: "katsuoji katsuo-ji temple daruma doll osaka minoh luck victory winning",
+    image: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1200&q=80",
+    description: "วัดศักดิ์สิทธิ์อายุกว่า 1,300 ปีบนหุบเขาทางตอนเหนือของโอซาก้า ขึ้นชื่อเรื่องตุ๊กตาดารุมะสีแดงนับพันตัวที่ตั้งเรียงรายทั่ววัด ผู้คนนิยมมาเขียนตาข้างขวาและขอพรแห่งชัยชนะ (Winning Daruma) ทั้งเรื่องธุรกิจ การสอบ และความสำเร็จในชีวิต",
+    transport: "🚌 จากสถานี Minoh-kayano (Osaka Metro Midosuji Line / Kita-Osaka Kyuko) ต่อรถบัส Hankyu Bus 15-20 นาที",
+    bestTime: "09:00 - 15:00 น. (ช่วงเช้าถึงบ่ายแดดส่องกระทบวิหารสีแดงและรอบรถบัสสะดวก)",
+    foodTips: "ห้ามพลาด: ชิมไอศกรีมมัทฉะดารุมะ และซื้อขนมเซมเบ้รูปดารุมะของฝากเอกลักษณ์ประจำวัด",
+    estimatedCost: "ค่าเข้าชมผู้ใหญ่ 500 เยน / เด็ก 400 เยน (ตุ๊กตาดารุมะขอพร 2,000 - 5,000 เยน)",
+    mustTry: ["เขียนตาและอธิษฐานขอพรกับตุ๊กตาดารุมะแห่งชัยชนะ", "ตามหาตุ๊กตาดารุมะจิ๋วที่ซ่อนอยู่ตามซอกหินและโคมไฟทั่ววัด", "ถ่ายรูปสะพานสีแดงข้ามสระน้ำและหมอกไอละอองน้ำสุดอลังการ"],
+    nearbyHotels: [
+      {
+        name: "Ooedo Onsen Monogatari Minoh Kanko Hotel",
+        japanese: "大江戸温泉物語 箕面観光ホテル",
+        type: "โรงแรมเรียวกังออนเซ็นชมวิวมหานคร",
+        distance: "นั่งรถ 10 นาทีถึงวัดคัตสึโอจิ",
+        priceJPY: 16500,
+        priceRange: "¥13,000 - ¥22,000 / คืน",
+        rating: 4.7,
+        highlight: "บ่อออนเซ็นลอยฟ้า Sky Open-air Bath ชมวิวพาโนรามาแสงไฟโอซาก้า มีบุฟเฟต์มื้อค่ำอาหารญี่ปุ่นและเนื้อย่างจัดเต็ม",
+        searchQuery: "Minoh Kanko Hotel Osaka"
+      },
+      {
+        name: "Senri Hankyu Hotel Osaka",
+        japanese: "千里阪急ホテル",
+        type: "โรงแรมคลาสสิกใกล้สถานีรถไฟใหญ่สายสีแดง",
+        distance: "ติดสถานี Senri-Chuo (นั่งรถบัสตรงถึงวัดคัตสึโอจิ)",
+        priceJPY: 11000,
+        priceRange: "¥9,000 - ¥16,000 / คืน",
+        rating: 4.6,
+        highlight: "ทำเลต่อรถบัสไปวัดคัตสึโอจิสะดวกที่สุด เงียบสงบ บรรยากาศร่มรื่นสไตล์ยุโรป",
+        searchQuery: "Senri Hankyu Hotel Osaka"
+      }
+    ]
+  },
 
   // --- NEW CHUBU & HOKKAIDO DESTINATIONS ---
   {
@@ -2896,6 +2938,18 @@ const ROUTE_SIMULATION_META = {
     icon: "🍁",
     mapsName: "Minoh Falls, Osaka"
   },
+  "osaka-katsuoji": {
+    station: "สถานี Minoh-kayano (M06) ต่อรถบัส 15 นาที",
+    city: "โอซาก้า",
+    region: "osaka",
+    lat: 34.8658,
+    lng: 135.4912,
+    svgPos: { x: 42, y: 63 },
+    stayHours: "1.5 - 2.5 ชม.",
+    bestTimeOfDay: "09:00 - 12:00 น.",
+    icon: "🏮",
+    mapsName: "Katsuo-ji, Minoh, Osaka"
+  },
   "kansai-nara-park": {
     station: "สถานี Kintetsu-Nara (เดิน 5 นาที)",
     city: "นารา",
@@ -3485,6 +3539,20 @@ const POPULAR_HOTSPOTS_DATA = [
     lng: 139.6158,
     tag: "สตูดิโอแฮร์รี่ พอตเตอร์",
     desc: "สตูดิโอทัวร์แฮร์รี่ พอตเตอร์ในร่มที่ใหญ่ที่สุดในโลก เดินชมฉากห้องโถงใหญ่ ชานชาลา 9 ¾ ป่าต้องห้าม และตรอกไดแอกอนของจริง"
+  },
+  {
+    id: "hotspot-attraction-katsuoji",
+    name: "Katsuo-ji Temple (วัดคัตสึโอจิ / วัดดารุมะแห่งชัยชนะ)",
+    japanese: "勝尾寺 (かつおうじ)",
+    category: "attraction",
+    icon: "🏮",
+    region: "osaka",
+    station: "สถานี Minoh-kayano (M06) ต่อรถบัส 15 นาที",
+    stayHours: "1.5 - 2.5 ชม.",
+    lat: 34.8658,
+    lng: 135.4912,
+    tag: "วัดดารุมะ / ขอพรชัยชนะ",
+    desc: "วัดดารุมะศักดิ์สิทธิ์บนหุบเขาโอซาก้า มีตุ๊กตาดารุมะสีแดงนับหมื่นตัวตั้งเรียงราย ขอพรเรื่องความสำเร็จ ธุรกิจ การงาน และชัยชนะ"
   },
   {
     id: "hotspot-attraction-borderless",
