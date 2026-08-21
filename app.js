@@ -707,9 +707,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getSmartMetaForItem(item) {
     const rawTitle = item.title || item.name || item.id || "";
+    const baseId = item.baseId || (item.id ? item.id.split('_')[0] : item.id);
     const resolved = resolveSmartStationAndRegion(rawTitle, item.lat, item.lng);
 
-    const base = ROUTE_SIMULATION_META[item.id] || {};
+    const base = ROUTE_SIMULATION_META[item.id] || ROUTE_SIMULATION_META[baseId] || {};
     const station = (base.station && base.station !== "สถานีใกล้เคียง" && base.station !== "จากการค้นหา")
       ? base.station
       : ((item.station && item.station !== "สถานีใกล้เคียง" && item.station !== "จากการค้นหา") ? item.station : resolved.station);
@@ -888,7 +889,8 @@ document.addEventListener("DOMContentLoaded", () => {
     resultsCountEl.textContent = `แสดง ${startIndex + 1} - ${endIndex} จากทั้งหมด ${totalItems} รายการ (หน้า ${currentCardPage}/${totalPages})`;
 
     cardsGrid.innerHTML = paginatedItems.map(item => {
-      const inPlan = itineraryList.some(i => i.id === item.id);
+      const instances = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) === item.id || i.id === item.id);
+      const inPlanCount = instances.length;
       return `
         <div class="card" data-id="${item.id}">
           <div class="card-image-wrap">
@@ -918,9 +920,20 @@ document.addEventListener("DOMContentLoaded", () => {
               <button class="btn primary view-detail-btn" data-id="${item.id}" style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-weight: 700;">
                 🏨 ดูโรงแรม & รายละเอียด
               </button>
-              <button class="btn outline toggle-plan-btn" data-id="${item.id}">
-                ${inPlan ? "✓ ในแผน" : "+ แผนเที่ยว"}
-              </button>
+              ${inPlanCount > 0 ? `
+                <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                  <button class="btn outline toggle-plan-btn" data-id="${item.id}" style="background: #e0f2fe; color: #0284c7; border-color: #0284c7; font-weight: 800; padding: 0.4rem 0.65rem;" title="อยู่ในแผน ${inPlanCount} ครั้ง (คลิกเพื่อลบออก)">
+                    ✓ ในแผน (${inPlanCount})
+                  </button>
+                  <button class="btn outline add-repeat-card-btn" data-id="${item.id}" title="เพิ่มสถานที่นี้ซ้ำอีกครั้ง (เช่น ไปวันที่ 2 หรือรอบค่ำ)" style="background: #f0fdf4; color: #16a34a; border-color: #86efac; font-weight: 800; padding: 0.4rem 0.6rem; cursor: pointer;">
+                    ➕ ซ้ำ
+                  </button>
+                </div>
+              ` : `
+                <button class="btn outline toggle-plan-btn" data-id="${item.id}">
+                  + แผนเที่ยว
+                </button>
+              `}
             </div>
           </div>
         </div>
@@ -948,6 +961,13 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", (e) => {
         const id = e.currentTarget.getAttribute("data-id");
         toggleItineraryItem(id);
+      });
+    });
+
+    document.querySelectorAll(".add-repeat-card-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.currentTarget.getAttribute("data-id");
+        addItineraryDuplicate(id);
       });
     });
 
@@ -2062,11 +2082,18 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
 
       return itineraryList.map((item, idx) => {
-        const builtin = JAPAN_DATA.find(i => i.id === item.id);
-        const custom = customPlacesStore.find(i => i.id === item.id);
+        const baseId = item.baseId || (item.id ? item.id.split('_')[0] : item.id);
+        const builtin = JAPAN_DATA.find(i => i.id === item.id || i.id === baseId);
+        const custom = customPlacesStore.find(i => i.id === item.id || i.id === baseId);
         const base = builtin || custom || item;
         return {
           ...base,
+          ...item,
+          id: item.id,
+          baseId: baseId,
+          title: item.title || base.title,
+          japanese: item.japanese || base.japanese,
+          region: item.region || base.region,
           day: parseInt(item.day, 10) || 1,
           time: item.time || ""
         };
@@ -2989,10 +3016,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 7. Open Detail Modal
   function openDetailModal(id) {
-    const item = JAPAN_DATA.find(i => i.id === id);
+    const baseId = id ? id.split('_')[0] : "";
+    const item = JAPAN_DATA.find(i => i.id === id || i.id === baseId);
     if (!item) return;
 
-    const inPlan = itineraryList.some(i => i.id === item.id);
+    const instances = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) === item.id || i.id === item.id);
+    const inPlanCount = instances.length;
+
     modalBodyContent.innerHTML = `
       <img 
         src="${item.image}" 
@@ -3107,33 +3137,75 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         })() : ''}
 
-        <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
-          <button class="btn primary" id="modal-plan-toggle" style="padding: 0.75rem;">
-            ${inPlan ? "✓ ลบออกจากแผนเที่ยว" : "+ เพิ่มลงในแผนการเดินทาง"}
-          </button>
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.65rem;">
+          ${inPlanCount > 0 ? `
+            <div style="background: #f0fdf4; border: 1.5px solid #86efac; padding: 0.65rem 1rem; border-radius: 10px; font-size: 0.85rem; color: #166534; font-weight: 700;">
+              📍 มีอยู่ในแผนเที่ยวแล้ว <strong>${inPlanCount} ครั้ง</strong> (${instances.map(inst => `DAY ${inst.day || 1}${inst.time ? ' ' + inst.time + 'น.' : ''}`).join(", ")})
+            </div>
+            <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+              <button class="btn primary" id="modal-plan-add-repeat" style="background: #0284c7; color: white; padding: 0.75rem 1.25rem; font-weight: 800; border-radius: 10px; border: none; cursor: pointer;">
+                ➕ เพิ่มสถานที่นี้อีกครั้ง (เช่น เที่ยววันที่ 2 หรือรอบค่ำ)
+              </button>
+              <button class="btn outline" id="modal-plan-remove-all" style="padding: 0.75rem 1rem; color: #dc2626; border-color: #fca5a5; font-weight: 700;">
+                ✕ ลบออกจากแผนเที่ยว
+              </button>
+            </div>
+          ` : `
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="btn primary" id="modal-plan-toggle" style="padding: 0.75rem 1.25rem;">
+                + เพิ่มลงในแผนการเดินทาง
+              </button>
+            </div>
+          `}
         </div>
       </div>
     `;
 
-    document.getElementById("modal-plan-toggle").addEventListener("click", () => {
-      toggleItineraryItem(item.id);
-      detailModal.classList.remove("active");
-    });
+    const addRepeatBtn = document.getElementById("modal-plan-add-repeat");
+    if (addRepeatBtn) {
+      addRepeatBtn.addEventListener("click", () => {
+        addItineraryDuplicate(item.id);
+        detailModal.classList.remove("active");
+      });
+    }
+
+    const removeAllBtn = document.getElementById("modal-plan-remove-all");
+    if (removeAllBtn) {
+      removeAllBtn.addEventListener("click", () => {
+        removeAllInstancesOfPlace(item.id);
+        detailModal.classList.remove("active");
+      });
+    }
+
+    const toggleBtn = document.getElementById("modal-plan-toggle");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => {
+        toggleItineraryItem(item.id);
+        detailModal.classList.remove("active");
+      });
+    }
 
     detailModal.classList.add("active");
   }
 
-  // 8. Toggle Itinerary Items
+  // 8. Toggle / Duplicate / Remove Itinerary Items
   function toggleItineraryItem(id, targetDay = null) {
-    const idx = itineraryList.findIndex(i => i.id === id);
-    if (idx >= 0) {
-      itineraryList.splice(idx, 1);
+    const baseId = id ? id.split('_')[0] : "";
+    const instances = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) === id || i.id === id || (i.baseId || i.id.split('_')[0]) === baseId);
+    
+    if (instances.length > 0) {
+      if (instances.length === 1) {
+        removeItineraryItemInstance(instances[0].id);
+      } else {
+        removeItineraryItemInstance(instances[instances.length - 1].id);
+      }
     } else {
       const assignedDay = targetDay ? parseInt(targetDay, 10) : (itineraryList.length > 0 ? Math.max(...itineraryList.map(i => parseInt(i.day, 10) || 1)) : 1);
-      const builtin = JAPAN_DATA.find(i => i.id === id);
+      const builtin = JAPAN_DATA.find(i => i.id === id || i.id === baseId);
       if (builtin) {
         itineraryList.push({
           id: builtin.id,
+          baseId: builtin.id,
           title: builtin.title,
           tag: builtin.tag,
           cost: builtin.estimatedCost,
@@ -3143,10 +3215,11 @@ document.addEventListener("DOMContentLoaded", () => {
           time: ""
         });
       } else {
-        const custom = customPlacesStore.find(i => i.id === id);
+        const custom = customPlacesStore.find(i => i.id === id || i.id === baseId);
         if (custom) {
           itineraryList.push({
             id: custom.id,
+            baseId: custom.id,
             title: custom.title,
             tag: custom.tag,
             cost: custom.cost,
@@ -3159,8 +3232,74 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
       }
+      sortItineraryList();
+      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+      updateItineraryUI();
+      renderCards();
+      renderRouteSimulator();
+    }
+  }
+
+  function addItineraryDuplicate(id, targetDay = null, targetTime = "") {
+    const baseId = id ? id.split('_')[0] : "";
+    const builtin = JAPAN_DATA.find(i => i.id === id || i.id === baseId);
+    const custom = customPlacesStore.find(i => i.id === id || i.id === baseId);
+    const base = builtin || custom;
+    if (!base) return;
+
+    // Find all current visits of this place
+    const existingVisits = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) === base.id || i.id === base.id);
+    let assignedDay = targetDay ? parseInt(targetDay, 10) : 1;
+    if (!targetDay) {
+      if (existingVisits.length > 0) {
+        const lastDay = Math.max(...existingVisits.map(v => parseInt(v.day, 10) || 1));
+        assignedDay = lastDay + 1;
+      } else {
+        assignedDay = itineraryList.length > 0 ? Math.max(...itineraryList.map(i => parseInt(i.day, 10) || 1)) : 1;
+      }
     }
 
+    const uniqueId = `${base.id}_v${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+
+    itineraryList.push({
+      id: uniqueId,
+      baseId: base.id,
+      title: base.title,
+      tag: base.tag,
+      cost: base.estimatedCost || base.cost,
+      region: base.region,
+      station: base.station,
+      stayHours: base.stayHours,
+      japanese: base.japanese,
+      icon: base.icon,
+      isCustom: !!custom,
+      day: assignedDay,
+      time: targetTime || ""
+    });
+
+    sortItineraryList();
+    localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+    updateItineraryUI();
+    renderCards();
+    renderRouteSimulator();
+
+    alert(`🎉 เพิ่ม "${base.title}" เข้าแผนเที่ยวอีกครั้งเรียบร้อยแล้ว!\n🗓️ กำหนดไว้ที่ DAY ${assignedDay} (คุณสามารถปรับเปลี่ยนวันและเวลาได้ในแถบแผนเที่ยวครับ)`);
+  }
+
+  function removeItineraryItemInstance(instanceId) {
+    const idx = itineraryList.findIndex(i => i.id === instanceId);
+    if (idx >= 0) {
+      itineraryList.splice(idx, 1);
+      sortItineraryList();
+      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+      updateItineraryUI();
+      renderCards();
+      renderRouteSimulator();
+    }
+  }
+
+  function removeAllInstancesOfPlace(baseId) {
+    itineraryList = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) !== baseId && i.id !== baseId);
     sortItineraryList();
     localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
     updateItineraryUI();
@@ -3261,12 +3400,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const isCustom = item.isCustom || item.id.startsWith("custom-");
             const icon = item.icon || (isCustom ? "📍" : "🗾");
             const num = globalCounter++;
+
+            const baseId = item.baseId || item.id.split('_')[0];
+            const allVisits = itineraryList.filter(x => (x.baseId || x.id.split('_')[0]) === baseId || x.id === baseId);
+            const isDuplicate = allVisits.length > 1;
+            const visitIdx = allVisits.findIndex(x => x.id === item.id) + 1;
+
             return `
               <div class="itinerary-item" data-id="${item.id}">
                 <div class="itinerary-item-info">
-                  <div class="itinerary-item-title" style="display: flex; align-items: center; gap: 4px;">
+                  <div class="itinerary-item-title" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                     <span>${icon}</span>
                     <strong title="${item.title}">${num}. ${item.title}</strong>
+                    ${isDuplicate ? `<span style="background: #e0f2fe; color: #0284c7; font-weight: 800; font-size: 0.7rem; padding: 1px 6px; border-radius: 6px;">รอบที่ ${visitIdx}/${allVisits.length}</span>` : ''}
                   </div>
                   <div class="itinerary-item-sub">
                     ${isCustom ? `<span style="background: #ecfdf5; color: #059669; font-weight: 700; padding: 1px 5px; border-radius: 6px; font-size: 0.7rem;">Custom</span> ` : ''}
@@ -3283,6 +3429,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <option value="${d}" ${d === item.day ? 'selected' : ''}>DAY ${d}</option>
                     `).join("")}
                   </select>
+                  <button type="button" class="duplicate-itinerary-btn" data-id="${item.id}" title="เพิ่มสถานที่นี้ซ้ำอีกครั้ง (เช่น ไปวันที่ 2 หรือรอบค่ำ)" style="background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; border-radius: 6px; padding: 2px 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer;">➕ ซ้ำ</button>
                   <button type="button" class="move-item-btn up" data-id="${item.id}" title="เลื่อนขึ้น">⬆️</button>
                   <button type="button" class="move-item-btn down" data-id="${item.id}" title="เลื่อนลง">⬇️</button>
                   <button type="button" class="remove-itinerary-btn" data-id="${item.id}" title="ลบออกจากแผน">&times;</button>
@@ -3326,6 +3473,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Attach Duplicate
+    itineraryItemsList.querySelectorAll(".duplicate-itinerary-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.currentTarget.getAttribute("data-id");
+        addItineraryDuplicate(id);
+      });
+    });
+
     // Attach Move Up & Move Down
     itineraryItemsList.querySelectorAll(".move-item-btn.up").forEach(btn => {
       btn.addEventListener("click", (e) => {
@@ -3345,7 +3500,7 @@ document.addEventListener("DOMContentLoaded", () => {
     itineraryItemsList.querySelectorAll(".remove-itinerary-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         const id = e.currentTarget.getAttribute("data-id");
-        toggleItineraryItem(id);
+        removeItineraryItemInstance(id);
       });
     });
 
@@ -3392,8 +3547,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchDebounceTimer = null;
 
   // Universal helper to add any place (hotspot, search, pin, form) directly into the plan
-  function addCustomPlaceToPlan(placeData, targetDay = null) {
-    const customId = placeData.id || `custom-place-${Date.now()}`;
+  function addCustomPlaceToPlan(placeData, targetDay = null, allowDuplicate = true) {
+    const rawId = placeData.id || `custom-place-${Date.now()}`;
+    const baseId = rawId.split('_')[0];
     const smart = resolveSmartStationAndRegion(placeData.title || placeData.name, placeData.lat, placeData.lng);
     const station = (placeData.station && placeData.station !== "สถานีใกล้เคียง" && placeData.station !== "จากการค้นหา") ? placeData.station : smart.station;
     const region = placeData.region || smart.region || "osaka";
@@ -3401,11 +3557,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const stayHours = placeData.stayHours || smart.stayHours || "1 - 2 ชม.";
 
     // Determine Day & Time
-    const assignedDay = targetDay ? parseInt(targetDay, 10) : (placeData.day ? parseInt(placeData.day, 10) : (itineraryList.length > 0 ? Math.max(...itineraryList.map(i => parseInt(i.day, 10) || 1)) : 1));
+    const existingVisits = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) === baseId || i.id === baseId || i.title === (placeData.title || placeData.name));
+    let assignedDay = targetDay ? parseInt(targetDay, 10) : (placeData.day ? parseInt(placeData.day, 10) : null);
+    if (!assignedDay) {
+      if (existingVisits.length > 0) {
+        const lastDay = Math.max(...existingVisits.map(v => parseInt(v.day, 10) || 1));
+        assignedDay = lastDay + 1;
+      } else {
+        assignedDay = itineraryList.length > 0 ? Math.max(...itineraryList.map(i => parseInt(i.day, 10) || 1)) : 1;
+      }
+    }
     const assignedTime = placeData.time || "";
+
+    const customId = allowDuplicate ? `${baseId}_v${Date.now()}_${Math.random().toString(36).substr(2, 4)}` : baseId;
 
     const newPlace = {
       id: customId,
+      baseId: baseId,
       title: placeData.title || placeData.name,
       japanese: placeData.japanese || placeData.title || placeData.name,
       region: region,
@@ -3422,11 +3590,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // 1. Save to customPlacesStore if not already there
-    const existingCpIdx = customPlacesStore.findIndex(cp => cp.id === newPlace.id || cp.title === newPlace.title);
+    const existingCpIdx = customPlacesStore.findIndex(cp => cp.id === baseId || cp.title === newPlace.title);
     if (existingCpIdx >= 0) {
-      customPlacesStore[existingCpIdx] = newPlace;
+      customPlacesStore[existingCpIdx] = { ...newPlace, id: baseId };
     } else {
-      customPlacesStore.push(newPlace);
+      customPlacesStore.push({ ...newPlace, id: baseId });
     }
     localStorage.setItem("nippon_custom_places", JSON.stringify(customPlacesStore));
 
@@ -3442,33 +3610,25 @@ document.addEventListener("DOMContentLoaded", () => {
         bestTimeOfDay: assignedTime ? `${assignedTime} น.` : "ช่วงเวลาที่สะดวก",
         mapsName: newPlace.title
       };
+      ROUTE_SIMULATION_META[baseId] = ROUTE_SIMULATION_META[newPlace.id];
     }
 
-    // 3. Add to itineraryList if not already present
-    const existingItinIdx = itineraryList.findIndex(i => i.id === newPlace.id || i.title === newPlace.title);
-    if (existingItinIdx >= 0) {
-      itineraryList[existingItinIdx].station = newPlace.station;
-      itineraryList[existingItinIdx].stayHours = newPlace.stayHours;
-      itineraryList[existingItinIdx].region = newPlace.region;
-      itineraryList[existingItinIdx].tag = newPlace.tag;
-      if (targetDay || placeData.day) itineraryList[existingItinIdx].day = assignedDay;
-      if (assignedTime) itineraryList[existingItinIdx].time = assignedTime;
-    } else {
-      itineraryList.push({
-        id: newPlace.id,
-        title: newPlace.title,
-        tag: newPlace.tag,
-        cost: newPlace.cost,
-        region: newPlace.region,
-        station: newPlace.station,
-        stayHours: newPlace.stayHours,
-        japanese: newPlace.japanese,
-        icon: newPlace.icon,
-        isCustom: true,
-        day: assignedDay,
-        time: assignedTime
-      });
-    }
+    // 3. Add to itineraryList
+    itineraryList.push({
+      id: newPlace.id,
+      baseId: baseId,
+      title: newPlace.title,
+      tag: newPlace.tag,
+      cost: newPlace.cost,
+      region: newPlace.region,
+      station: newPlace.station,
+      stayHours: newPlace.stayHours,
+      japanese: newPlace.japanese,
+      icon: newPlace.icon,
+      isCustom: true,
+      day: assignedDay,
+      time: assignedTime
+    });
 
     sortItineraryList();
     localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
@@ -3479,6 +3639,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateItineraryUI();
     renderRouteSimulator();
     renderHotspotsGrid();
+    renderCards();
   }
 
   // 1-Click Hotspots Catalog Renderer
@@ -3491,7 +3652,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     hotspotsGrid.innerHTML = list.map(h => {
-      const isAdded = itineraryList.some(i => i.id === h.id || i.title === h.name);
+      const instances = itineraryList.filter(i => (i.baseId || i.id.split('_')[0]) === h.id || i.id === h.id || i.title === h.name);
+      const isAdded = instances.length > 0;
       return `
         <div class="hotspot-card">
           <div class="hotspot-card-top">
@@ -3505,15 +3667,44 @@ document.addEventListener("DOMContentLoaded", () => {
           <p class="hotspot-card-desc">${h.desc}</p>
           <div class="hotspot-card-bottom">
             <span class="hotspot-tag-badge">${h.tag}</span>
-            <button type="button" class="hotspot-add-btn ${isAdded ? 'added' : ''}" data-hotspot-id="${h.id}">
-              ${isAdded ? '✓ อยู่ในแผนแล้ว' : '+ เพิ่มเข้าทริป'}
-            </button>
+            <div style="display: flex; gap: 4px;">
+              <button type="button" class="hotspot-add-btn ${isAdded ? 'added' : ''}" data-hotspot-id="${h.id}">
+                ${isAdded ? `✓ ในแผน (${instances.length})` : '+ เพิ่มเข้าทริป'}
+              </button>
+              ${isAdded ? `
+                <button type="button" class="hotspot-repeat-btn" data-hotspot-id="${h.id}" title="เพิ่มสถานที่นี้อีกครั้ง (เช่น ไปวันที่ 2 หรือ 3)" style="padding: 2px 8px; font-size: 0.72rem; font-weight: 800; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; border-radius: 6px; cursor: pointer;">
+                  ➕ ซ้ำ
+                </button>
+              ` : ''}
+            </div>
           </div>
         </div>
       `;
     }).join("");
 
     hotspotsGrid.querySelectorAll(".hotspot-add-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.currentTarget.getAttribute("data-hotspot-id");
+        const found = POPULAR_HOTSPOTS_DATA.find(h => h.id === id);
+        if (found) {
+          addCustomPlaceToPlan({
+            id: found.id,
+            title: found.name,
+            japanese: found.japanese,
+            region: found.region,
+            tag: found.tag,
+            icon: found.icon,
+            category: found.category,
+            station: found.station,
+            stayHours: found.stayHours,
+            lat: found.lat,
+            lng: found.lng
+          });
+        }
+      });
+    });
+
+    hotspotsGrid.querySelectorAll(".hotspot-repeat-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         const id = e.currentTarget.getAttribute("data-hotspot-id");
         const found = POPULAR_HOTSPOTS_DATA.find(h => h.id === id);
