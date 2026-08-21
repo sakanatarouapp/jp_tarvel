@@ -311,6 +311,19 @@ document.addEventListener("DOMContentLoaded", () => {
       lat: 34.8893,
       lng: 135.8078
     },
+    {
+      aliases: ["gion", "hanamikoji", "yasakashrine", "กิออน", "ย่านกิออน", "ฮานามิโคจิ", "เกอิชา", "ศาลเจ้ายาซากะ", "祇園", "花見小路"],
+      id: "kyoto-gion-hanamikoji",
+      title: "ย่านกิออน & ถนนสายเกอิชา ฮานามิโคจิ (Gion & Hanamikoji Geisha District)",
+      japanese: "祇園 / 花見小路通 (ぎおん / はなみこうじどおり)",
+      station: "สถานี Gion-Shijo (Keihan) / Kyoto-Kawaramachi (Hankyu เดิน 3 นาที)",
+      region: "kyoto",
+      tag: "ย่านเกอิชาโบราณ / บ้านไม้ Machiya & โรงน้ำชา",
+      icon: "🏮",
+      stayHours: "2 - 3 ชม.",
+      lat: 35.0037,
+      lng: 135.7753
+    },
 
     // Tokyo & Kanto
     {
@@ -748,7 +761,10 @@ document.addEventListener("DOMContentLoaded", () => {
     "disneyland": "tokyo-disneyland-guide",
     "hotspot-attraction-disneysea": "tokyo-disneysea-guide",
     "disneysea": "tokyo-disneysea-guide",
-    "usj": "osaka-usj"
+    "usj": "osaka-usj",
+    "gion": "kyoto-gion-hanamikoji",
+    "hanamikoji": "kyoto-gion-hanamikoji",
+    "kyoto-gion": "kyoto-gion-hanamikoji"
   };
 
   function getCanonicalPlaceId(id, title = "") {
