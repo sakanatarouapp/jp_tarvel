@@ -2499,6 +2499,10 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="stop-drag-handle" title="คลิกลากเพื่อสลับลำดับ">⋮⋮</span>
               <span class="stop-num-badge" style="background: ${theme.color};">${i + 1}</span>
               <span class="stop-day-pill">DAY ${currentDay}</span>
+              <div class="stop-time-picker-box">
+                <span>🕒</span>
+                <input type="time" class="stop-time-picker-input" data-id="${item.id}" value="${item.time || ''}" title="เลือกเวลาเริ่มต้นของสถานที่นี้">
+              </div>
               <div style="min-width: 0; flex: 1 1 auto;">
                 <div class="stop-title-text">${meta.icon} ${item.title}</div>
                 <div style="font-size: 0.75rem; color: ${theme.color}; font-weight: 700;">${item.japanese}</div>
@@ -2510,15 +2514,9 @@ document.addEventListener("DOMContentLoaded", () => {
               <button class="stop-reorder-btn remove-stop" data-idx="${i}" title="ลบออก" style="color: #ef4444;">✕</button>
             </div>
           </div>
-          <div class="stop-meta-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem 0.75rem;">
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-              <span>🚉 ${meta.station}</span>
-              <span>⏳ เวลาแวะ: ${meta.stayHours}</span>
-            </div>
-            <div class="stop-time-picker-box">
-              <span>🕒 เวลา:</span>
-              <input type="time" class="stop-time-picker-input" data-id="${item.id}" value="${item.time || ''}" title="เลือกเวลาเริ่มต้นของสถานที่นี้">
-            </div>
+          <div class="stop-meta-row">
+            <span>🚉 ${meta.station}</span>
+            <span>⏳ เวลาแวะ: ${meta.stayHours}</span>
           </div>
         </div>
       `;
