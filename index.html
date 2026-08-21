@@ -1658,6 +1658,43 @@
     </div>
   </div>
 
+  <!-- AI Trip Plan Rationale Presentation Modal -->
+  <div class="modal-backdrop" id="ai-rationale-modal" style="display: none;">
+    <div class="modal-container rationale-modal-box">
+      <!-- Top Banner -->
+      <div class="rationale-modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="rationale-ai-avatar">🤖✨</div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.22rem; color: #1e1b4b; font-weight: 800;">
+              AI Trip Insights & บทวิเคราะห์เบื้องหลังการวางแผน
+            </h3>
+            <p style="margin: 2px 0 0; font-size: 0.82rem; color: #4338ca; font-weight: 600;">
+              เหตุผลและกลยุทธ์การจัดรูทท่องเที่ยวโดย Nippon AI Planner
+            </p>
+          </div>
+        </div>
+        <button type="button" class="rationale-close-btn" id="close-ai-rationale-modal-btn" aria-label="ปิด">&times;</button>
+      </div>
+
+      <div class="rationale-modal-body" id="ai-rationale-body">
+        <!-- Dynamically rendered AI Analysis & Rationale -->
+      </div>
+
+      <div class="rationale-modal-footer">
+        <button type="button" class="btn" id="rationale-close-bottom-btn" style="background: #f1f5f9; color: var(--text-main); font-weight: 700; border-radius: 12px; padding: 0.6rem 1.2rem;">
+          ปิด
+        </button>
+        <button type="button" class="btn primary" id="rationale-view-route-btn" style="background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%); color: white; font-weight: 800; border-radius: 12px; padding: 0.6rem 1.4rem;">
+          🗺️ ดูแผนที่ & ไทม์ไลน์
+        </button>
+        <button type="button" class="btn primary" id="rationale-open-ontrip-btn" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: white; font-weight: 800; border-radius: 12px; padding: 0.6rem 1.4rem;">
+          🎯 เปิดโหมดเที่ยวจริง (On-Trip)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- On-Trip Live Travel Mode Modal (Fullscreen Travel Companion for Walking in Japan) -->
   <div class="modal-backdrop ontrip-backdrop" id="ontrip-modal" style="display: none;">
     <div class="ontrip-container">

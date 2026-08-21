@@ -6680,8 +6680,185 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRouteSimulator();
     if (typeof updateProfileHubUI === "function") updateProfileHubUI();
 
-    const seasonLabel = season === "spring" ? "ฤดูใบไม้ผลิ (ซากุระ)" : (season === "summer" ? "ฤดูร้อน (มัตสึริ)" : (season === "autumn" ? "ฤดูใบไม้ร่วง (ใบไม้เปลี่ยนสี)" : (season === "winter" ? "ฤดูหนาว (หิมะ/ออนเซ็น)" : "ทุกฤดู")));
-    alert(`🎉 AI จัดทริปเที่ยว ${days} วัน (${region.toUpperCase()}) ช่วง${seasonLabel} ให้เรียบร้อยแล้ว!\n✨ ทุกสถานที่ทั้ง ${newItinerary.length} แห่งไม่ซ้ำกัน จัดวันและเวลาให้ครบถ้วนพร้อมเที่ยวครับ`);
+    // Present comprehensive AI Rationale Breakdown
+    openAiRationaleModal(days, region, season, style, newItinerary);
+  }
+
+  // ================= 20.1 AI Trip Plan Rationale Presentation Logic =================
+  const aiRationaleModal = document.getElementById("ai-rationale-modal");
+  const aiRationaleBody = document.getElementById("ai-rationale-body");
+  const closeAiRationaleModalBtn = document.getElementById("close-ai-rationale-modal-btn");
+  const rationaleCloseBottomBtn = document.getElementById("rationale-close-bottom-btn");
+  const rationaleViewRouteBtn = document.getElementById("rationale-view-route-btn");
+  const rationaleOpenOntripBtn = document.getElementById("rationale-open-ontrip-btn");
+
+  function openAiRationaleModal(days, region, season, style, newItinerary) {
+    if (!aiRationaleModal || !aiRationaleBody) return;
+    aiRationaleBody.innerHTML = generateAiRationaleHTML(days, region, season, style, newItinerary);
+    aiRationaleModal.style.display = "flex";
+  }
+
+  function closeAiRationaleModal() {
+    if (aiRationaleModal) aiRationaleModal.style.display = "none";
+  }
+
+  function generateAiRationaleHTML(days, region, season, style, newItinerary) {
+    const regionLabels = {
+      tokyo: "Tokyo & Kanto (มหานครโตเกียว & คันโต)",
+      kansai: "Kansai (โอซาก้า เกียวโต นารา คันไซ)",
+      golden: "Golden Route (โตเกียว + ฟูจิ + เกียวโต + โอซาก้า)",
+      hokkaido: "Hokkaido (ฮอกไกโด ซัปโปโร โอตารุ)"
+    };
+
+    const seasonLabels = {
+      all: "🌟 เที่ยวได้ทุกฤดู (All Year)",
+      spring: "🌸 ฤดูใบไม้ผลิ • เทศกาลซากุระ (มี.ค. - พ.ค.)",
+      summer: "☀️ ฤดูร้อน • เทศกาลมัตสึริ & แสงสี (มิ.ย. - ส.ค.)",
+      autumn: "🍁 ฤดูใบไม้ร่วง • ใบไม้เปลี่ยนสี (ก.ย. - พ.ย.)",
+      winter: "❄️ ฤดูหนาว • หิมะ ออนเซ็น & ไฟประดับ (ธ.ค. - ก.พ.)"
+    };
+
+    const styleLabels = {
+      landmarks: "📸 ไฮไลต์ & ถ่ายรูปเช็กอินยอดนิยม",
+      foodie: "🍜 ตะลุยชิมสตรีทฟู้ด ตลาดปลา & คาเฟ่",
+      shopping: "🛍️ ช้อปปิ้ง แฟชั่น & สวรรค์อนิเมะ",
+      parks: "🎢 สวนสนุกระดับโลก & ธีมพาร์คครอบครัว"
+    };
+
+    // Seasonal explanations
+    let seasonRationale = "";
+    if (season === "spring") {
+      seasonRationale = "AI จัดวางสถานที่ที่มีทัศนียภาพซากุระและธรรมชาติสดใสเป็นอันดับหนึ่ง เช่น วัดเซ็นโซจิริมแม่น้ำสุมิดะ, สวนชินจูกุ, สวนนารา และจุดชมวิวฟูจิ เพื่อให้คุณได้สัมผัสบรรยากาศกลีบซากุระบานสะพรั่งและแสงแดดฤดูใบไม้ผลิที่อบอุ่นที่สุด";
+    } else if (season === "summer") {
+      seasonRationale = "AI คัดสรรย่านริมน้ำ ตลาดคนเดินสตรีทฟู้ดยามเย็น และสถานที่ในร่มสลับกลางแจ้งอย่างสมดุล (เช่น โตเกียวสกายทรี, ไคยูคัง, โดทงโบริ, อควาเรียม) เพื่อให้เที่ยวสบายท่ามกลางบรรยากาศสดใสของฤดูร้อนญี่ปุ่น";
+    } else if (season === "autumn") {
+      seasonRationale = "AI จัดลำดับสถานที่ที่มีทิวทัศน์ใบไม้เปลี่ยนสี (Koyo) ที่งดงามระดับตำนาน เช่น วัดคัตสึโอจิ (ดารุมะแดงตัดกับใบไม้เปลี่ยนสี), ศาลเจ้าฟูชิมิอินาริ, วัดคิโยมิซุเดระ และทะเลสาบคาวากุจิโกะ ให้คุณได้ภาพถ่ายโทนอุ่นสวยงามที่สุด";
+    } else if (season === "winter") {
+      seasonRationale = "AI ให้ความสำคัญกับเสน่ห์ฤดูหนาว เช่น ลานหิมะฮอกไกโด, แหล่งแช่ออนเซ็นคลายหนาว, จุดชมวิวไฟประดับยามค่ำคืน (Shibuya Sky / Umeda Sky) และการแวะคาเฟ่อุ่นๆ ในย่านวินเทจ";
+    } else {
+      seasonRationale = "AI คัดกรองสถานที่ระดับ Iconic ที่สวยงามทรงคุณค่าตลอด 365 วัน ไม่ว่าคุณจะเดินทางช่วงเวลาใด ก็จะได้รับประสบการณ์ท่องเที่ยวญี่ปุ่นที่ครบถ้วนสมบูรณ์แบบ";
+    }
+
+    // Geographical & Transit explanations
+    let transitRationale = "AI ใช้หลักการจัดกลุ่มแบบเชิงเส้น (Linear Corridor Clustering) โดยแบ่งกลุ่มสถานที่ตามสายรถไฟสายหลัก (เช่น JR Yamanote / Tokyo Metro / Osaka Loop Line / Keihan Line) จัดให้สถานที่ในวันเดียวกันอยู่ในโซนเดียวกัน ลดเวลาเดินทางบนรถไฟเหลือเฉลี่ยเพียง 10-18 นาทีต่อจุด และไม่ต้องนั่งรถไฟย้อนไปย้อนมา";
+
+    // Pacing & Crowd explanations
+    let pacingRationale = "จัดวางวัดและศาลเจ้าประวัติศาสตร์ไว้ช่วงเช้า (09:00 น.) เพื่อเลี่ยงความแออัดของนักท่องเที่ยวและรับพลังความสงบยามเช้า, วางตลาดสดและแหล่งของกินไว้ช่วงเที่ยง (13:00 น.) ที่อาหารสดใหม่ที่สุด, และวางย่านช้อปปิ้ง/จุดชมวิวหอคอยไว้ช่วงเย็น-ค่ำ (17:30 น.) เพื่อชมพระอาทิตย์ตกดินและไฟนีออนยามราตรี";
+
+    // Budget & Fatigue balance
+    let budgetRationale = `เกลี่ยสัดส่วนระหว่างสถานที่เข้าชมฟรี (วัด, ศาลเจ้า, สวนสาธารณะ, ย่านการค้า) กับสถานที่ที่ต้องซื้อบัตร (ธีมพาร์ค, หอคอย) ไว้อย่างลงตัว โดยเฉลี่ยงบไม่เกิน ~¥5,500/วัน และกำหนดจุดแวะพอดีที่ 3 สถานที่ต่อวัน เพื่อให้มีเวลาดื่มด่ำ ไม่เร่งรีบ และไม่เหนื่อยล้า`;
+
+    // Day-by-day themes
+    const dayGroups = {};
+    newItinerary.forEach(item => {
+      const d = item.day || 1;
+      if (!dayGroups[d]) dayGroups[d] = [];
+      dayGroups[d].push(item);
+    });
+
+    const dayCardsHtml = Object.keys(dayGroups).map(d => {
+      const items = dayGroups[d];
+      const titles = items.map(i => i.title.split('(')[0].trim()).join(" ➔ ");
+      const areaName = items[0]?.region === "tokyo" ? "มหานครโตเกียว" : (items[0]?.region === "kyoto" ? "เกียวโตโบราณ" : (items[0]?.region === "osaka" ? "โอซาก้า & คันไซ" : "ฮอกไกโด / ธรรมชาติ"));
+      
+      return `
+        <div class="rationale-day-row">
+          <div class="rationale-day-badge-line">
+            <span class="rationale-day-badge">DAY ${d}</span>
+            <span class="rationale-day-theme">โซน${areaName} • เที่ยวตามแนวเส้นทางหลัก</span>
+          </div>
+          <div class="rationale-day-stops">
+            📍 ลำดับการเที่ยว: <strong>${titles}</strong>
+          </div>
+          <div class="rationale-day-reason">
+            💡 <strong>กลยุทธ์ AI:</strong> เที่ยวเรียงลำดับเวลา 09:00น. ➔ 13:00น. ➔ 17:30น. อยู่บนสายรถไฟเดียวกัน เดินทางง่าย ไม่เหนื่อย
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div class="rationale-hero-card">
+        <div class="rationale-hero-title">
+          ✨ กลยุทธ์การวางแผน: ทริป ${days} วัน (${regionLabels[region] || region.toUpperCase()})
+        </div>
+        <div style="font-size: 0.84rem; opacity: 0.9; line-height: 1.4;">
+          ระบบ Nippon AI ได้วิเคราะห์ฐานข้อมูล 3 มิติ และวางแผนการเดินทางจำนวน <strong>${newItinerary.length} จุดหมายเฉพาะตัว (ไม่ซ้ำกัน 100%)</strong> ให้พร้อมสำหรับการเดินทางจริงของคุณ
+        </div>
+        <div class="rationale-hero-tags">
+          <span class="rationale-tag-pill">🗓️ ${days} วัน</span>
+          <span class="rationale-tag-pill">${seasonLabels[season] || season}</span>
+          <span class="rationale-tag-pill">${styleLabels[style] || style}</span>
+          <span class="rationale-tag-pill">🎯 รวม ${newItinerary.length} จุดหมายไม่ซ้ำกัน</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: #1e1b4b; margin-bottom: 0.65rem;">
+          🧠 4 เสาหลักเหตุผลเบื้องหลังการออกแบบแผนโดย AI:
+        </div>
+        <div class="rationale-pillars-grid">
+          <div class="rationale-pillar-card">
+            <div class="rationale-pillar-header">
+              <span class="rationale-pillar-icon">🌸</span>
+              <span class="rationale-pillar-title">1. เหตุผลด้านฤดูกาล (Seasonal Match)</span>
+            </div>
+            <p class="rationale-pillar-desc">${seasonRationale}</p>
+          </div>
+
+          <div class="rationale-pillar-card">
+            <div class="rationale-pillar-header">
+              <span class="rationale-pillar-icon">🚇</span>
+              <span class="rationale-pillar-title">2. การจัดกลุ่มสถานี & รถไฟ (Transit Clustering)</span>
+            </div>
+            <p class="rationale-pillar-desc">${transitRationale}</p>
+          </div>
+
+          <div class="rationale-pillar-card">
+            <div class="rationale-pillar-header">
+              <span class="rationale-pillar-icon">⏰</span>
+              <span class="rationale-pillar-title">3. จังหวะเวลา & เลี่ยงฝูงชน (Pacing & Crowd)</span>
+            </div>
+            <p class="rationale-pillar-desc">${pacingRationale}</p>
+          </div>
+
+          <div class="rationale-pillar-card">
+            <div class="rationale-pillar-header">
+              <span class="rationale-pillar-icon">💰</span>
+              <span class="rationale-pillar-title">4. ความสมดุลของงบ & กำลังกาย (Balance)</span>
+            </div>
+            <p class="rationale-pillar-desc">${budgetRationale}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rationale-days-section">
+        <div class="rationale-days-title">
+          <span>📋 สรุปกลยุทธ์การจัดรูท Day-by-Day (วันต่อวัน):</span>
+        </div>
+        <div class="rationale-days-list">
+          ${dayCardsHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  if (closeAiRationaleModalBtn) closeAiRationaleModalBtn.addEventListener("click", closeAiRationaleModal);
+  if (rationaleCloseBottomBtn) rationaleCloseBottomBtn.addEventListener("click", closeAiRationaleModal);
+
+  if (rationaleViewRouteBtn) {
+    rationaleViewRouteBtn.addEventListener("click", () => {
+      closeAiRationaleModal();
+      const routeSec = document.getElementById("route-simulator");
+      if (routeSec) routeSec.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  if (rationaleOpenOntripBtn) {
+    rationaleOpenOntripBtn.addEventListener("click", () => {
+      closeAiRationaleModal();
+      openOnTripModal();
+    });
   }
 
   // ================= 21. On-Trip Live Travel Mode Logic =================
