@@ -6668,7 +6668,8 @@ body {
   .pocket-export-footer,
   .pocket-modal-close-btn,
   .pocket-export-toolbar,
-  .pocket-card-day-ctrl {
+  .pocket-card-day-ctrl,
+  .pocket-hotel-select-wrap {
     display: none !important;
   }
 
@@ -6691,6 +6692,37 @@ body {
     page-break-inside: avoid;
     break-inside: avoid;
   }
+}
+
+/* Pocket Sheet Hotel Live Dropdown Switcher */
+.pocket-hotel-select-wrap {
+  margin-bottom: 0.45rem;
+}
+
+.pocket-hotel-select {
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: #f8fafc;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pocket-hotel-select:focus,
+.pocket-hotel-select:hover {
+  border-color: #0284c7;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.pocket-hotel-book-link:hover {
+  color: #1d4ed8 !important;
 }
 
 

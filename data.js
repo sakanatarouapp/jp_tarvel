@@ -1549,6 +1549,28 @@ const JAPAN_DATA = [
     mustTry: ["เดินช้อปปิ้งตั้งแต่ชินไซบาชิทะลุไปยังป้ายกูลิโกะโดทงโบริ", "ชิมทาโกะยากิราดซอสมายองเนสตาข่ายร้าน Kogaryu", "ค้นหาเสื้อผ้าวินเทจและไอเทมสตรีทแฟชั่นใน Amerikamura"],
     nearbyHotels: [
       {
+        name: "Sotetsu Fresa Inn Osaka Namba",
+        japanese: "相鉄フレッサイン 大阪なんば駅前",
+        type: "โรงแรมบัดเจ็ทคุ้มค่ายอดนิยม",
+        distance: "เดิน 1 นาทีถึงสถานี Namba / เดิน 4 นาทีถึงชินไซบาชิ",
+        priceJPY: 7200,
+        priceRange: "¥6,800 - ¥11,500 / คืน",
+        rating: 4.7,
+        highlight: "ราคาประหยัด ทำเลดีมากติดทางขึ้นรถไฟใต้ดิน สิ่งอำนวยความสะดวกฟรีครบครันและระบบเช็คอินอัตโนมัติ",
+        searchQuery: "Sotetsu Fresa Inn Osaka Namba"
+      },
+      {
+        name: "APA Hotel & Resort Midosuji Hommachi Eki Tower",
+        japanese: "アパホテル＆リゾート 御堂筋本町駅タワー",
+        type: "โรงแรมบัดเจ็ทพรีเมียมพร้อมสปาออนเซ็น",
+        distance: "เชื่อมตรงสถานี Hommachi (สายสีแดง Midosuji Line เดิน 5 นาทีถึงชินไซบาชิ)",
+        priceJPY: 6800,
+        priceRange: "¥6,000 - ¥10,500 / คืน",
+        rating: 4.6,
+        highlight: "โรงแรมตึกสูงมีบ่อออนเซ็นขนาดใหญ่และสระว่ายน้ำ เดินทางง่าย 1 สถานีถึงชินไซบาชิและอุเมดะ",
+        searchQuery: "APA Hotel Resort Midosuji Hommachi Osaka"
+      },
+      {
         name: "Cross Hotel Osaka",
         japanese: "クロスホテル大阪",
         type: "โรงแรมทำเลทองติดถนนชินไซบาชิ",

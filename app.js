@@ -4059,6 +4059,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   ];
 
+  let selectedPocketHotelName = "";
+
   const IMMIGRATION_CHECKLIST_DATA = [
     { id: "imm-chk-1", title: "🛂 หนังสือเดินทาง (Passport)", desc: "มีอายุการใช้งานเหลือมากกว่า 6 เดือน และไม่มีรอยชำรุดฉีกขาด" },
     { id: "imm-chk-2", title: "📲 QR Code จาก Visit Japan Web (VJW)", desc: "ลงทะเบียนล่วงหน้าและแคปรูป Screenshot QR Code ทั้ง 2 ส่วน (ตม. และศุลกากร) บันทึกไว้ในอัลบั้มรูปภาพ" },
@@ -4496,13 +4498,63 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     });
 
-    // Selected Hotel Data
-    const sampleHotel = JAPAN_DATA.find(i => i.nearbyHotels && i.nearbyHotels.length > 0)?.nearbyHotels[0] || {
+    // 1. Detect Dominant Region from plan items
+    const regionCounts = {};
+    planItems.forEach(item => {
+      const fullData = JAPAN_DATA.find(d => d.id === item.id) || customPlacesStore.find(cp => cp.id === item.id) || {};
+      const smart = getSmartMetaForItem(item);
+      const reg = item.region || fullData.region || smart.region || "osaka";
+      regionCounts[reg] = (regionCounts[reg] || 0) + 1;
+    });
+
+    let dominantRegion = "osaka";
+    let maxCount = 0;
+    Object.keys(regionCounts).forEach(r => {
+      if (regionCounts[r] > maxCount) {
+        maxCount = regionCounts[r];
+        dominantRegion = r;
+      }
+    });
+
+    // 2. Gather candidate hotels matching dominant region
+    const candidateHotels = [];
+    JAPAN_DATA.forEach(p => {
+      if (p.region === dominantRegion && p.nearbyHotels) {
+        p.nearbyHotels.forEach(h => {
+          if (!candidateHotels.some(ch => ch.name === h.name)) {
+            candidateHotels.push(h);
+          }
+        });
+      }
+    });
+
+    // Fallback if none found
+    if (candidateHotels.length === 0) {
+      JAPAN_DATA.forEach(p => {
+        if (p.nearbyHotels) {
+          p.nearbyHotels.forEach(h => {
+            if (!candidateHotels.some(ch => ch.name === h.name)) {
+              candidateHotels.push(h);
+            }
+          });
+        }
+      });
+    }
+
+    // Sort by price ascending: Best budget & value options first!
+    candidateHotels.sort((a, b) => a.priceJPY - b.priceJPY);
+
+    if (!selectedPocketHotelName || !candidateHotels.some(h => h.name === selectedPocketHotelName)) {
+      selectedPocketHotelName = candidateHotels[0]?.name || "Hotel Universal Port Vita";
+    }
+
+    const sampleHotel = candidateHotels.find(h => h.name === selectedPocketHotelName) || candidateHotels[0] || {
       name: "Hotel Universal Port Vita",
       japanese: "ホテル ユニバーサル ポート ヴィータ",
       priceJPY: 6550,
+      priceRange: "¥6,550 - ¥13,500 / คืน",
       distance: "เดิน 3 นาทีถึงสถานี Universal City",
-      type: "โรงแรมทำเลทอง"
+      type: "โรงแรมบัดเจ็ทคุ้มค่าทำเลทอง"
     };
 
     const hotelPricing = calculateDateAwareHotelPricing(sampleHotel, selectedCheckinDate, selectedStayNights, selectedGuestCount);
@@ -4537,6 +4589,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const formattedCheckin = `${inDate.getDate()} ${thaiMonths[inDate.getMonth()]} ${inDate.getFullYear()}`;
     const formattedCheckout = `${outDate.getDate()} ${thaiMonths[outDate.getMonth()]} ${outDate.getFullYear()}`;
 
+    const regionNameTh = dominantRegion === "osaka" ? "โอซาก้า / คันไซ" : (dominantRegion === "kyoto" ? "เกียวโต" : (dominantRegion === "tokyo" ? "โตเกียว" : dominantRegion.toUpperCase()));
+
     pocketSheetRenderTarget.innerHTML = `
       <div class="pocket-itinerary-card" id="pocket-itinerary-sheet">
         <!-- Header Banner -->
@@ -4568,23 +4622,45 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="pocket-two-col-grid">
           <!-- Hotel Summary Box -->
           <div class="pocket-card-box">
-            <div class="pocket-box-title">
-              <span>🏨</span> ข้อมูลที่พักแนะนำ (Accommodation)
+            <div class="pocket-box-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <span>🏨 ที่พักแนะนำ (${regionNameTh})</span>
+              <span style="font-size: 0.72rem; color: #0284c7; font-weight: 700;">เลือกเปลี่ยนได้ ▾</span>
             </div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; line-height: 1.3;">
+
+            <!-- Live Hotel Switcher Dropdown -->
+            <div class="pocket-hotel-select-wrap">
+              <select class="pocket-hotel-select" id="pocket-hotel-select" title="เลือกเปลี่ยนโรงแรมที่ต้องการ">
+                ${candidateHotels.map(h => {
+                  const tagIcon = h.priceJPY <= 9000 ? '💰' : (h.priceJPY <= 16000 ? '♨️' : '👑');
+                  return `
+                    <option value="${h.name}" ${h.name === sampleHotel.name ? 'selected' : ''}>
+                      ${tagIcon} ${h.name} (~¥${h.priceJPY.toLocaleString()}/คืน)
+                    </option>
+                  `;
+                }).join("")}
+              </select>
+            </div>
+
+            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; line-height: 1.3; margin-top: 0.35rem;">
               ${sampleHotel.name}
             </div>
-            <div style="font-size: 0.75rem; color: #16a34a; font-family: var(--font-jp); margin-bottom: 0.4rem;">
+            <div style="font-size: 0.75rem; color: #16a34a; font-family: var(--font-jp); margin-bottom: 0.3rem;">
               ${sampleHotel.japanese || ''}
             </div>
-            <div style="font-size: 0.78rem; color: #475569; margin-bottom: 0.35rem;">
+            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.25rem;">
+              🏷️ สไตล์: <strong>${sampleHotel.type}</strong>
+            </div>
+            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.25rem;">
               📍 ทำเล: ${sampleHotel.distance || 'ใกล้สถานีรถไฟหลัก'}
             </div>
-            <div style="font-size: 0.78rem; color: #475569; margin-bottom: 0.35rem;">
-              🗓️ เข้าพัก: <strong>${formattedCheckin}</strong> - <strong>${formattedCheckout}</strong> (${hotelPricing.nights} คืน)
+            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 0.35rem;">
+              🗓️ เข้าพัก: <strong>${formattedCheckin}</strong> – <strong>${formattedCheckout}</strong> (${hotelPricing.nights} คืน, ${hotelPricing.guests} ท่าน)
             </div>
-            <div style="font-size: 0.82rem; font-weight: 800; color: #dc2626; margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px dashed #cbd5e1;">
-              💳 ค่าที่พักประเมิน: ~¥${hotelPricing.totalJPY.toLocaleString()} เยน (~${hotelPricing.totalTHB.toLocaleString()} บาท)
+            <div style="font-size: 0.82rem; font-weight: 800; color: #dc2626; margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <span>💳 รวม ${hotelPricing.nights} คืน: ~¥${hotelPricing.totalJPY.toLocaleString()} เยน (~${hotelPricing.totalTHB.toLocaleString()} บาท)</span>
+              <a href="${hotelPricing.agodaUrl}" target="_blank" rel="noopener noreferrer" class="pocket-hotel-book-link" style="font-size: 0.73rem; color: #0284c7; font-weight: 700; text-decoration: underline;">
+                🏨 จองผ่าน Agoda ↗
+              </a>
             </div>
           </div>
 
@@ -4608,6 +4684,15 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
+
+    // Attach Hotel Select change listener
+    const hotelSelectEl = pocketSheetRenderTarget.querySelector("#pocket-hotel-select");
+    if (hotelSelectEl) {
+      hotelSelectEl.addEventListener("change", (e) => {
+        selectedPocketHotelName = e.target.value;
+        openPocketExportModal();
+      });
+    }
 
     // Attach Day change listener inside the pocket sheet cards
     pocketSheetRenderTarget.querySelectorAll(".pocket-item-day-select").forEach(select => {
@@ -4644,9 +4729,9 @@ document.addEventListener("DOMContentLoaded", () => {
       exportActionImgBtn.disabled = true;
     }
 
-    // Temporarily hide interactive day controls for clean picture capture
-    const dayCtrls = target.querySelectorAll(".pocket-card-day-ctrl");
-    dayCtrls.forEach(el => el.style.display = "none");
+    // Temporarily hide interactive day controls & hotel select dropdown for clean picture capture
+    const hiddenCtrls = target.querySelectorAll(".pocket-card-day-ctrl, .pocket-hotel-select-wrap");
+    hiddenCtrls.forEach(el => el.style.display = "none");
 
     html2canvas(target, {
       scale: 2,
@@ -4654,7 +4739,7 @@ document.addEventListener("DOMContentLoaded", () => {
       backgroundColor: "#ffffff",
       logging: false
     }).then(canvas => {
-      dayCtrls.forEach(el => el.style.display = "");
+      hiddenCtrls.forEach(el => el.style.display = "");
       const link = document.createElement("a");
       link.download = `nippon_trip_plan_${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -4665,7 +4750,7 @@ document.addEventListener("DOMContentLoaded", () => {
         exportActionImgBtn.disabled = false;
       }
     }).catch(err => {
-      dayCtrls.forEach(el => el.style.display = "");
+      hiddenCtrls.forEach(el => el.style.display = "");
       console.error("Error generating image:", err);
       alert("เกิดข้อผิดพลาดในการสร้างรูปภาพ กรุณาลองใหม่อีกครั้งหรือใช้ปุ่มพิมพ์ PDF ครับ");
       if (exportActionImgBtn) {
