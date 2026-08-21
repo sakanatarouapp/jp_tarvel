@@ -5912,13 +5912,16 @@ document.addEventListener("DOMContentLoaded", () => {
                           📍 สถานี/พิกัด: <strong>${station}</strong> • 🇯🇵 ${jpName}
                         </div>
                       </div>
-                      <div class="pocket-card-day-ctrl">
-                        <span class="pocket-day-pill-label">ย้ายวัน:</span>
-                        <select class="pocket-item-day-select" data-id="${item.id}" title="ย้ายสถานที่นี้ไปวันที่...">
-                          ${availableDays.map(d => `
-                            <option value="${d}" ${d === (item.day || day) ? 'selected' : ''}>DAY ${d}</option>
-                          `).join("")}
-                        </select>
+                      <div class="pocket-card-actions">
+                        <div class="pocket-card-day-ctrl">
+                          <span class="pocket-day-pill-label">ย้ายวัน:</span>
+                          <select class="pocket-item-day-select" data-id="${item.id}" title="ย้ายสถานที่นี้ไปวันที่...">
+                            ${availableDays.map(d => `
+                              <option value="${d}" ${d === (item.day || day) ? 'selected' : ''}>DAY ${d}</option>
+                            `).join("")}
+                          </select>
+                        </div>
+                        <button type="button" class="pocket-item-remove-btn" data-id="${item.id}" title="ลบ ${item.title} ออกจากแผนเที่ยว" aria-label="ลบ">&times;</button>
                       </div>
                     </div>
                   </div>
@@ -6240,6 +6243,19 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           openPocketExportModal();
         }
+      });
+    });
+
+    // Attach Remove Item listener inside the pocket sheet cards
+    pocketSheetRenderTarget.querySelectorAll(".pocket-item-remove-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.currentTarget.getAttribute("data-id");
+        removeItineraryItemInstance(id);
+        openPocketExportModal();
+        updateItineraryUI();
+        renderRouteSimulator();
+        renderCards();
+        if (typeof updateProfileHubUI === "function") updateProfileHubUI();
       });
     });
 
