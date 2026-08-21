@@ -2050,6 +2050,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const dayB = parseInt(b.day, 10) || 1;
       if (dayA !== dayB) return dayA - dayB;
       if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time && !b.time) return -1;
+      if (!a.time && b.time) return 1;
       return 0;
     });
   }
@@ -2231,6 +2233,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const dayB = parseInt(b.day, 10) || 1;
       if (dayA !== dayB) return dayA - dayB;
       if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time && !b.time) return -1;
+      if (!a.time && b.time) return 1;
       return 0;
     });
 
@@ -5451,6 +5455,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     dayNumbers.forEach(day => {
       const dayList = dayMap[day];
+      dayList.sort((a, b) => {
+        if (a.time && b.time) return a.time.localeCompare(b.time);
+        if (a.time && !b.time) return -1;
+        if (!a.time && b.time) return 1;
+        return 0;
+      });
 
       daysHtml += `
         <div class="pocket-day-section">
