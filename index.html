@@ -1937,20 +1937,25 @@
 
   <!-- Mobile Floating Quick Dock (Bottom Bar for Touch Users) -->
   <div class="mobile-floating-dock" id="mobile-floating-dock">
-    <button type="button" class="mobile-dock-btn dock-profile-btn" id="mobile-dock-profile-btn" style="background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%); color: white; font-weight: 800;">
-      <span>🧳</span> ทริปของฉัน
+    <button type="button" class="mobile-dock-btn dock-profile-btn" id="mobile-dock-profile-btn">
+      <span class="dock-icon">🧳</span>
+      <span class="dock-label">ทริปของฉัน</span>
     </button>
-    <button type="button" class="mobile-dock-btn dock-ontrip-btn" id="mobile-dock-ontrip-btn" style="background: #dc2626; color: white; font-weight: 800;">
-      <span>🎯</span> เที่ยวจริง
+    <button type="button" class="mobile-dock-btn dock-ontrip-btn" id="mobile-dock-ontrip-btn">
+      <span class="dock-icon">🎯<span class="dock-live-dot"></span></span>
+      <span class="dock-label">เที่ยวจริง</span>
     </button>
-    <button type="button" class="mobile-dock-btn dock-wizard-btn" id="mobile-dock-wizard-btn" style="background: #7c3aed; color: white; font-weight: 800;">
-      <span>🪄</span> จัดทริป AI
+    <button type="button" class="mobile-dock-btn dock-wizard-btn" id="mobile-dock-wizard-btn">
+      <span class="dock-icon">🪄</span>
+      <span class="dock-label">จัดทริป AI</span>
     </button>
     <button type="button" class="mobile-dock-btn dock-plan-btn" id="mobile-dock-plan-btn">
-      <span>📋</span> แผน (<span id="mobile-dock-badge">0</span>)
+      <span class="dock-icon">📋<span class="dock-count-badge" id="mobile-dock-badge">0</span></span>
+      <span class="dock-label">แผนเที่ยว</span>
     </button>
     <button type="button" class="mobile-dock-btn dock-top-btn" id="mobile-dock-top-btn" title="กลับขึ้นด้านบน">
-      <span>⬆️</span>
+      <span class="dock-icon">⬆️</span>
+      <span class="dock-label">ขึ้นบน</span>
     </button>
   </div>
 
