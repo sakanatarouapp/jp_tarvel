@@ -3096,20 +3096,20 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="tier-daily">${t.dailyCostTHB}</div>
         </div>
         <div class="tier-cost-item">
-          <span class="tier-cost-label">✈️ ตั๋วเครื่องบินไป-กลับ:</span>
-          <span class="tier-cost-val">${t.flightTHB}</span>
+          <div class="tier-cost-label">✈️ ตั๋วเครื่องบินไป-กลับ:</div>
+          <div class="tier-cost-val">${t.flightTHB}</div>
         </div>
         <div class="tier-cost-item">
-          <span class="tier-cost-label">🏨 ที่พักต่อคืน:</span>
-          <span class="tier-cost-val">${t.hotelTHB}</span>
+          <div class="tier-cost-label">🏨 ที่พักต่อคืน:</div>
+          <div class="tier-cost-val">${t.hotelTHB}</div>
         </div>
         <div class="tier-cost-item">
-          <span class="tier-cost-label">🍜 ค่าอาหารต่อวัน:</span>
-          <span class="tier-cost-val">${t.foodTHB}</span>
+          <div class="tier-cost-label">🍜 ค่าอาหารต่อวัน:</div>
+          <div class="tier-cost-val">${t.foodTHB}</div>
         </div>
         <div class="tier-cost-item">
-          <span class="tier-cost-label">🚅 การเดินทางต่อวัน:</span>
-          <span class="tier-cost-val">${t.transitTHB}</span>
+          <div class="tier-cost-label">🚅 การเดินทางต่อวัน:</div>
+          <div class="tier-cost-val">${t.transitTHB}</div>
         </div>
       </div>
     `).join("");
