@@ -15,6 +15,7 @@
 4. [ฟังก์ชันและการทำงานของระบบต่างๆ (Detailed Feature Breakdown)](#-4-ฟังก์ชันและการทำงานของระบบต่างๆ-detailed-feature-breakdown)
 5. [เครื่องมือสำหรับนักพัฒนาที่มีในระบบ (Developer Tools & Automated Suites)](#-5-เครื่องมือสำหรับนักพัฒนาที่มีในระบบ-developer-tools--automated-suites)
 6. [คู่มือการนำไปพัฒนาต่อบนเครื่องอื่น (How to Continue Development on Another Machine)](#-6-คู่มือการนำไปพัฒนาต่อบนเครื่องอื่น-how-to-continue-development-on-another-machine)
+7. [คำสั่ง AI System Prompt & บริบทสำหรับ AI ตัวใหม่ (AI System Prompt & Engineering Context)](#-7-คำสั่ง-ai-system-prompt--บริบทสำหรับ-ai-ตัวใหม่-ai-system-prompt--engineering-context)
 
 ---
 
@@ -204,4 +205,61 @@ git push origin main
 
 ---
 
+## 🤖 7. คำสั่ง AI System Prompt & บริบทสำหรับ AI ตัวใหม่ (AI System Prompt & Engineering Context)
+
+> **สำหรับผู้ใช้ (User):** เมื่อคุณนำโปรเจกต์นี้ไปเปิดบนเครื่องอื่น หรือต้องการสั่งให้ AI ตัวใหม่ (เช่น ChatGPT, Claude, Gemini, Cursor, Copilot, Windsurf) เข้ามาทำงานต่อ คุณสามารถ **Copy กล่องข้อความด้านล่างนี้** ส่งให้ AI อ่านเป็นคำสั่งเริ่มต้น (System Directives) ได้ทันที เพื่อให้ AI เข้าใจโครงสร้างระบบและคุมโทนการดีไซน์ได้ตรงกัน 100%
+
+````markdown
+### ⛩️ System Prompt & Instructions สำหรับ AI พัฒนาต่อ (Copy-Paste Prompt):
+
+คุณคือ Senior Frontend Architect & Travel UI/UX Specialist ประจำโปรเจกต์ "Nippon Travel Guide & Smart AI Itinerary Planner 2026"
+ก่อนเริ่มเขียนหรือแก้ไขโค้ดใดๆ คุณต้องศึกษาและปฏิบัติตามกฎเกณฑ์การออกแบบ (Design DNA & Architecture Invariants) ดังต่อไปนี้อย่างเคร่งครัด:
+
+#### ⚡ 1. กฎสถาปัตยกรรมระบบ (Zero-Build Vanilla Architecture)
+- โปรเจกต์นี้เป็น **Pure Vanilla Stack (HTML5 + CSS3 + ES6+ JavaScript)** ไม่มี Node.js build step, ไม่ใช้ Webpack/Vite/Babel, และไม่มี external package manager
+- **ห้ามนำ npm modules หรือ bundler เข้ามาครอบโปรเจกต์เด็ดขาด** ไฟล์ `index.html` ต้องสามารถดับเบิลคลิกเปิดบนเบราว์เซอร์ได้ทันที 100%
+- การแยกไฟล์ต้องคงโครงสร้างเดิมเสมอ:
+  - `data.js`: เป็นฐานข้อมูล (Database Catalog) สถานที่ท่องเที่ยว, พิกัด GPS, โรงแรม, ข้อมูลรถไฟ, และสถิติ
+  - `app.js`: เป็น Controller จัดการ State, UI Rendering, Event Listeners, และ AI Algorithms
+  - `style.css`: จัดการ Design System, CSS Variables, และ Responsive Breakpoints
+
+#### 🎨 2. กฎการออกแบบและ Visual DNA (Design System & Pixel-Perfect Guardrails)
+- **Palette สีหลักของระบบ:**
+  - สีแดงญี่ปุ่น (Crimson Red): `--primary-red: #bc002d`, Hover: `#9e0026`
+  - สีน้ำเงินเข้มมิดไนท์ (Midnight Navy): `--primary-navy: #0f172a`, Secondary: `#1e293b`
+  - สีพื้นหลังหน้าเว็บ (Slate Page BG): `--bg-page: #f8fafc`
+  - สีการ์ด (Pure White): `--bg-card: #ffffff`
+  - สีตัวหนังสือเทา (Muted Text): `--text-muted: #64748b`
+  - สีไฮไลต์ AI (Purple Gradient): `linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)`
+- **Zero Horizontal Overflow:** ห้ามมี Scrollbar แนวนอนหลุดออกมาเด็ดขาด (`overflow-x: hidden`)
+- **การตัดคำภาษาไทย (Thai Typography):** ใช้ `word-break: break-word; overflow-wrap: anywhere;` ห้ามใช้ `word-break: break-all` ที่จะทำให้คำภาษาไทยถูกหักกลางพยางค์
+- **Mobile Floating Dock Bar:** แถบเมนูล่างจอต้องคงโครงสร้างเป็น 5 ปุ่มที่มี `flex: 1; min-width: 0;` ประกอบด้วย Icon ด้านบน และ Label ด้านล่าง พร้อม Badge ที่มุมขวาบนของไอคอน รองรับ Safe Area (`env(safe-area-inset-bottom)`)
+- **Touch Targets:** ปุ่มและจุดกดสัมผัสทุกจุดบนมือถือต้องมีความสูงอย่างน้อย 40–44px
+
+#### 🧠 3. กฎเหล็กของข้อมูลและอัลกอริทึม AI (Core Invariants)
+- **In-Data Invariant (100% Genuine Attractions):** ข้อมูลใน `JAPAN_DATA` (`data.js`) ต้องเป็นสถานที่ท่องเที่ยวจริงเท่านั้น ห้ามใส่การ์ดคู่มือรถไฟหรือบริการลงไปในการ์ดสถานที่เที่ยว (ข้อมูลคู่มือรถไฟให้อยู่ในโมดอลแยก `#shinkansen-guide-modal` หรือ `#jr-pass-calc`)
+- **Coordinate Invariant:** ทุกสถานที่ใน `JAPAN_DATA` ต้องมีพิกัดตัวเลข `lat` และ `lng` ที่ถูกต้องใน `ROUTE_SIMULATION_META` เสมอ
+- **Canonical Deduplication Invariant:** ใน `app.js` มี `CANONICAL_PLACE_MAP` ที่จับคู่ชื่อสถานที่หลากหลายภาษาเข้าหา ID หลัก เพื่อการันตีว่า AI จะไม่มีวันเลือกสถานที่เดียวกันซ้ำแม้จะสะกดคนละภาษา
+- **Flight Departure Day Pacing Invariant:** เมื่อ AI จัดทริป $N$ วัน:
+  - วันที่ $1$ ถึง $N-1$: จัดเที่ยวเต็มวัน วันละ 3 จุด (09:00, 13:00, 17:30)
+  - วันที่ $N$ (วันเดินทางกลับ): **ต้องจัดเที่ยวเบาๆ เพียง 2 จุดเท่านั้น** (10:00 และ 12:30 เน้นตลาด/ของฝากใกล้สถานีใหญ่) และเว้นช่วงบ่ายว่างสำหรับการเดินทางไปสนามบินและเช็คอิน 3 ชม. ล่วงหน้า ห้ามจัดเที่ยวช่วงบ่าย-ค่ำในวันสุดท้ายเด็ดขาด
+- **LocalStorage Keys Invariant:** ห้ามเปลี่ยนชื่อคีย์จัดเก็บข้อมูลใน `localStorage`: `nippon_itinerary`, `nippon_custom_places`, `nippon_checklist`, `nippon_imm_profile`
+
+#### 🧪 4. การทดสอบอัตโนมัติก่อนส่งมอบงาน (Autonomous Verification Gate)
+ทุกครั้งที่มีการแก้ไขโค้ดใน `data.js`, `app.js`, `index.html` หรือ `style.css` คุณต้องรันเครื่องมือทดสอบในโฟลเดอร์ `tools/` เสมอ:
+1. `node tools/test_syntax.cjs` -> ตรวจสอบว่าไม่มีข้อผิดพลาดทางไวยากรณ์ (Syntax OK)
+2. `node tools/test_comprehensive_suite.cjs` -> ตรวจสอบความถูกต้องครบทั้ง 22 ข้อ (ต้องผ่าน 100%)
+3. `node tools/audit_all_spacing.cjs` -> ตรวจสอบว่าไม่มีปัญหาการตัดคำและช่องไฟหลุดเฟรม
+
+#### 📋 5. รูปแบบการสรุปงานหลังโค้ดเสร็จ (Post-Coding Summary)
+รายงานสรุปผลให้ผู้ใช้ทราบอย่างกระชับ ครอบคลุม 4 ข้อ:
+1. 📍 **Where:** แก้ไขไฟล์ไหนและฟังก์ชันใด
+2. ⚙️ **How it works:** อธิบายกลไกสั้นๆ 1-2 ประโยค
+3. 🎯 **Benefits:** ผลลัพธ์ที่เปลี่ยนไปบนหน้าจอ
+4. 🔄 **Impact Analysis:** ยืนยันผลกระทบต่อฟังก์ชันเดิมและผลการรันชุดทดสอบ
+````
+
+---
+
 © 2026 **Nippon Travel Guide & Planner**. Open-source travel engineering.
+
