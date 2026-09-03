@@ -893,6 +893,13 @@
       <button class="drawer-close-btn" id="drawer-close-btn">&times;</button>
     </div>
 
+    <!-- Group Trip Collaboration Strip in Drawer -->
+    <div class="drawer-group-strip" id="drawer-group-strip">
+      <div class="group-strip-content" id="group-strip-content">
+        <!-- Injected via JavaScript (Solo or Group Active state) -->
+      </div>
+    </div>
+
     <!-- Quick Add Custom Place in Drawer -->
     <div style="padding: 0.75rem 1.25rem; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
       <span style="font-size: 0.8rem; color: var(--text-muted);">อยากแวะโรงแรม/ร้านอาหาร?</span>
@@ -1445,6 +1452,18 @@
           <span class="menu-item-badge" id="profile-menu-plan-badge">0 รายการ</span>
         </button>
 
+        <button type="button" class="profile-menu-item item-group" id="profile-menu-group-btn">
+          <div class="menu-item-icon">👥</div>
+          <div class="menu-item-text">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <strong>วางแผนเที่ยวเป็นกลุ่ม (Group Trip Room)</strong>
+              <span class="profile-group-status-pill" id="profile-group-status-pill">ใหม่</span>
+            </div>
+            <span id="profile-group-sub-text">สร้างห้องส่งลิงก์ชวนเพื่อน เข้ามารวมแผนเที่ยวด้วยกันแบบสดๆ</span>
+          </div>
+          <span class="menu-item-tag" style="background: #059669; color: white;">SYNC</span>
+        </button>
+
         <button type="button" class="profile-menu-item item-ontrip" id="profile-menu-ontrip-btn">
           <div class="menu-item-icon">🎯</div>
           <div class="menu-item-text">
@@ -1513,6 +1532,130 @@
         <button type="button" class="btn-clear-plan" id="profile-clear-plan-btn">
           🗑️ ล้างแผนเที่ยวทั้งหมด
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group Trip Collaboration Modal -->
+  <div class="modal-backdrop group-trip-backdrop" id="group-trip-modal" style="display: none;">
+    <div class="modal-container group-trip-modal-box">
+      <button type="button" class="modal-close-btn" id="close-group-modal-btn">&times;</button>
+      
+      <!-- Modal Header -->
+      <div class="group-modal-header">
+        <div class="group-modal-title-wrap">
+          <div class="group-modal-icon-badge">👥</div>
+          <div>
+            <h3>วางแผนเที่ยวเป็นกลุ่ม (Group Trip Room)</h3>
+            <p>สร้างห้องหรือเข้าร่วมผ่านลิงก์ เพื่อรวมแผนเที่ยว ซิงค์สดแบบเรียลไทม์</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="group-modal-body">
+        
+        <!-- View 1: Not In Room (Create or Join) -->
+        <div id="group-view-no-room">
+          <div class="group-tabs-row">
+            <button type="button" class="group-tab-btn active" id="group-tab-create-btn">🏠 สร้างห้องกลุ่มใหม่</button>
+            <button type="button" class="group-tab-btn" id="group-tab-join-btn">🚪 เข้าร่วมด้วยรหัส/ลิงก์</button>
+          </div>
+
+          <!-- Tab Pane: Create Room -->
+          <div class="group-pane active" id="group-pane-create">
+            <div class="group-form-group">
+              <label for="group-input-trip-name">🏷️ ชื่อทริปของกลุ่ม:</label>
+              <input type="text" id="group-input-trip-name" class="group-input" placeholder="เช่น ทริปตะลุยโตเกียว 5 วัน" value="ทริปญี่ปุ่นเพื่อนซี้ 2026">
+            </div>
+            <div class="group-form-group">
+              <label for="group-input-my-name-create">🧑‍💼 ชื่อเล่นของคุณในกลุ่ม:</label>
+              <input type="text" id="group-input-my-name-create" class="group-input" placeholder="เช่น บอย, ต้น, มายด์" value="ฉันเอง">
+            </div>
+            <div class="group-checkbox-row">
+              <label class="group-checkbox-label">
+                <input type="checkbox" id="group-check-import-itinerary" checked>
+                <span>นำสถานที่ที่บันทึกไว้ปัจจุบัน (<strong id="group-import-count">0</strong> แห่ง) เข้าไปเป็นแผนเริ่มต้นของห้องกลุ่มด้วย</span>
+              </label>
+            </div>
+            <button type="button" class="btn primary group-submit-btn" id="group-create-submit-btn">
+              🚀 สร้างห้องทริป & รับลิงก์ชวนเพื่อน
+            </button>
+          </div>
+
+          <!-- Tab Pane: Join Room -->
+          <div class="group-pane" id="group-pane-join" style="display: none;">
+            <div class="group-form-group">
+              <label for="group-input-room-code">🔑 รหัสห้อง 6 หลัก หรือวางลิงก์ห้อง:</label>
+              <input type="text" id="group-input-room-code" class="group-input" placeholder="เช่น JP-7821 หรือวาง https://...">
+            </div>
+            <div class="group-form-group">
+              <label for="group-input-my-name-join">🧑‍💼 ชื่อเล่นของคุณในกลุ่ม:</label>
+              <input type="text" id="group-input-my-name-join" class="group-input" placeholder="เช่น บอย, ต้น, มายด์" value="ฉันเอง">
+            </div>
+            <button type="button" class="btn primary group-submit-btn" id="group-join-submit-btn">
+              ✨ เข้าร่วมห้องทริปทันที
+            </button>
+          </div>
+        </div>
+
+        <!-- View 2: Active Room (Manage / Share) -->
+        <div id="group-view-active-room" style="display: none;">
+          <div class="group-active-status-card">
+            <div class="status-card-top">
+              <div class="status-live-indicator">
+                <span class="live-dot-pulse"></span>
+                <strong>ห้องกำลังออนไลน์ (Live Synced)</strong>
+              </div>
+              <span class="group-room-code-tag" id="active-room-code-tag">JP-0000</span>
+            </div>
+            <h4 class="active-room-name" id="active-room-name-display">ชื่อทริปกลุ่ม</h4>
+            <div class="active-room-meta">
+              <span>👤 คุณ: <strong id="active-my-name-display">คุณ</strong></span>
+              <span>·</span>
+              <span>📍 แผนในห้อง: <strong id="active-room-stops-display">0 จุด</strong></span>
+            </div>
+          </div>
+
+          <!-- Share Link Box -->
+          <div class="group-share-box">
+            <label>🔗 ลิงก์เชิญเพื่อนเข้าห้องนี้:</label>
+            <div class="group-copy-wrap">
+              <input type="text" id="group-share-url-input" class="group-input" readonly>
+              <button type="button" class="btn" id="group-copy-link-btn">📋 คัดลอก</button>
+            </div>
+            <div class="group-share-actions-row">
+              <button type="button" class="group-share-btn line-btn" id="group-share-line-btn">
+                📲 แชร์เข้า LINE กลุ่ม
+              </button>
+              <button type="button" class="group-share-btn sync-btn" id="group-force-sync-btn">
+                🔄 รีเฟรชซิงค์สด
+              </button>
+            </div>
+          </div>
+
+          <!-- Members in Room -->
+          <div class="group-members-box">
+            <div class="members-box-header">
+              <span>👥 สมาชิกในห้อง (<span id="group-members-count">1</span> คน):</span>
+            </div>
+            <div class="group-members-chips" id="group-members-chips">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- How It Works Hint -->
+          <div class="group-sync-tips">
+            💡 <strong>วิธีใช้งาน:</strong> เมื่ออยู่ในห้องนี้ ทุกครั้งที่สมาชิกกด <strong>"+ แผนเที่ยว"</strong> เพิ่ม/ลบสถานที่ หรือจัดเวลา ข้อมูลจะซิงค์มาขึ้นที่หน้าจอและแผนที่ของทุกคนในกลุ่มโดยอัตโนมัติ!
+          </div>
+
+          <div class="group-room-footer-actions">
+            <button type="button" class="btn group-leave-btn" id="group-leave-room-btn">
+              🚪 ออกจากห้องกลุ่ม (กลับไปทริปส่วนตัว)
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

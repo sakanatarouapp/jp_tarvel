@@ -118,6 +118,14 @@ assert(cssContent.includes(".user-profile-hub-btn"), "style.css contains .user-p
 assert(appContent.includes("openProfileHub"), "app.js contains openProfileHub logic");
 
 
+// --- 5. GROUP TRIP COLLABORATION TESTS ---
+console.log("\n--- 5. GROUP TRIP COLLABORATION TESTS ---");
+assert(htmlContent.includes('id="profile-menu-group-btn"'), "index.html contains #profile-menu-group-btn in Profile Hub");
+assert(htmlContent.includes('id="group-trip-modal"'), "index.html contains #group-trip-modal for room collaboration");
+assert(htmlContent.includes('id="drawer-group-strip"'), "index.html contains #drawer-group-strip in itinerary drawer");
+assert(cssContent.includes('.drawer-group-strip') && cssContent.includes('.group-trip-modal-box'), "style.css contains .drawer-group-strip and .group-trip-modal-box styles");
+assert(appContent.includes('createGroupRoom') && appContent.includes('joinGroupRoom') && appContent.includes('broadcastGroupSync'), "app.js manages createGroupRoom, joinGroupRoom, and broadcastGroupSync");
+
 console.log("\n=================================================================");
 console.log(`📊 TEST SUITE SUMMARY: ${passedCount} / ${totalCount} TESTS PASSED (100% SUCCESS)`);
 console.log("=================================================================\n");

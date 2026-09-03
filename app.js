@@ -3097,6 +3097,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="stop-meta-row">
             <span>🚉 ${meta.station}</span>
             <span>⏳ เวลาแวะ: ${meta.stayHours}</span>
+            ${item.addedBy ? `<span class="itinerary-added-by">👤 ${item.addedBy.name || item.addedBy}</span>` : ''}
           </div>
         </div>
       `;
@@ -3826,6 +3827,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       const assignedDay = targetDay ? parseInt(targetDay, 10) : (itineraryList.length > 0 ? Math.max(...itineraryList.map(i => parseInt(i.day, 10) || 1)) : 1);
       const builtin = JAPAN_DATA.find(i => i.id === id || i.id === baseId);
+      const contributor = (typeof currentGroupRoom !== "undefined" && currentGroupRoom) ? { name: currentGroupRoom.myNickname } : null;
       if (builtin) {
         itineraryList.push({
           id: builtin.id,
@@ -3836,7 +3838,8 @@ document.addEventListener("DOMContentLoaded", () => {
           region: builtin.region,
           japanese: builtin.japanese,
           day: assignedDay,
-          time: ""
+          time: "",
+          addedBy: contributor
         });
       } else {
         const custom = customPlacesStore.find(i => i.id === id || i.id === baseId);
@@ -3852,7 +3855,8 @@ document.addEventListener("DOMContentLoaded", () => {
             icon: custom.icon,
             isCustom: true,
             day: assignedDay,
-            time: custom.time || ""
+            time: custom.time || "",
+            addedBy: contributor
           });
         }
       }
@@ -3861,6 +3865,9 @@ document.addEventListener("DOMContentLoaded", () => {
       updateItineraryUI();
       renderCards();
       renderRouteSimulator();
+      if (typeof broadcastGroupSync === "function") {
+        broadcastGroupSync("UPDATE_ITINERARY", { addedTitle: (builtin || custom)?.title });
+      }
     }
   }
 
@@ -3884,6 +3891,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const uniqueId = `${base.id}_v${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    const contributor = (typeof currentGroupRoom !== "undefined" && currentGroupRoom) ? { name: currentGroupRoom.myNickname } : null;
 
     itineraryList.push({
       id: uniqueId,
@@ -3898,7 +3906,8 @@ document.addEventListener("DOMContentLoaded", () => {
       icon: base.icon,
       isCustom: !!custom,
       day: assignedDay,
-      time: targetTime || ""
+      time: targetTime || "",
+      addedBy: contributor
     });
 
     sortItineraryList();
@@ -3906,6 +3915,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateItineraryUI();
     renderCards();
     renderRouteSimulator();
+    if (typeof broadcastGroupSync === "function") {
+      broadcastGroupSync("UPDATE_ITINERARY", { addedTitle: base.title });
+    }
 
     alert(`🎉 เพิ่ม "${base.title}" เข้าแผนเที่ยวอีกครั้งเรียบร้อยแล้ว!\n🗓️ กำหนดไว้ที่ DAY ${assignedDay} (คุณสามารถปรับเปลี่ยนวันและเวลาได้ในแถบแผนเที่ยวครับ)`);
   }
@@ -3919,6 +3931,9 @@ document.addEventListener("DOMContentLoaded", () => {
       updateItineraryUI();
       renderCards();
       renderRouteSimulator();
+      if (typeof broadcastGroupSync === "function") {
+        broadcastGroupSync("UPDATE_ITINERARY");
+      }
     }
   }
 
@@ -3929,6 +3944,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateItineraryUI();
     renderCards();
     renderRouteSimulator();
+    if (typeof broadcastGroupSync === "function") {
+      broadcastGroupSync("UPDATE_ITINERARY");
+    }
   }
 
   function setItineraryItemDay(id, newDay) {
@@ -3939,6 +3957,9 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
       updateItineraryUI();
       renderRouteSimulator();
+      if (typeof broadcastGroupSync === "function") {
+        broadcastGroupSync("UPDATE_ITINERARY");
+      }
     }
   }
 
@@ -3950,6 +3971,9 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
       updateItineraryUI();
       renderRouteSimulator();
+      if (typeof broadcastGroupSync === "function") {
+        broadcastGroupSync("UPDATE_ITINERARY");
+      }
     }
   }
 
@@ -3971,6 +3995,9 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
     updateItineraryUI();
     renderRouteSimulator();
+    if (typeof broadcastGroupSync === "function") {
+      broadcastGroupSync("UPDATE_ITINERARY");
+    }
   }
 
   // 9. Update Itinerary Drawer UI with Day Grouping & Time Setting
@@ -3980,6 +4007,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const mobileDockBadge = document.getElementById("mobile-dock-badge");
     if (mobileDockBadge) mobileDockBadge.textContent = itineraryList.length;
     if (typeof updateProfileHubUI === "function") updateProfileHubUI();
+    if (typeof renderGroupTripUI === "function") renderGroupTripUI();
 
     if (!itineraryItemsList) return;
 
@@ -4042,6 +4070,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="itinerary-item-sub">
                     ${isCustom ? `<span style="background: #ecfdf5; color: #059669; font-weight: 700; padding: 1px 5px; border-radius: 6px; font-size: 0.7rem;">Custom</span> ` : ''}
                     ${item.tag || 'จุดหมาย'} • ${item.japanese || item.title}
+                    ${item.addedBy ? `<span class="itinerary-added-by" style="margin-left: 4px;">👤 ${item.addedBy.name || item.addedBy}</span>` : ''}
                   </div>
                   <div class="itinerary-item-time-row" style="display: flex; align-items: center; gap: 6px; margin-top: 5px;">
                     <span style="font-size: 0.72rem; color: #0369a1; font-weight: 700;">🕒 เวลา:</span>
@@ -8047,6 +8076,511 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("🗑️ ล้างแผนการเดินทางเรียบร้อยแล้ว");
       }
     });
+  }
+
+  // =========================================================================
+  // GROUP TRIP COLLABORATION & REAL-TIME ROOM SYNC ENGINE
+  // =========================================================================
+  let currentGroupRoom = null;
+  let groupEventSource = null;
+  let groupPresenceInterval = null;
+
+  try {
+    const savedRoom = localStorage.getItem("nippon_group_room");
+    if (savedRoom) {
+      currentGroupRoom = JSON.parse(savedRoom);
+    }
+  } catch (e) {
+    console.warn("Failed to load nippon_group_room:", e);
+  }
+
+  function getCleanTopic(roomId) {
+    return "jp_trip_" + String(roomId || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function showGroupToast(msg, icon = "👥") {
+    const existing = document.querySelector(".group-toast-notification");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.className = "group-toast-notification";
+    toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(20px)";
+      setTimeout(() => toast.remove(), 400);
+    }, 3800);
+  }
+
+  function broadcastGroupSync(actionType, extraData = {}) {
+    if (!currentGroupRoom || !currentGroupRoom.roomId) return;
+    const topic = getCleanTopic(currentGroupRoom.roomId);
+
+    const payload = {
+      actionType,
+      roomId: currentGroupRoom.roomId,
+      roomName: currentGroupRoom.roomName,
+      sender: currentGroupRoom.myNickname,
+      itinerary: itineraryList,
+      timestamp: Date.now(),
+      ...extraData
+    };
+
+    fetch(`https://ntfy.sh/${topic}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).catch(err => console.warn("Group sync broadcast failed:", err));
+  }
+
+  function connectGroupRoomSSE(roomId) {
+    if (!roomId) return;
+    if (groupEventSource) {
+      groupEventSource.close();
+      groupEventSource = null;
+    }
+    if (groupPresenceInterval) {
+      clearInterval(groupPresenceInterval);
+      groupPresenceInterval = null;
+    }
+
+    const topic = getCleanTopic(roomId);
+    try {
+      groupEventSource = new EventSource(`https://ntfy.sh/${topic}/sse`);
+
+      groupEventSource.onmessage = (e) => {
+        try {
+          const raw = JSON.parse(e.data);
+          if (!raw.message) return;
+          const data = JSON.parse(raw.message);
+          handleGroupSyncEvent(data);
+        } catch (err) {
+          // ignore unparseable message
+        }
+      };
+
+      groupEventSource.onerror = (err) => {
+        console.warn("Group SSE connection error, will auto-reconnect:", err);
+      };
+
+      // Broadcast join event after brief delay
+      setTimeout(() => {
+        if (currentGroupRoom) {
+          broadcastGroupSync("JOIN", { member: currentGroupRoom.myNickname });
+        }
+      }, 600);
+
+      // Periodic presence heartbeat every 45s
+      groupPresenceInterval = setInterval(() => {
+        if (currentGroupRoom) {
+          broadcastGroupSync("PING", { member: currentGroupRoom.myNickname });
+        }
+      }, 45000);
+
+    } catch (e) {
+      console.warn("EventSource setup error:", e);
+    }
+  }
+
+  function handleGroupSyncEvent(data) {
+    if (!currentGroupRoom || !data || data.roomId !== currentGroupRoom.roomId) return;
+    if (data.sender === currentGroupRoom.myNickname) return; // Ignore own echo
+
+    if (data.actionType === "JOIN" || data.actionType === "PING") {
+      if (data.member && !currentGroupRoom.members.includes(data.member)) {
+        currentGroupRoom.members.push(data.member);
+        localStorage.setItem("nippon_group_room", JSON.stringify(currentGroupRoom));
+        renderGroupTripUI();
+        if (data.actionType === "JOIN") {
+          showGroupToast(`👋 <strong>${data.member}</strong> ได้เข้าร่วมห้องทริปนี้แล้ว!`, "🎉");
+          if (itineraryList.length > 0) {
+            broadcastGroupSync("SYNC_RESPONSE");
+          }
+        }
+      }
+    } else if (data.actionType === "UPDATE_ITINERARY" || data.actionType === "SYNC_RESPONSE") {
+      if (Array.isArray(data.itinerary)) {
+        itineraryList = data.itinerary;
+        localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+        updateItineraryUI();
+        renderCards();
+        renderRouteSimulator();
+        if (data.addedTitle) {
+          showGroupToast(`📍 <strong>${data.sender}</strong> ได้เพิ่ม "${data.addedTitle}" ลงในแผน!`, "✨");
+        } else {
+          showGroupToast(`🔄 <strong>${data.sender}</strong> ได้อัปเดตแผนเที่ยว (${itineraryList.length} จุดหมาย)`, "👥");
+        }
+      }
+    } else if (data.actionType === "CLEAR_ITINERARY") {
+      itineraryList = [];
+      localStorage.setItem("nippon_itinerary", "[]");
+      updateItineraryUI();
+      renderCards();
+      renderRouteSimulator();
+      showGroupToast(`🗑️ <strong>${data.sender}</strong> ได้ล้างแผนเที่ยวทั้งหมด`, "⚠️");
+    }
+  }
+
+  function createGroupRoom(roomName, myName, importCurrent) {
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const roomId = `JP-${randomNum}`;
+    const cleanRoomName = (roomName || "").trim() || "ทริปญี่ปุ่นเพื่อนซี้ 2026";
+    const cleanMyName = (myName || "").trim() || "ฉันเอง";
+
+    if (!importCurrent) {
+      itineraryList = [];
+      localStorage.setItem("nippon_itinerary", "[]");
+      updateItineraryUI();
+      renderCards();
+      renderRouteSimulator();
+    } else {
+      itineraryList.forEach(item => {
+        if (!item.addedBy) item.addedBy = { name: cleanMyName };
+      });
+      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+    }
+
+    currentGroupRoom = {
+      roomId,
+      roomName: cleanRoomName,
+      myNickname: cleanMyName,
+      members: [cleanMyName],
+      isHost: true,
+      createdAt: Date.now()
+    };
+
+    localStorage.setItem("nippon_group_room", JSON.stringify(currentGroupRoom));
+
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set("room", roomId);
+    window.history.replaceState(null, "", newUrl.toString());
+
+    connectGroupRoomSSE(roomId);
+    renderGroupTripUI();
+    showGroupToast(`🚀 สร้างห้องทริป <strong>${roomId}</strong> สำเร็จแล้ว! ส่งลิงก์ชวนเพื่อนได้เลย`, "✅");
+  }
+
+  function joinGroupRoom(rawRoomCodeOrUrl, myName) {
+    let roomId = (rawRoomCodeOrUrl || "").trim();
+    if (roomId.includes("room=")) {
+      try {
+        const parsed = new URL(roomId);
+        roomId = parsed.searchParams.get("room") || roomId;
+      } catch (e) {
+        const match = roomId.match(/room=([A-Za-z0-9\-]+)/);
+        if (match) roomId = match[1];
+      }
+    }
+    roomId = roomId.toUpperCase();
+    if (!roomId.startsWith("JP-") && /^\d+$/.test(roomId)) {
+      roomId = `JP-${roomId}`;
+    }
+
+    const cleanMyName = (myName || "").trim() || "ฉันเอง";
+
+    currentGroupRoom = {
+      roomId,
+      roomName: `ห้องทริป ${roomId}`,
+      myNickname: cleanMyName,
+      members: [cleanMyName],
+      isHost: false,
+      joinedAt: Date.now()
+    };
+
+    localStorage.setItem("nippon_group_room", JSON.stringify(currentGroupRoom));
+
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set("room", roomId);
+    window.history.replaceState(null, "", newUrl.toString());
+
+    connectGroupRoomSSE(roomId);
+    renderGroupTripUI();
+    showGroupToast(`✨ เข้าร่วมห้องทริป <strong>${roomId}</strong> สำเร็จแล้ว! กำลังเชื่อมต่อข้อมูล...`, "🎉");
+  }
+
+  function leaveGroupRoom() {
+    if (!currentGroupRoom) return;
+    const oldId = currentGroupRoom.roomId;
+    if (groupEventSource) {
+      groupEventSource.close();
+      groupEventSource = null;
+    }
+    if (groupPresenceInterval) {
+      clearInterval(groupPresenceInterval);
+      groupPresenceInterval = null;
+    }
+
+    currentGroupRoom = null;
+    localStorage.removeItem("nippon_group_room");
+
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.delete("room");
+    window.history.replaceState(null, "", newUrl.toString());
+
+    renderGroupTripUI();
+    showGroupToast(`🚪 คุณได้ออกจากห้อง <strong>${oldId}</strong> กลับสู่โหมดทริปส่วนตัวแล้ว`, "👋");
+  }
+
+  function renderGroupTripUI() {
+    // 1. Update Drawer Group Strip
+    const drawerGroupStrip = document.getElementById("drawer-group-strip");
+    const groupStripContent = document.getElementById("group-strip-content");
+
+    if (drawerGroupStrip && groupStripContent) {
+      if (!currentGroupRoom) {
+        drawerGroupStrip.classList.remove("is-group-active");
+        groupStripContent.innerHTML = `
+          <div class="group-strip-solo">
+            <div class="group-strip-solo-left">
+              <span class="group-strip-icon">👥</span>
+              <div class="group-strip-text">
+                <strong>วางแผนกับเพื่อน?</strong>
+                <span>สร้างห้องส่งลิงก์ชวนเพื่อนมารวมแผนเที่ยวกัน</span>
+              </div>
+            </div>
+            <button type="button" class="group-strip-btn" id="open-group-modal-drawer-btn">
+              + สร้างกลุ่ม
+            </button>
+          </div>
+        `;
+        document.getElementById("open-group-modal-drawer-btn")?.addEventListener("click", openGroupTripModal);
+      } else {
+        drawerGroupStrip.classList.add("is-group-active");
+        const membersText = currentGroupRoom.members.map(m => m === currentGroupRoom.myNickname ? `${m} (คุณ)` : m).join(", ");
+        groupStripContent.innerHTML = `
+          <div class="group-strip-active-wrap">
+            <div class="group-strip-active-header">
+              <div class="group-strip-room-name">
+                <span class="live-dot-pulse"></span>
+                <span>${currentGroupRoom.roomName} (${currentGroupRoom.roomId})</span>
+              </div>
+              <div class="group-strip-actions">
+                <button type="button" class="group-strip-sm-btn" id="drawer-copy-room-link-btn" title="คัดลอกลิงก์ห้อง">
+                  🔗 ลิงก์
+                </button>
+                <button type="button" class="group-strip-sm-btn manage-btn" id="drawer-manage-room-btn">
+                  ⚙️ กลุ่ม
+                </button>
+              </div>
+            </div>
+            <div class="group-strip-members-row">
+              <span>👥 สมาชิก (${currentGroupRoom.members.length}): <strong>${membersText}</strong></span>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("drawer-copy-room-link-btn")?.addEventListener("click", copyGroupRoomLink);
+        document.getElementById("drawer-manage-room-btn")?.addEventListener("click", openGroupTripModal);
+      }
+    }
+
+    // 2. Update Profile Hub Pill
+    const profileGroupStatusPill = document.getElementById("profile-group-status-pill");
+    const profileGroupSubText = document.getElementById("profile-group-sub-text");
+    if (profileGroupStatusPill) {
+      if (currentGroupRoom) {
+        profileGroupStatusPill.textContent = `🟢 ${currentGroupRoom.roomId}`;
+        profileGroupStatusPill.style.background = "#d1fae5";
+        profileGroupStatusPill.style.color = "#065f46";
+        if (profileGroupSubText) {
+          profileGroupSubText.textContent = `กำลังเชื่อมต่อห้อง: ${currentGroupRoom.roomName} (${currentGroupRoom.members.length} สมาชิก)`;
+        }
+      } else {
+        profileGroupStatusPill.textContent = "ใหม่";
+        profileGroupStatusPill.style.background = "#d1fae5";
+        profileGroupStatusPill.style.color = "#059669";
+        if (profileGroupSubText) {
+          profileGroupSubText.textContent = "สร้างห้องส่งลิงก์ชวนเพื่อน เข้ามารวมแผนเที่ยวด้วยกันแบบสดๆ";
+        }
+      }
+    }
+
+    // 3. Update Modal Views
+    const viewNoRoom = document.getElementById("group-view-no-room");
+    const viewActiveRoom = document.getElementById("group-view-active-room");
+    const groupImportCount = document.getElementById("group-import-count");
+    if (groupImportCount) groupImportCount.textContent = itineraryList.length;
+
+    if (viewNoRoom && viewActiveRoom) {
+      if (!currentGroupRoom) {
+        viewNoRoom.style.display = "block";
+        viewActiveRoom.style.display = "none";
+      } else {
+        viewNoRoom.style.display = "none";
+        viewActiveRoom.style.display = "block";
+
+        const roomCodeTag = document.getElementById("active-room-code-tag");
+        const roomNameDisplay = document.getElementById("active-room-name-display");
+        const myNameDisplay = document.getElementById("active-my-name-display");
+        const roomStopsDisplay = document.getElementById("active-room-stops-display");
+        const shareUrlInput = document.getElementById("group-share-url-input");
+        const membersCount = document.getElementById("group-members-count");
+        const membersChips = document.getElementById("group-members-chips");
+
+        if (roomCodeTag) roomCodeTag.textContent = currentGroupRoom.roomId;
+        if (roomNameDisplay) roomNameDisplay.textContent = currentGroupRoom.roomName;
+        if (myNameDisplay) myNameDisplay.textContent = currentGroupRoom.myNickname;
+        if (roomStopsDisplay) roomStopsDisplay.textContent = `${itineraryList.length} จุด`;
+
+        const roomLink = `${window.location.origin}${window.location.pathname}?room=${currentGroupRoom.roomId}`;
+        if (shareUrlInput) shareUrlInput.value = roomLink;
+
+        if (membersCount) membersCount.textContent = currentGroupRoom.members.length;
+        if (membersChips) {
+          membersChips.innerHTML = currentGroupRoom.members.map(m => {
+            const isMe = m === currentGroupRoom.myNickname;
+            return `
+              <span class="group-member-chip ${isMe ? 'is-me' : ''}">
+                <span class="group-member-dot"></span>
+                <span>${m} ${isMe ? '(คุณ)' : ''}</span>
+              </span>
+            `;
+          }).join("");
+        }
+      }
+    }
+  }
+
+  function openGroupTripModal() {
+    const modal = document.getElementById("group-trip-modal");
+    if (!modal) return;
+    renderGroupTripUI();
+    modal.style.display = "flex";
+  }
+
+  function closeGroupTripModal() {
+    const modal = document.getElementById("group-trip-modal");
+    if (modal) modal.style.display = "none";
+  }
+
+  function copyGroupRoomLink() {
+    if (!currentGroupRoom) return;
+    const roomLink = `${window.location.origin}${window.location.pathname}?room=${currentGroupRoom.roomId}`;
+    navigator.clipboard.writeText(roomLink).then(() => {
+      showGroupToast("📋 คัดลอกลิงก์ห้องเรียบร้อย! ส่งให้เพื่อนใน LINE ได้เลย", "✅");
+    }).catch(() => {
+      prompt("คัดลอกลิงก์ห้องด้านล่างนี้ได้เลยครับ:", roomLink);
+    });
+  }
+
+  // Bind Group Modal Event Listeners
+  const profileMenuGroupBtn = document.getElementById("profile-menu-group-btn");
+  if (profileMenuGroupBtn) {
+    profileMenuGroupBtn.addEventListener("click", () => {
+      closeProfileHub();
+      openGroupTripModal();
+    });
+  }
+
+  const closeGroupModalBtn = document.getElementById("close-group-modal-btn");
+  if (closeGroupModalBtn) {
+    closeGroupModalBtn.addEventListener("click", closeGroupTripModal);
+  }
+
+  const groupTripModal = document.getElementById("group-trip-modal");
+  if (groupTripModal) {
+    groupTripModal.addEventListener("click", (e) => {
+      if (e.target === groupTripModal) closeGroupTripModal();
+    });
+  }
+
+  const groupTabCreateBtn = document.getElementById("group-tab-create-btn");
+  const groupTabJoinBtn = document.getElementById("group-tab-join-btn");
+  const groupPaneCreate = document.getElementById("group-pane-create");
+  const groupPaneJoin = document.getElementById("group-pane-join");
+
+  if (groupTabCreateBtn && groupTabJoinBtn && groupPaneCreate && groupPaneJoin) {
+    groupTabCreateBtn.addEventListener("click", () => {
+      groupTabCreateBtn.classList.add("active");
+      groupTabJoinBtn.classList.remove("active");
+      groupPaneCreate.style.display = "block";
+      groupPaneJoin.style.display = "none";
+    });
+
+    groupTabJoinBtn.addEventListener("click", () => {
+      groupTabJoinBtn.classList.add("active");
+      groupTabCreateBtn.classList.remove("active");
+      groupPaneJoin.style.display = "block";
+      groupPaneCreate.style.display = "none";
+    });
+  }
+
+  const groupCreateSubmitBtn = document.getElementById("group-create-submit-btn");
+  if (groupCreateSubmitBtn) {
+    groupCreateSubmitBtn.addEventListener("click", () => {
+      const tripName = document.getElementById("group-input-trip-name")?.value || "ทริปญี่ปุ่นเพื่อนซี้ 2026";
+      const myName = document.getElementById("group-input-my-name-create")?.value || "ฉันเอง";
+      const importCheck = document.getElementById("group-check-import-itinerary")?.checked ?? true;
+      createGroupRoom(tripName, myName, importCheck);
+    });
+  }
+
+  const groupJoinSubmitBtn = document.getElementById("group-join-submit-btn");
+  if (groupJoinSubmitBtn) {
+    groupJoinSubmitBtn.addEventListener("click", () => {
+      const roomCode = document.getElementById("group-input-room-code")?.value || "";
+      const myName = document.getElementById("group-input-my-name-join")?.value || "ฉันเอง";
+      if (!roomCode.trim()) {
+        alert("กรุณาระบุรหัสห้องหรือวางลิงก์ที่เพื่อนส่งให้ครับ");
+        return;
+      }
+      joinGroupRoom(roomCode, myName);
+    });
+  }
+
+  const groupCopyLinkBtn = document.getElementById("group-copy-link-btn");
+  if (groupCopyLinkBtn) {
+    groupCopyLinkBtn.addEventListener("click", copyGroupRoomLink);
+  }
+
+  const groupShareLineBtn = document.getElementById("group-share-line-btn");
+  if (groupShareLineBtn) {
+    groupShareLineBtn.addEventListener("click", () => {
+      if (!currentGroupRoom) return;
+      const roomLink = `${window.location.origin}${window.location.pathname}?room=${currentGroupRoom.roomId}`;
+      const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(roomLink)}`;
+      window.open(lineUrl, "_blank", "noopener,noreferrer");
+    });
+  }
+
+  const groupForceSyncBtn = document.getElementById("group-force-sync-btn");
+  if (groupForceSyncBtn) {
+    groupForceSyncBtn.addEventListener("click", () => {
+      broadcastGroupSync("UPDATE_ITINERARY");
+      showGroupToast("🔄 กำลังรีเฟรชซิงค์ข้อมูลกับสมาชิกทุกคน...", "⚡");
+    });
+  }
+
+  const groupLeaveRoomBtn = document.getElementById("group-leave-room-btn");
+  if (groupLeaveRoomBtn) {
+    groupLeaveRoomBtn.addEventListener("click", () => {
+      if (confirm("คุณต้องการออกจากห้องกลุ่มนี้และกลับสู่โหมดทริปส่วนตัวหรือไม่?")) {
+        leaveGroupRoom();
+      }
+    });
+  }
+
+  // Connect on boot if already in room
+  if (currentGroupRoom && currentGroupRoom.roomId) {
+    connectGroupRoomSSE(currentGroupRoom.roomId);
+  }
+
+  // Check URL params for invite link (?room=...)
+  const initialUrlParams = new URLSearchParams(window.location.search);
+  if (initialUrlParams.has("room")) {
+    const incomingRoomId = initialUrlParams.get("room").trim().toUpperCase();
+    if (!currentGroupRoom || currentGroupRoom.roomId !== incomingRoomId) {
+      setTimeout(() => {
+        openGroupTripModal();
+        document.getElementById("group-tab-join-btn")?.click();
+        const roomCodeInput = document.getElementById("group-input-room-code");
+        if (roomCodeInput) roomCodeInput.value = incomingRoomId;
+        showGroupToast(`📬 ได้รับคำเชิญเข้าห้องทริป ${incomingRoomId}! กรุณาใส่ชื่อของคุณเพื่อเริ่มวางแผนด้วยกัน`, "👥");
+      }, 700);
+    }
   }
 
   // Initial Render
