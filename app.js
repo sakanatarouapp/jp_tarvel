@@ -2144,11 +2144,10 @@ document.addEventListener("DOMContentLoaded", () => {
       scrollWheelZoom: false
     });
 
-    // Clean OpenStreetMap tiles - reliable, zero watermark
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-      subdomains: ["a", "b", "c"]
+    // Clean Modern Basemap - soft pastel tones, clear landmarks, English/Japanese labels, 100% zero watermark
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a> &mdash; National Geographic, Esri, DeLorme, NAVTEQ',
+      maxZoom: 19
     }).addTo(leafletRouteMap);
 
     leafletRouteLayerGroup = L.layerGroup().addTo(leafletRouteMap);
