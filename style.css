@@ -2671,83 +2671,111 @@ body {
   background: #ffe4e6;
 }
 
+/* Compact Multi-Modal Selectable Buttons */
 .transit-modes-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
-@media (max-width: 620px) {
-  .transit-modes-grid {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
-  }
-}
-
-.transit-mode-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+.transit-mode-btn {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
   border-radius: 8px;
-  padding: 0.45rem 0.55rem;
+  padding: 0.35rem 0.45rem;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  text-align: left;
   transition: all 0.15s ease;
+  user-select: none;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.transit-mode-card:hover {
-  border-color: #94a3b8;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+.transit-mode-btn:hover {
+  border-color: #0284c7;
+  background: #f8fafc;
+  transform: translateY(-1px);
 }
 
-.transit-mode-card.is-recommended {
-  border-color: #38bdf8;
+.transit-mode-btn.is-selected {
+  border-color: #0284c7;
   background: #f0f9ff;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25);
 }
 
-.transit-mode-card.is-walk-friendly {
-  border-color: #34d399;
-  background: #f0fdf4;
-}
-
-.mode-card-top {
+.mode-btn-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  gap: 4px;
+}
+
+.mode-btn-title {
   font-size: 0.72rem;
   font-weight: 800;
-  color: #1e293b;
-}
-
-.mode-card-badge {
-  font-size: 0.65rem;
-  padding: 1px 5px;
-  border-radius: 6px;
-  font-weight: 700;
-}
-
-.mode-card-badge.rec {
-  background: #0284c7;
-  color: white;
-}
-
-.mode-card-badge.walk {
-  background: #059669;
-  color: white;
-}
-
-.mode-card-time {
-  font-size: 0.82rem;
-  font-weight: 800;
   color: #0f172a;
-  margin-top: 1px;
+  white-space: nowrap;
 }
 
-.mode-card-cost {
-  font-size: 0.7rem;
+.mode-btn-check {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #0284c7;
+  background: #e0f2fe;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mode-btn-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mode-btn-time {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.mode-btn-price {
+  font-size: 0.67rem;
   color: #64748b;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 540px) {
+  .transit-modes-grid {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .transit-mode-btn {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.55rem;
+  }
+  .mode-btn-top {
+    width: auto;
+    gap: 6px;
+  }
+  .mode-btn-meta {
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+  }
 }
 
 .empty-route-state {

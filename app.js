@@ -2033,6 +2033,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentRouteFilterDay = "all";
   let leafletMarkersMap = {};
   let isFullscreenMap = false;
+  let userSelectedTransitModes = {};
 
   const routePresetPills = document.getElementById("route-preset-pills");
   const routeActiveCount = document.getElementById("route-active-count");
@@ -2871,8 +2872,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const reg2 = meta2.region || item2.region || "tokyo";
         const isCrossRegion = (reg1 !== reg2);
 
+        const legKey = `${item1.id}_${item2.id}`;
         const leg = calculateTransitLeg(item1, item2);
-        totalFareJPY += leg.fareJPY;
+        const chosenMode = userSelectedTransitModes[legKey] || (leg.distKm <= 0.8 ? "walk" : "train");
+
+        let activeModeFare = leg.fareJPY;
+        let activeModeDuration = leg.duration;
+        let activeModeIcon = leg.icon;
+
+        if (chosenMode === "taxi") {
+          activeModeFare = leg.taxi.costJPY || 0;
+          activeModeDuration = leg.taxi.time;
+          activeModeIcon = "🚕";
+        } else if (chosenMode === "walk") {
+          activeModeFare = 0;
+          activeModeDuration = leg.walk.time;
+          activeModeIcon = "🚶";
+        }
+
+        totalFareJPY += activeModeFare;
 
         const lineColor = getDayColor(item1.day || 1);
         const curveIntensity = isCrossRegion ? 0.08 : 0.12;
@@ -2903,11 +2921,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const badgeLat = curved.midPoint[0];
         const badgeLng = curved.midPoint[1];
 
+        const fareBadgeText = activeModeFare === 0 ? "ฟรี" : `¥${activeModeFare.toLocaleString()}`;
         const badgeHtml = `
           <div class="leaflet-route-badge ${isCrossRegion ? 'shinkansen-badge' : ''}">
-            <span>${leg.icon}</span>
-            <span>${leg.duration}</span>
-            <span>· ¥${leg.fareJPY.toLocaleString()}</span>
+            <span>${activeModeIcon}</span>
+            <span>${activeModeDuration}</span>
+            <span>· ${fareBadgeText}</span>
           </div>
         `;
 
@@ -3104,43 +3123,64 @@ document.addEventListener("DOMContentLoaded", () => {
           const nextRegCode = nextMeta.region || nextItem.region || "tokyo";
           const isCross = (regCode !== nextRegCode);
 
+          const legKey = `${item.id}_${nextItem.id}`;
           const leg = calculateTransitLeg(item, nextItem);
+          const chosenMode = userSelectedTransitModes[legKey] || (leg.distKm <= 0.8 ? "walk" : "train");
+
+          let chosenLabel = `🚇 ${leg.mode}`;
+          let chosenDuration = leg.duration;
+          if (chosenMode === "taxi") {
+            chosenLabel = "🚕 แท็กซี่";
+            chosenDuration = leg.taxi.time;
+          } else if (chosenMode === "walk") {
+            chosenLabel = "🚶 เดิน";
+            chosenDuration = leg.walk.time;
+          }
+
           timelineHtml += `
             <div class="route-transit-leg multi-modal-leg ${isCross ? 'cross-region' : ''}">
               <div class="transit-leg-header">
-                <span class="transit-leg-distance">📏 ระยะทาง ~${leg.distKm} กม.</span>
-                <span class="transit-leg-rec">⭐ แนะนำ: ${leg.mode}</span>
+                <span class="transit-leg-distance">📏 ~${leg.distKm} กม.</span>
+                <span class="transit-leg-rec">
+                  เลือก: <strong>${chosenLabel}</strong> (⏱️ ${chosenDuration})
+                </span>
               </div>
               <div class="transit-modes-grid">
-                <!-- Mode 1: รถไฟ / ขนส่งสาธารณะ -->
-                <div class="transit-mode-card is-recommended" title="แนะนำสำหรับการเดินทางในเมืองและระหว่างสถานี">
-                  <div class="mode-card-top">
-                    <span>${leg.icon} รถไฟ / ใต้ดิน</span>
-                    <span class="mode-card-badge rec">แนะนำ</span>
+                <!-- Mode 1: รถไฟ -->
+                <button type="button" class="transit-mode-btn ${chosenMode === 'train' ? 'is-selected' : ''}" data-leg-key="${legKey}" data-mode="train" title="เลือกเดินทางด้วยรถไฟ">
+                  <div class="mode-btn-top">
+                    <span class="mode-btn-title">🚇 รถไฟ</span>
+                    ${chosenMode === 'train' ? '<span class="mode-btn-check">✓</span>' : ''}
                   </div>
-                  <div class="mode-card-time">⏱️ ${leg.train.time}</div>
-                  <div class="mode-card-cost">${leg.train.costText}</div>
-                </div>
+                  <div class="mode-btn-meta">
+                    <span class="mode-btn-time">⏱️ ${leg.train.time}</span>
+                    <span class="mode-btn-price">${leg.train.costText}</span>
+                  </div>
+                </button>
 
-                <!-- Mode 2: เรียกรถ / แท็กซี่ -->
-                <div class="transit-mode-card" title="สะดวกสำหรับกลุ่ม 2-4 คน หรือมีสัมภาระกระเป๋าใบใหญ่">
-                  <div class="mode-card-top">
-                    <span>🚕 เรียกรถ / แท็กซี่</span>
-                    <span style="font-size: 0.65rem; color: #64748b;">GO / Uber</span>
+                <!-- Mode 2: แท็กซี่ -->
+                <button type="button" class="transit-mode-btn ${chosenMode === 'taxi' ? 'is-selected' : ''}" data-leg-key="${legKey}" data-mode="taxi" title="เลือกเดินทางด้วยแท็กซี่ / เรียกรถ">
+                  <div class="mode-btn-top">
+                    <span class="mode-btn-title">🚕 แท็กซี่</span>
+                    ${chosenMode === 'taxi' ? '<span class="mode-btn-check">✓</span>' : ''}
                   </div>
-                  <div class="mode-card-time">⏱️ ${leg.taxi.time}</div>
-                  <div class="mode-card-cost">${leg.taxi.cost}</div>
-                </div>
+                  <div class="mode-btn-meta">
+                    <span class="mode-btn-time">⏱️ ${leg.taxi.time}</span>
+                    <span class="mode-btn-price">${leg.taxi.cost}</span>
+                  </div>
+                </button>
 
                 <!-- Mode 3: เดินเท้า -->
-                <div class="transit-mode-card ${leg.walk.isFriendly ? 'is-walk-friendly' : ''}" title="${leg.walk.note}">
-                  <div class="mode-card-top">
-                    <span>🚶 เดินเท้า</span>
-                    ${leg.walk.isFriendly ? '<span class="mode-card-badge walk">เดินชิลๆ</span>' : `<span style="font-size: 0.65rem; color: #94a3b8;">${leg.walk.note}</span>`}
+                <button type="button" class="transit-mode-btn ${chosenMode === 'walk' ? 'is-selected' : ''}" data-leg-key="${legKey}" data-mode="walk" title="${leg.walk.note}">
+                  <div class="mode-btn-top">
+                    <span class="mode-btn-title">🚶 เดิน</span>
+                    ${chosenMode === 'walk' ? '<span class="mode-btn-check">✓</span>' : ''}
                   </div>
-                  <div class="mode-card-time">⏱️ ${leg.walk.time}</div>
-                  <div class="mode-card-cost">${leg.walk.cost}</div>
-                </div>
+                  <div class="mode-btn-meta">
+                    <span class="mode-btn-time">⏱️ ${leg.walk.time}</span>
+                    <span class="mode-btn-price">${leg.walk.cost}</span>
+                  </div>
+                </button>
               </div>
             </div>
           `;
@@ -3223,6 +3263,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = e.target.getAttribute("data-id");
         const newTime = e.target.value;
         setItineraryItemTime(id, newTime);
+      });
+    });
+
+    // Attach Transit Mode Selection Click Listeners (เลือกรูปแบบการเดินทาง รถไฟ / แท็กซี่ / เดิน)
+    routeTimelineList.querySelectorAll(".transit-mode-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const legKey = btn.getAttribute("data-leg-key");
+        const mode = btn.getAttribute("data-mode");
+        if (legKey && mode) {
+          userSelectedTransitModes[legKey] = mode;
+          renderRouteSimulator();
+        }
       });
     });
 
