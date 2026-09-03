@@ -2614,53 +2614,140 @@ body {
   line-height: 1.35;
 }
 
-/* Connecting Leg */
+/* Connecting Leg - Multi-Modal 3-Options Comparison Card */
 .route-transit-leg {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.6rem 0.75rem;
+  background: #f8fafc;
+  border-left: 3.5px solid #0284c7;
+  border-top: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin: 0.45rem 0 0.45rem 12px;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.route-transit-leg.cross-region {
+  background: #fff1f2;
+  border-left-color: #e11d48;
+  border-color: #fecdd3;
+  color: #9f1239;
+}
+
+.transit-leg-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.4rem 0.65rem;
-  background: #f1f5f9;
-  border-left: 3px solid #64748b;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  margin-left: 10px;
-  font-size: 0.75rem;
-  color: var(--text-main);
-  font-weight: 600;
+  font-size: 0.76rem;
   flex-wrap: wrap;
 }
 
-.route-transit-leg.cross-region {
-  background: #ffe4e6;
-  border-left-color: #e11d48;
-  color: #9f1239;
+.transit-leg-distance {
+  color: #64748b;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
-.transit-leg-mode {
+.transit-leg-rec {
+  color: #0369a1;
+  font-weight: 700;
+  font-size: 0.72rem;
+  background: #e0f2fe;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.route-transit-leg.cross-region .transit-leg-rec {
+  color: #be123c;
+  background: #ffe4e6;
+}
+
+.transit-modes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+
+@media (max-width: 620px) {
+  .transit-modes-grid {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+}
+
+.transit-mode-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+}
+
+.transit-mode-card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.transit-mode-card.is-recommended {
+  border-color: #38bdf8;
+  background: #f0f9ff;
+}
+
+.transit-mode-card.is-walk-friendly {
+  border-color: #34d399;
+  background: #f0fdf4;
+}
+
+.mode-card-top {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  flex: 1 1 auto;
-  min-width: 130px;
-}
-
-.transit-leg-time {
-  background: white;
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-weight: 700;
-  color: var(--primary-navy);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  justify-content: space-between;
   font-size: 0.72rem;
-  white-space: nowrap;
+  font-weight: 800;
+  color: #1e293b;
 }
 
-.transit-leg-fare {
-  margin-left: auto;
+.mode-card-badge {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 6px;
   font-weight: 700;
-  color: var(--primary-red);
-  white-space: nowrap;
+}
+
+.mode-card-badge.rec {
+  background: #0284c7;
+  color: white;
+}
+
+.mode-card-badge.walk {
+  background: #059669;
+  color: white;
+}
+
+.mode-card-time {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 1px;
+}
+
+.mode-card-cost {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
 }
 
 .empty-route-state {

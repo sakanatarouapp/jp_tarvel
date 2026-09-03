@@ -2304,68 +2304,215 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function calculateTransitLeg(fromItem, toItem) {
-    if (!fromItem || !toItem) return { mode: "🚇 รถไฟ", duration: "15 นาที", fareJPY: 210, icon: "🚇" };
+    if (!fromItem || !toItem) {
+      return {
+        mode: "🚇 รถไฟ / ใต้ดิน",
+        duration: "15 นาที",
+        fareJPY: 210,
+        icon: "🚇",
+        distKm: 3.5,
+        walk: { time: "45 นาที", cost: "ฟรี (0 บ.)", isFriendly: false, note: "เดินพอไหว" },
+        taxi: { time: "10 - 15 นาที", cost: "~¥1,500 (315 บ.)", costJPY: 1500 },
+        train: { mode: "Tokyo Metro / JR Line", time: "15 นาที", costJPY: 210, costText: "~¥210 (44 บ.)", icon: "🚇" }
+      };
+    }
+
+    // Coordinates and Distance
+    const meta1 = getSmartMetaForItem(fromItem);
+    const meta2 = getSmartMetaForItem(toItem);
+    const lat1 = meta1.lat, lon1 = meta1.lng;
+    const lat2 = meta2.lat, lon2 = meta2.lng;
+
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const straightDistKm = R * c;
+    const roadKm = Math.max(0.4, Math.round(straightDistKm * 1.25 * 10) / 10);
+
+    // 1. Walk Calculation (เดินเท้า)
+    const walkMins = Math.round(roadKm * 13.5);
+    let walkTimeText = "";
+    let walkCostText = "ฟรี (0 บ.)";
+    let isWalkFriendly = false;
+    let walkNote = "";
+
+    if (roadKm <= 1.2) {
+      walkTimeText = `${walkMins} นาที`;
+      walkCostText = `ฟรี · ${Math.round(roadKm * 1000)} ม.`;
+      isWalkFriendly = true;
+      walkNote = "เดินชิลๆ ชมเมือง";
+    } else if (roadKm <= 3.5) {
+      walkTimeText = `${walkMins} นาที`;
+      walkCostText = `ฟรี · ${roadKm} กม.`;
+      isWalkFriendly = false;
+      walkNote = "เดินพอไหว";
+    } else if (roadKm <= 12) {
+      const h = Math.floor(walkMins / 60);
+      const m = walkMins % 60;
+      walkTimeText = `${h} ชม. ${m > 0 ? m + ' น.' : ''}`;
+      walkCostText = `~${roadKm} กม.`;
+      walkNote = "ระยะไกล";
+    } else {
+      walkTimeText = "> 3 - 5 ชม.";
+      walkCostText = `ไกลเกินเดิน (${Math.round(roadKm)} กม.)`;
+      walkNote = "ไม่แนะนำให้เดิน";
+    }
+
+    // 2. Taxi Calculation (เรียกรถ / แท็กซี่)
+    let taxiTimeText = "";
+    let taxiCostJPY = 0;
+    let taxiCostText = "";
+
+    if (roadKm <= 20) {
+      const minMins = Math.max(5, Math.round(roadKm * 2.2 + 3));
+      const maxMins = Math.max(8, Math.round(roadKm * 3.2 + 6));
+      taxiTimeText = `${minMins} - ${maxMins} นาที`;
+
+      if (roadKm <= 1.1) {
+        taxiCostJPY = 500;
+      } else {
+        taxiCostJPY = Math.round((500 + (roadKm - 1.1) * 392) / 100) * 100;
+      }
+      const thb = Math.round(taxiCostJPY * currentExchangeRate);
+      taxiCostText = `~¥${taxiCostJPY.toLocaleString()} (${thb} บ.)`;
+    } else if (roadKm <= 60) {
+      const minMins = Math.round(roadKm * 1.2 + 10);
+      const maxMins = Math.round(roadKm * 1.5 + 15);
+      taxiTimeText = `${minMins} - ${maxMins} นาที`;
+      taxiCostJPY = Math.round((roadKm * 350 + 2000) / 500) * 500;
+      const thb = Math.round(taxiCostJPY * currentExchangeRate);
+      taxiCostText = `~¥${taxiCostJPY.toLocaleString()} (${thb} บ.)`;
+    } else {
+      taxiTimeText = "~5 - 6 ชม.";
+      taxiCostText = "ไม่แนะนำ (> ¥70,000)";
+      taxiCostJPY = 70000;
+    }
+
+    // 3. Train Calculation (รถไฟ / ขนส่งสาธารณะ)
+    let trainMode = "Tokyo Metro / JR Line";
+    let trainDuration = "15 - 25 นาที";
+    let trainFareJPY = 210;
+    let trainIcon = "🚇";
 
     // Same Tokyo
     if (fromItem.region === "tokyo" && toItem.region === "tokyo") {
       if (fromItem.id === "tokyo-sensoji" && toItem.id === "tokyo-tsukiji-outer") {
-        return { mode: "Toei Asakusa + Hibiya Line", duration: "18 นาที", fareJPY: 210, icon: "🚇" };
+        trainMode = "Toei Asakusa + Hibiya Line";
+        trainDuration = "18 นาที";
+        trainFareJPY = 210;
+        trainIcon = "🚇";
+      } else if (fromItem.id === "tokyo-tsukiji-outer" && toItem.id === "tokyo-shibuya-sky") {
+        trainMode = "Tokyo Metro Hibiya + Ginza Line";
+        trainDuration = "22 นาที";
+        trainFareJPY = 210;
+        trainIcon = "🚇";
+      } else if (fromItem.id === "tokyo-shibuya-sky" && toItem.id === "tokyo-shinjuku-omoide") {
+        trainMode = "JR Yamanote Line";
+        trainDuration = "7 นาที";
+        trainFareJPY = 170;
+        trainIcon = "🚆";
+      } else {
+        trainMode = "Tokyo Metro / JR Yamanote Line";
+        trainDuration = "15 - 25 นาที";
+        trainFareJPY = 210;
+        trainIcon = "🚇";
       }
-      if (fromItem.id === "tokyo-tsukiji-outer" && toItem.id === "tokyo-shibuya-sky") {
-        return { mode: "Tokyo Metro Hibiya + Ginza Line", duration: "22 นาที", fareJPY: 210, icon: "🚇" };
-      }
-      if (fromItem.id === "tokyo-shibuya-sky" && toItem.id === "tokyo-shinjuku-omoide") {
-        return { mode: "JR Yamanote Line", duration: "7 นาที", fareJPY: 170, icon: "🚆" };
-      }
-      return { mode: "Tokyo Metro / JR Yamanote Line", duration: "15 - 25 นาที", fareJPY: 210, icon: "🚇" };
-    }
-
-    // Same Kansai (Kyoto / Osaka)
-    if ((fromItem.region === "kyoto" || fromItem.region === "osaka") && (toItem.region === "kyoto" || toItem.region === "osaka")) {
+    } else if ((fromItem.region === "kyoto" || fromItem.region === "osaka") && (toItem.region === "kyoto" || toItem.region === "osaka")) {
       if (fromItem.region === "kyoto" && toItem.region === "osaka") {
-        return { mode: "JR Special Rapid Service / Keihan Line", duration: "35 นาที", fareJPY: 580, icon: "🚆" };
+        trainMode = "JR Special Rapid Service / Keihan Line";
+        trainDuration = "35 นาที";
+        trainFareJPY = 580;
+        trainIcon = "🚆";
+      } else if (fromItem.region === "osaka" && toItem.region === "kyoto") {
+        trainMode = "JR Special Rapid Service / Hankyu Line";
+        trainDuration = "35 นาที";
+        trainFareJPY = 580;
+        trainIcon = "🚆";
+      } else if (fromItem.id === "osaka-usj" && toItem.id === "osaka-dotonbori") {
+        trainMode = "JR Yumesaki + Hanshin Namba Line";
+        trainDuration = "25 นาที";
+        trainFareJPY = 370;
+        trainIcon = "🚆";
+      } else if (fromItem.id === "osaka-castle" && toItem.id === "osaka-usj") {
+        trainMode = "JR Osaka Loop + Yumesaki Line";
+        trainDuration = "30 นาที";
+        trainFareJPY = 200;
+        trainIcon = "🚆";
+      } else {
+        trainMode = "JR Kansai / Osaka Metro / Hankyu";
+        trainDuration = "20 - 30 นาที";
+        trainFareJPY = 250;
+        trainIcon = "🚆";
       }
-      if (fromItem.region === "osaka" && toItem.region === "kyoto") {
-        return { mode: "JR Special Rapid Service / Hankyu Line", duration: "35 นาที", fareJPY: 580, icon: "🚆" };
-      }
-      if (fromItem.id === "osaka-usj" && toItem.id === "osaka-dotonbori") {
-        return { mode: "JR Yumesaki + Hanshin Namba Line", duration: "25 นาที", fareJPY: 370, icon: "🚆" };
-      }
-      if (fromItem.id === "osaka-castle" && toItem.id === "osaka-usj") {
-        return { mode: "JR Osaka Loop + Yumesaki Line", duration: "30 นาที", fareJPY: 200, icon: "🚆" };
-      }
-      return { mode: "JR Kansai / Osaka Metro / Hankyu", duration: "20 - 30 นาที", fareJPY: 250, icon: "🚆" };
-    }
-
-    // Tokyo <-> Kyoto / Osaka
-    if ((fromItem.region === "tokyo" && (toItem.region === "kyoto" || toItem.region === "osaka")) ||
-        ((fromItem.region === "kyoto" || fromItem.region === "osaka") && toItem.region === "tokyo")) {
-      return { mode: "Shinkansen Nozomi (Tokaido Line)", duration: "2 ชม. 15 นาที", fareJPY: 14170, icon: "🚄" };
-    }
-
-    // Tokyo / Shinjuku <-> Fuji Kawaguchiko
-    if ((fromItem.region === "tokyo" && toItem.region === "chubu") || (fromItem.region === "chubu" && toItem.region === "tokyo")) {
-      return { mode: "Highway Express Bus / Fuji Excursion", duration: "1 ชม. 45 นาที", fareJPY: 2200, icon: "🚌" };
-    }
-
-    // Fuji <-> Shirakawago
-    if (fromItem.region === "chubu" && toItem.region === "chubu") {
-      return { mode: "JR Limited Express Hida + Nohi Bus", duration: "3 ชม. 45 นาที", fareJPY: 6500, icon: "🚆" };
-    }
-
-    // Hokkaido
-    if (fromItem.region === "hokkaido" && toItem.region === "hokkaido") {
+    } else if ((fromItem.region === "tokyo" && (toItem.region === "kyoto" || toItem.region === "osaka")) ||
+               ((fromItem.region === "kyoto" || fromItem.region === "osaka") && toItem.region === "tokyo")) {
+      trainMode = "Shinkansen Nozomi (Tokaido Line)";
+      trainDuration = "2 ชม. 15 นาที";
+      trainFareJPY = 14170;
+      trainIcon = "🚄";
+    } else if ((fromItem.region === "tokyo" && toItem.region === "chubu") || (fromItem.region === "chubu" && toItem.region === "tokyo")) {
+      trainMode = "Highway Express Bus / Fuji Excursion";
+      trainDuration = "1 ชม. 45 นาที";
+      trainFareJPY = 2200;
+      trainIcon = "🚌";
+    } else if (fromItem.region === "chubu" && toItem.region === "chubu") {
+      trainMode = "JR Limited Express Hida + Nohi Bus";
+      trainDuration = "3 ชม. 45 นาที";
+      trainFareJPY = 6500;
+      trainIcon = "🚆";
+    } else if (fromItem.region === "hokkaido" && toItem.region === "hokkaido") {
       if (fromItem.id === "hokkaido-otaru-canal" && toItem.id === "hokkaido-shikisaino-oka") {
-        return { mode: "JR Limited Express Lilac + Furano Line", duration: "2 ชม. 15 นาที", fareJPY: 3850, icon: "🚆" };
+        trainMode = "JR Limited Express Lilac + Furano Line";
+        trainDuration = "2 ชม. 15 นาที";
+        trainFareJPY = 3850;
+        trainIcon = "🚆";
+      } else if (fromItem.id === "hokkaido-shikisaino-oka" && toItem.id === "hokkaido-ramen-alley") {
+        trainMode = "JR Limited Express Kamui / Lilac";
+        trainDuration = "1 ชม. 45 นาที";
+        trainFareJPY = 3400;
+        trainIcon = "🚆";
+      } else {
+        trainMode = "JR Hokkaido Rapid Airport / Express";
+        trainDuration = "35 นาที";
+        trainFareJPY = 750;
+        trainIcon = "🚆";
       }
-      if (fromItem.id === "hokkaido-shikisaino-oka" && toItem.id === "hokkaido-ramen-alley") {
-        return { mode: "JR Limited Express Kamui / Lilac", duration: "1 ชม. 45 นาที", fareJPY: 3400, icon: "🚆" };
-      }
-      return { mode: "JR Hokkaido Rapid Airport / Express", duration: "35 นาที", fareJPY: 750, icon: "🚆" };
+    } else {
+      trainMode = "Shinkansen / JR Limited Express";
+      trainDuration = "2 - 3 ชั่วโมง";
+      trainFareJPY = 11500;
+      trainIcon = "🚄";
     }
 
-    // Long distance
-    return { mode: "Shinkansen / JR Limited Express", duration: "2 - 3 ชั่วโมง", fareJPY: 11500, icon: "🚄" };
+    return {
+      mode: trainMode,
+      duration: trainDuration,
+      fareJPY: trainFareJPY,
+      icon: trainIcon,
+      distKm: roadKm,
+      walk: {
+        time: walkTimeText,
+        cost: walkCostText,
+        isFriendly: isWalkFriendly,
+        note: walkNote
+      },
+      taxi: {
+        time: taxiTimeText,
+        cost: taxiCostText,
+        costJPY: taxiCostJPY
+      },
+      train: {
+        mode: trainMode,
+        time: trainDuration,
+        costJPY: trainFareJPY,
+        costText: `~¥${trainFareJPY.toLocaleString()} (${Math.round(trainFareJPY * currentExchangeRate)} บ.)`,
+        icon: trainIcon
+      }
+    };
   }
 
   function moveRouteItem(index, direction) {
@@ -2958,16 +3105,43 @@ document.addEventListener("DOMContentLoaded", () => {
           const isCross = (regCode !== nextRegCode);
 
           const leg = calculateTransitLeg(item, nextItem);
-          const fareTHB = Math.round(leg.fareJPY * currentExchangeRate);
-
           timelineHtml += `
-            <div class="route-transit-leg ${isCross ? 'cross-region' : ''}">
-              <div class="transit-leg-mode">
-                <span>${leg.icon}</span>
-                <span>${leg.mode}</span>
+            <div class="route-transit-leg multi-modal-leg ${isCross ? 'cross-region' : ''}">
+              <div class="transit-leg-header">
+                <span class="transit-leg-distance">📏 ระยะทาง ~${leg.distKm} กม.</span>
+                <span class="transit-leg-rec">⭐ แนะนำ: ${leg.mode}</span>
               </div>
-              <div class="transit-leg-time">⏱️ ${leg.duration}</div>
-              <div class="transit-leg-fare">~¥${leg.fareJPY.toLocaleString()} (${fareTHB} บ.)</div>
+              <div class="transit-modes-grid">
+                <!-- Mode 1: รถไฟ / ขนส่งสาธารณะ -->
+                <div class="transit-mode-card is-recommended" title="แนะนำสำหรับการเดินทางในเมืองและระหว่างสถานี">
+                  <div class="mode-card-top">
+                    <span>${leg.icon} รถไฟ / ใต้ดิน</span>
+                    <span class="mode-card-badge rec">แนะนำ</span>
+                  </div>
+                  <div class="mode-card-time">⏱️ ${leg.train.time}</div>
+                  <div class="mode-card-cost">${leg.train.costText}</div>
+                </div>
+
+                <!-- Mode 2: เรียกรถ / แท็กซี่ -->
+                <div class="transit-mode-card" title="สะดวกสำหรับกลุ่ม 2-4 คน หรือมีสัมภาระกระเป๋าใบใหญ่">
+                  <div class="mode-card-top">
+                    <span>🚕 เรียกรถ / แท็กซี่</span>
+                    <span style="font-size: 0.65rem; color: #64748b;">GO / Uber</span>
+                  </div>
+                  <div class="mode-card-time">⏱️ ${leg.taxi.time}</div>
+                  <div class="mode-card-cost">${leg.taxi.cost}</div>
+                </div>
+
+                <!-- Mode 3: เดินเท้า -->
+                <div class="transit-mode-card ${leg.walk.isFriendly ? 'is-walk-friendly' : ''}" title="${leg.walk.note}">
+                  <div class="mode-card-top">
+                    <span>🚶 เดินเท้า</span>
+                    ${leg.walk.isFriendly ? '<span class="mode-card-badge walk">เดินชิลๆ</span>' : `<span style="font-size: 0.65rem; color: #94a3b8;">${leg.walk.note}</span>`}
+                  </div>
+                  <div class="mode-card-time">⏱️ ${leg.walk.time}</div>
+                  <div class="mode-card-cost">${leg.walk.cost}</div>
+                </div>
+              </div>
             </div>
           `;
         }
