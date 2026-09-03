@@ -9802,13 +9802,13 @@ body {
   transition: all 0.15s ease;
 }
 
-.group-share-btn.line-btn {
-  background: #06c755;
+.group-share-btn.discord-btn {
+  background: #5865f2;
   color: white;
 }
 
-.group-share-btn.line-btn:hover {
-  background: #05a646;
+.group-share-btn.discord-btn:hover {
+  background: #4752c4;
 }
 
 .group-share-btn.sync-btn {

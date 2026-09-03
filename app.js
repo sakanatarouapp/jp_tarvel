@@ -8536,13 +8536,20 @@ document.addEventListener("DOMContentLoaded", () => {
     groupCopyLinkBtn.addEventListener("click", copyGroupRoomLink);
   }
 
-  const groupShareLineBtn = document.getElementById("group-share-line-btn");
-  if (groupShareLineBtn) {
-    groupShareLineBtn.addEventListener("click", () => {
+  const groupShareDiscordBtn = document.getElementById("group-share-discord-btn");
+  if (groupShareDiscordBtn) {
+    groupShareDiscordBtn.addEventListener("click", () => {
       if (!currentGroupRoom) return;
       const roomLink = `${window.location.origin}${window.location.pathname}?room=${currentGroupRoom.roomId}`;
-      const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(roomLink)}`;
-      window.open(lineUrl, "_blank", "noopener,noreferrer");
+      const inviteMsg = `⛩️ มาช่วยกันวางแผนเที่ยวญี่ปุ่นกันเถอะ!\nห้อง: ${currentGroupRoom.roomName} (${currentGroupRoom.roomId})\n🔗 ลิงก์เข้าร่วมห้อง: ${roomLink}`;
+      
+      navigator.clipboard.writeText(inviteMsg).then(() => {
+        showGroupToast("💬 คัดลอกข้อความชวนเข้าห้องสำหรับ Discord แล้ว! นำไปวางส่งในห้องแชทได้เลย", "✅");
+      }).catch(() => {
+        prompt("คัดลอกข้อความสำหรับ Discord ด้านล่างนี้ได้เลยครับ:", inviteMsg);
+      });
+
+      window.open("https://discord.com/channels/@me", "_blank", "noopener,noreferrer");
     });
   }
 
