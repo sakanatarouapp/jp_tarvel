@@ -2608,14 +2608,21 @@ document.addEventListener("DOMContentLoaded", () => {
         visitedRegions.add(regCode);
         const dayColor = getDayColor(item.day || 1);
 
-        // Sequence number display
-        let seqLabel = "";
+        // Clean sequence number inside circle (Option 1: crisp single number)
+        let circleNumber = i + 1;
+        let dayTagHtml = "";
+        let popupBadgeLabel = `#${i + 1}`;
+
         if (currentRouteFilterDay === "all") {
           const dayStops = allRouteItems.filter(x => (x.day || 1) === (item.day || 1));
           const seqInDay = dayStops.findIndex(x => x.id === item.id) + 1;
-          seqLabel = `D${item.day || 1}#${seqInDay > 0 ? seqInDay : (i + 1)}`;
+          circleNumber = seqInDay > 0 ? seqInDay : (i + 1);
+          dayTagHtml = `<span class="pin-day-tag">D${item.day || 1}</span>`;
+          popupBadgeLabel = `Day ${item.day || 1} · #${circleNumber}`;
         } else {
-          seqLabel = `#${i + 1}`;
+          circleNumber = i + 1;
+          dayTagHtml = "";
+          popupBadgeLabel = `Day ${item.day || 1} · #${circleNumber}`;
         }
 
         const pos = [meta.lat, meta.lng];
@@ -2624,11 +2631,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const markerHtml = `
           <div class="modern-drop-pin-container" id="modern-pin-${item.id}">
             <div class="pin-label-pill" style="border-color: ${dayColor};">
+              ${dayTagHtml}
               <span>${meta.icon || '📍'}</span>
               <span>${item.title.split('(')[0].trim()}</span>
             </div>
             <div class="pin-circle-head" style="background: ${dayColor};">
-              ${seqLabel}
+              ${circleNumber}
             </div>
             <div class="pin-point-arrow" style="border-top-color: ${dayColor};"></div>
           </div>
@@ -2636,10 +2644,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const customIcon = L.divIcon({
           html: markerHtml,
-          className: "",
-          iconSize: [120, 56],
-          iconAnchor: [60, 56],
-          popupAnchor: [0, -56]
+          className: "custom-modern-pin-divicon",
+          iconSize: [160, 68],
+          iconAnchor: [80, 66],
+          popupAnchor: [0, -66]
         });
 
         const marker = L.marker(pos, { icon: customIcon }).addTo(leafletRouteLayerGroup);
@@ -2648,7 +2656,7 @@ document.addEventListener("DOMContentLoaded", () => {
         marker.bindPopup(`
           <div style="font-family: inherit; font-size: 0.85rem; padding: 2px; min-width: 200px;">
             <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
-              <span style="background: ${dayColor}; color: white; font-weight: 800; font-size: 0.72rem; padding: 1px 6px; border-radius: 10px;">${seqLabel}</span>
+              <span style="background: ${dayColor}; color: white; font-weight: 800; font-size: 0.72rem; padding: 1px 6px; border-radius: 10px;">${popupBadgeLabel}</span>
               <strong style="color: #0f172a;">${item.title}</strong>
             </div>
             <span style="color: #64748b; font-size: 0.8rem;">🚉 ${meta.station}</span><br>
