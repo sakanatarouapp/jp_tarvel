@@ -303,13 +303,38 @@
               <h4>แผนที่จำลองการเดินทาง (Interactive Map)</h4>
             </div>
             <div style="display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;">
+              <button class="map-action-icon-btn" id="map-fit-bounds-btn" title="จัดกึ่งกลางแผนที่ให้เห็นครบทุกจุด (Fit View)">
+                🎯 Fit
+              </button>
+              <button class="map-action-icon-btn" id="map-fullscreen-toggle-btn" title="ขยายแผนที่เต็มหน้าจอ (Fullscreen Mode)">
+                ⛶ เต็มจอ
+              </button>
               <button class="map-pin-mode-btn" id="map-pin-mode-btn" title="เปิดโหมดคลิกเพื่อปักหมุดโรงแรม/ร้านอาหารลงบนแผนที่โดยตรง">
-                📌 คลิกปักหมุด
+                📌 ปักหมุด
               </button>
               <div class="map-view-switcher" id="map-view-switcher">
                 <button class="map-switch-btn active" data-view="map">🗺️ แผนที่</button>
                 <button class="map-switch-btn" data-view="metro">🚇 ผังเส้นทาง</button>
               </div>
+            </div>
+          </div>
+
+          <!-- Day-by-Day Route Filter Tabs Bar -->
+          <div class="route-day-filter-bar" id="route-day-filter-bar">
+            <div class="route-day-filter-label">🗓️ เลือกดูเส้นทาง:</div>
+            <div class="route-day-filter-tabs" id="route-day-filter-tabs">
+              <!-- Injected via JavaScript: [🌟 ทุกวัน] [Day 1] [Day 2] ... -->
+            </div>
+          </div>
+
+          <!-- Day Transit & Metrics Banner -->
+          <div class="route-day-stats-banner" id="route-day-stats-banner">
+            <div class="day-stats-main">
+              <span class="day-stats-dot"></span>
+              <span id="route-day-stats-title" class="day-stats-title">📍 พร้อมแสดงเส้นทาง</span>
+            </div>
+            <div class="day-stats-metrics" id="route-day-stats-metrics">
+              <!-- Injected via JavaScript -->
             </div>
           </div>
 

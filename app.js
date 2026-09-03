@@ -2030,6 +2030,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let leafletRouteLayerGroup = null;
   let leafletVehicleMarker = null;
   let currentMapViewMode = "map";
+  let currentRouteFilterDay = "all";
+  let leafletMarkersMap = {};
+  let isFullscreenMap = false;
 
   const routePresetPills = document.getElementById("route-preset-pills");
   const routeActiveCount = document.getElementById("route-active-count");
@@ -2045,10 +2048,70 @@ document.addEventListener("DOMContentLoaded", () => {
   const metroTrackLine = document.getElementById("metro-track-line");
   const mapViewSwitcher = document.getElementById("map-view-switcher");
 
+  const routeDayFilterBar = document.getElementById("route-day-filter-bar");
+  const routeDayFilterTabs = document.getElementById("route-day-filter-tabs");
+  const routeDayStatsBanner = document.getElementById("route-day-stats-banner");
+  const routeDayStatsTitle = document.getElementById("route-day-stats-title");
+  const routeDayStatsMetrics = document.getElementById("route-day-stats-metrics");
+  const mapFitBoundsBtn = document.getElementById("map-fit-bounds-btn");
+  const mapFullscreenToggleBtn = document.getElementById("map-fullscreen-toggle-btn");
+
   let isMapPinMode = false;
   const mapPinModeBtn = document.getElementById("map-pin-mode-btn");
   const mapPinHintBanner = document.getElementById("map-pin-hint-banner");
   const closePinModeBtn = document.getElementById("close-pin-hint-btn");
+
+  function getDayColor(dayNum) {
+    const d = parseInt(dayNum, 10) || 1;
+    const colors = ["#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48"];
+    return colors[(d - 1) % colors.length];
+  }
+
+  function toggleFullscreenMap(forceState) {
+    const panel = document.querySelector(".route-map-panel");
+    if (!panel) return;
+    isFullscreenMap = typeof forceState === "boolean" ? forceState : !isFullscreenMap;
+    if (isFullscreenMap) {
+      panel.classList.add("fullscreen-map-active");
+      if (mapFullscreenToggleBtn) mapFullscreenToggleBtn.innerHTML = "✕ ย่อจอ";
+      document.body.style.overflow = "hidden";
+    } else {
+      panel.classList.remove("fullscreen-map-active");
+      if (mapFullscreenToggleBtn) mapFullscreenToggleBtn.innerHTML = "⛶ เต็มจอ";
+      document.body.style.overflow = "";
+    }
+    setTimeout(() => {
+      if (leafletRouteMap) leafletRouteMap.invalidateSize();
+    }, 200);
+  }
+
+  if (mapFullscreenToggleBtn) {
+    mapFullscreenToggleBtn.addEventListener("click", () => toggleFullscreenMap());
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isFullscreenMap) {
+      toggleFullscreenMap(false);
+    }
+  });
+
+  function fitMapBoundsToActive() {
+    if (!leafletRouteMap) return;
+    const items = getFilteredRouteItems();
+    const latLngs = items.map(item => {
+      const meta = getSmartMetaForItem(item);
+      return [meta.lat, meta.lng];
+    });
+    if (latLngs.length === 1) {
+      leafletRouteMap.setView(latLngs[0], 13);
+    } else if (latLngs.length > 1) {
+      leafletRouteMap.fitBounds(latLngs, { padding: [50, 50], maxZoom: 14 });
+    }
+  }
+
+  if (mapFitBoundsBtn) {
+    mapFitBoundsBtn.addEventListener("click", () => fitMapBoundsToActive());
+  }
 
   function toggleMapPinMode(forceState) {
     isMapPinMode = typeof forceState === "boolean" ? forceState : !isMapPinMode;
@@ -2309,17 +2372,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const targetIdx = index + direction;
     if (targetIdx < 0 || targetIdx >= activeSimulationRoute.length) return;
 
+    const itemA = activeSimulationRoute[index];
+    const itemB = activeSimulationRoute[targetIdx];
+    if (!itemA || !itemB) return;
+
     if (selectedRoutePresetId === "custom") {
-      const temp = itineraryList[index];
-      itineraryList[index] = itineraryList[targetIdx];
-      itineraryList[targetIdx] = temp;
-      
-      // Update day to match target location's day if crossed
-      if (itineraryList[index] && itineraryList[targetIdx]) {
-        itineraryList[index].day = itineraryList[targetIdx].day || 1;
+      const realIdxA = itineraryList.findIndex(x => x.id === itemA.id);
+      const realIdxB = itineraryList.findIndex(x => x.id === itemB.id);
+      if (realIdxA !== -1 && realIdxB !== -1) {
+        const temp = itineraryList[realIdxA];
+        itineraryList[realIdxA] = itineraryList[realIdxB];
+        itineraryList[realIdxB] = temp;
+        itineraryList[realIdxA].day = itemA.day || 1;
+        itineraryList[realIdxB].day = itemB.day || 1;
+        localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+        updateItineraryUI();
       }
-      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
-      updateItineraryUI();
     } else {
       const temp = activeSimulationRoute[index];
       activeSimulationRoute[index] = activeSimulationRoute[targetIdx];
@@ -2333,14 +2401,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
     if (fromIdx >= activeSimulationRoute.length || toIdx >= activeSimulationRoute.length) return;
 
+    const fromItem = activeSimulationRoute[fromIdx];
+    const toItem = activeSimulationRoute[toIdx];
+    if (!fromItem || !toItem) return;
+
     if (selectedRoutePresetId === "custom") {
-      const movedItem = itineraryList.splice(fromIdx, 1)[0];
-      if (itineraryList[toIdx]) {
-        movedItem.day = itineraryList[toIdx].day || 1;
+      const realFromIdx = itineraryList.findIndex(x => x.id === fromItem.id);
+      const realToIdx = itineraryList.findIndex(x => x.id === toItem.id);
+      if (realFromIdx !== -1 && realToIdx !== -1) {
+        const movedItem = itineraryList.splice(realFromIdx, 1)[0];
+        if (itineraryList[realToIdx]) {
+          movedItem.day = itineraryList[realToIdx].day || fromItem.day || 1;
+        }
+        itineraryList.splice(realToIdx, 0, movedItem);
+        localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
+        updateItineraryUI();
       }
-      itineraryList.splice(toIdx, 0, movedItem);
-      localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
-      updateItineraryUI();
     } else {
       const movedItem = activeSimulationRoute.splice(fromIdx, 1)[0];
       activeSimulationRoute.splice(toIdx, 0, movedItem);
@@ -2350,8 +2426,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function removeRouteItem(index) {
+    const item = activeSimulationRoute[index];
+    if (!item) return;
+
     if (selectedRoutePresetId === "custom") {
-      itineraryList = itineraryList.filter((_, idx) => idx !== index);
+      itineraryList = itineraryList.filter(x => x.id !== item.id);
       localStorage.setItem("nippon_itinerary", JSON.stringify(itineraryList));
       updateItineraryUI();
       renderCards();
@@ -2362,12 +2441,9 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRouteSimulator();
   }
 
-  function renderRouteSimulator() {
-    if (!routePresetPills || !routeTimelineList) return;
-
-    activeSimulationRoute = getRouteItems();
-    // Bulletproof sort: activeSimulationRoute is always sorted by Day ascending, then by Time
-    activeSimulationRoute.sort((a, b) => {
+  function getFilteredRouteItems(allItems) {
+    const list = allItems || getRouteItems();
+    list.sort((a, b) => {
       const dayA = parseInt(a.day, 10) || 1;
       const dayB = parseInt(b.day, 10) || 1;
       if (dayA !== dayB) return dayA - dayB;
@@ -2376,6 +2452,91 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!a.time && b.time) return 1;
       return 0;
     });
+
+    if (currentRouteFilterDay === "all") {
+      return list;
+    }
+    const targetDay = parseInt(currentRouteFilterDay, 10);
+    return list.filter(item => (parseInt(item.day, 10) || 1) === targetDay);
+  }
+
+  function renderRouteDayFilterTabs(allItems) {
+    if (!routeDayFilterTabs) return;
+    const uniqueDays = Array.from(new Set(allItems.map(i => parseInt(i.day, 10) || 1))).sort((a, b) => a - b);
+
+    if (currentRouteFilterDay !== "all" && !uniqueDays.includes(parseInt(currentRouteFilterDay, 10))) {
+      currentRouteFilterDay = "all";
+    }
+
+    let tabsHtml = `
+      <button type="button" class="route-day-tab-btn ${currentRouteFilterDay === 'all' ? 'active' : ''}" data-day="all">
+        <span>🌟</span> ทุกวัน (${allItems.length} จุด)
+      </button>
+    `;
+
+    uniqueDays.forEach(dayNum => {
+      const stopsOnDay = allItems.filter(i => (parseInt(i.day, 10) || 1) === dayNum);
+      const themeClass = `day-theme-${((dayNum - 1) % 5) + 1}`;
+      const isAct = (currentRouteFilterDay !== "all" && parseInt(currentRouteFilterDay, 10) === dayNum);
+      tabsHtml += `
+        <button type="button" class="route-day-tab-btn ${themeClass} ${isAct ? 'active' : ''}" data-day="${dayNum}">
+          <span>🗓️</span> Day ${dayNum} (${stopsOnDay.length} จุด)
+        </button>
+      `;
+    });
+
+    routeDayFilterTabs.innerHTML = tabsHtml;
+
+    routeDayFilterTabs.querySelectorAll(".route-day-tab-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const dayVal = e.currentTarget.getAttribute("data-day");
+        currentRouteFilterDay = (dayVal === "all") ? "all" : parseInt(dayVal, 10);
+        resetRouteSimulation();
+        renderRouteSimulator();
+      });
+    });
+  }
+
+  function highlightTimelineItem(itemId) {
+    if (!routeTimelineList) return;
+    routeTimelineList.querySelectorAll(".route-stop-card").forEach(c => c.classList.remove("active-pin-highlight"));
+    const targetCard = routeTimelineList.querySelector(`.route-stop-card[data-item-id="${itemId}"]`);
+    if (targetCard) {
+      targetCard.classList.add("active-pin-highlight");
+      targetCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  function focusMapOnItem(itemId) {
+    if (!leafletRouteMap || !leafletMarkersMap[itemId]) return;
+    const marker = leafletMarkersMap[itemId];
+    const latLng = marker.getLatLng();
+    leafletRouteMap.flyTo(latLng, Math.max(leafletRouteMap.getZoom(), 14), { duration: 0.8 });
+    marker.openPopup();
+
+    document.querySelectorAll(".modern-drop-pin-container").forEach(el => el.classList.remove("active-selected-pin"));
+    const pinEl = document.getElementById(`modern-pin-${itemId}`);
+    if (pinEl) pinEl.classList.add("active-selected-pin");
+  }
+
+  function renderRouteSimulator() {
+    if (!routePresetPills || !routeTimelineList) return;
+
+    const allRouteItems = getRouteItems();
+    allRouteItems.sort((a, b) => {
+      const dayA = parseInt(a.day, 10) || 1;
+      const dayB = parseInt(b.day, 10) || 1;
+      if (dayA !== dayB) return dayA - dayB;
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time && !b.time) return -1;
+      if (!a.time && b.time) return 1;
+      return 0;
+    });
+
+    // Render Day-by-Day Filter Tabs
+    renderRouteDayFilterTabs(allRouteItems);
+
+    activeSimulationRoute = getFilteredRouteItems(allRouteItems);
 
     // 1. Render Preset Pills
     let pillsHtml = `
@@ -2397,6 +2558,7 @@ document.addEventListener("DOMContentLoaded", () => {
     routePresetPills.querySelectorAll(".preset-pill-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         selectedRoutePresetId = e.currentTarget.getAttribute("data-preset");
+        currentRouteFilterDay = "all";
         resetRouteSimulation();
         renderRouteSimulator();
       });
@@ -2418,6 +2580,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (metroTrackLine) metroTrackLine.innerHTML = "";
       if (routeSummaryBox) routeSummaryBox.innerHTML = "";
       if (simPlayBtn) simPlayBtn.disabled = true;
+      if (routeDayStatsTitle) routeDayStatsTitle.textContent = "📍 ยังไม่มีสถานที่ในเส้นทาง";
+      if (routeDayStatsMetrics) routeDayStatsMetrics.innerHTML = "";
       return;
     }
 
@@ -2432,51 +2596,86 @@ document.addEventListener("DOMContentLoaded", () => {
     if (leafletRouteMap && leafletRouteLayerGroup) {
       leafletRouteLayerGroup.clearLayers();
       leafletVehicleMarker = null;
+      leafletMarkersMap = {};
 
       const latLngs = [];
 
-      // 2.1 Add Numbered Circular Pin Markers with Region Themed Colors
+      // 2.1 Add Numbered Circular Drop-Pin Markers
       for (let i = 0; i < activeSimulationRoute.length; i++) {
         const item = activeSimulationRoute[i];
         const meta = getSmartMetaForItem(item);
         const regCode = meta.region || item.region || "tokyo";
         visitedRegions.add(regCode);
-        const theme = (typeof REGION_THEMES !== "undefined" && REGION_THEMES[regCode]) ? REGION_THEMES[regCode] : { color: "#0284c7", icon: "📍" };
+        const dayColor = getDayColor(item.day || 1);
+
+        // Sequence number display
+        let seqLabel = "";
+        if (currentRouteFilterDay === "all") {
+          const dayStops = allRouteItems.filter(x => (x.day || 1) === (item.day || 1));
+          const seqInDay = dayStops.findIndex(x => x.id === item.id) + 1;
+          seqLabel = `D${item.day || 1}#${seqInDay > 0 ? seqInDay : (i + 1)}`;
+        } else {
+          seqLabel = `#${i + 1}`;
+        }
 
         const pos = [meta.lat, meta.lng];
         latLngs.push(pos);
 
         const markerHtml = `
-          <div class="custom-leaflet-marker" id="leaflet-marker-${i}" style="border-color: ${theme.color};">
-            <span class="marker-badge-num" style="background: ${theme.color};">${i + 1}</span>
-            <span>${meta.icon} ${item.title.split('(')[0].trim()}</span>
+          <div class="modern-drop-pin-container" id="modern-pin-${item.id}">
+            <div class="pin-label-pill" style="border-color: ${dayColor};">
+              <span>${meta.icon || '📍'}</span>
+              <span>${item.title.split('(')[0].trim()}</span>
+            </div>
+            <div class="pin-circle-head" style="background: ${dayColor};">
+              ${seqLabel}
+            </div>
+            <div class="pin-point-arrow" style="border-top-color: ${dayColor};"></div>
           </div>
         `;
 
         const customIcon = L.divIcon({
           html: markerHtml,
           className: "",
-          iconSize: [150, 34],
-          iconAnchor: [24, 17]
+          iconSize: [120, 56],
+          iconAnchor: [60, 56],
+          popupAnchor: [0, -56]
         });
 
         const marker = L.marker(pos, { icon: customIcon }).addTo(leafletRouteLayerGroup);
+        leafletMarkersMap[item.id] = marker;
+
         marker.bindPopup(`
-          <div style="font-family: inherit; font-size: 0.85rem; padding: 2px;">
+          <div style="font-family: inherit; font-size: 0.85rem; padding: 2px; min-width: 200px;">
             <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
-              <span style="background: ${theme.color}; color: white; font-weight: 800; font-size: 0.72rem; padding: 1px 6px; border-radius: 10px;">#${i + 1}</span>
+              <span style="background: ${dayColor}; color: white; font-weight: 800; font-size: 0.72rem; padding: 1px 6px; border-radius: 10px;">${seqLabel}</span>
               <strong style="color: #0f172a;">${item.title}</strong>
             </div>
             <span style="color: #64748b; font-size: 0.8rem;">🚉 ${meta.station}</span><br>
             <span style="color: #059669; font-weight: 600; font-size: 0.8rem;">⏳ แนะนำเวลา: ${meta.stayHours}</span>
+            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.72rem; color: #64748b;">🗓️ Day ${item.day || 1}</span>
+              <span style="font-size: 0.72rem; font-weight: 700; color: #0284c7;">⏰ ${item.time || 'ไม่ระบุเวลา'}</span>
+            </div>
           </div>
         `);
+
+        marker.on("click", () => {
+          highlightTimelineItem(item.id);
+        });
       }
 
       // 2.2 Draw Color-Coded Polylines & Midpoint Leg Badges
+      // Clean Connection Rule: only connect stops that belong to the same day or when viewing a single day!
       for (let i = 0; i < activeSimulationRoute.length - 1; i++) {
         const item1 = activeSimulationRoute[i];
         const item2 = activeSimulationRoute[i + 1];
+
+        // Skip line connection if day changes in 'all' view to prevent tangled cross-day lines!
+        if (currentRouteFilterDay === "all" && (item1.day || 1) !== (item2.day || 1)) {
+          continue;
+        }
+
         const meta1 = getSmartMetaForItem(item1);
         const meta2 = getSmartMetaForItem(item2);
         const pos1 = [meta1.lat, meta1.lng];
@@ -2489,7 +2688,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const leg = calculateTransitLeg(item1, item2);
         totalFareJPY += leg.fareJPY;
 
-        const lineColor = isCrossRegion ? "#e11d48" : ((typeof REGION_THEMES !== "undefined" && REGION_THEMES[reg1]) ? REGION_THEMES[reg1].color : "#0284c7");
+        const lineColor = getDayColor(item1.day || 1);
         const dashArray = isCrossRegion ? "10, 8" : "6, 6";
         const weight = isCrossRegion ? 5 : 4;
 
@@ -2521,6 +2720,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         L.marker([midLat, midLng], { icon: badgeIcon, interactive: false }).addTo(leafletRouteLayerGroup);
+      }
+
+      // 2.3 Update Day Stats Banner
+      if (routeDayStatsTitle && routeDayStatsMetrics) {
+        if (currentRouteFilterDay === "all") {
+          const uniqueDays = Array.from(new Set(allRouteItems.map(i => parseInt(i.day, 10) || 1)));
+          routeDayStatsTitle.textContent = `🌟 ภาพรวมเส้นทางทุกวัน (${allRouteItems.length} จุดหมาย · ${uniqueDays.length} วัน)`;
+          routeDayStatsMetrics.innerHTML = `
+            <span>📍 ครบทุกเมือง</span>
+            <span>·</span>
+            <span>💳 ค่าเดินทางรวม ~¥${totalFareJPY.toLocaleString()} (~${Math.round(totalFareJPY * currentExchangeRate)} บาท)</span>
+            <span>·</span>
+            <span style="color: #38bdf8;">✨ คลิกปุ่ม Day ด้านบนเพื่อแยกดูทีละวัน</span>
+          `;
+        } else {
+          const dNum = parseInt(currentRouteFilterDay, 10);
+          const stopNames = activeSimulationRoute.map(s => s.title.split('(')[0].trim()).join(' ➔ ');
+          routeDayStatsTitle.textContent = `📍 Day ${dNum}: ${stopNames}`;
+          routeDayStatsMetrics.innerHTML = `
+            <span>🎯 ${activeSimulationRoute.length} สถานที่</span>
+            <span>·</span>
+            <span style="color: #38bdf8;">💳 ค่าเดินทาง ~¥${totalFareJPY.toLocaleString()} (~${Math.round(totalFareJPY * currentExchangeRate)} บาท)</span>
+            <span>·</span>
+            <span style="color: #34d399;">⏱️ ลำดับการเดินทางชัดเจน</span>
+          `;
+        }
       }
 
       // Auto zoom to perfectly frame all marked places
@@ -2632,7 +2857,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       timelineHtml += `
-        <div class="route-stop-card" id="sim-stop-${i}" data-stop-idx="${i}" draggable="true">
+        <div class="route-stop-card" id="sim-stop-${i}" data-stop-idx="${i}" data-item-id="${item.id}" draggable="true">
           <div class="route-stop-header">
             <div class="stop-title-wrap">
               <span class="stop-drag-handle" title="คลิกลากเพื่อสลับลำดับ">⋮⋮</span>
@@ -2700,9 +2925,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     routeTimelineList.innerHTML = timelineHtml;
 
-    // Attach HTML5 Drag-and-Drop Handlers
+    // Attach HTML5 Drag-and-Drop & 2-Way Sync Handlers
     let draggedIndex = null;
     routeTimelineList.querySelectorAll(".route-stop-card").forEach(card => {
+      // 2-Way Sync: clicking card smoothly pans map to destination and highlights pin
+      card.addEventListener("click", (e) => {
+        if (e.target.closest("button") || e.target.closest("input")) return;
+        const itemId = card.getAttribute("data-item-id");
+        if (itemId) {
+          focusMapOnItem(itemId);
+          highlightTimelineItem(itemId);
+        }
+      });
+
       card.addEventListener("dragstart", (e) => {
         draggedIndex = parseInt(e.currentTarget.getAttribute("data-stop-idx"));
         e.currentTarget.classList.add("dragging");

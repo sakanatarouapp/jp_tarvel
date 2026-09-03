@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draft Preview: Next-Gen Interactive Map & Route Sequence 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Kanit', 'Prompt', sans-serif;
+    }
+    .pin-pulse {
+      animation: pinPulse 2s infinite ease-in-out;
+    }
+    @keyframes pinPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4); }
+      50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(2, 132, 199, 0); }
+    }
+    .line-dash-move {
+      stroke-dasharray: 8, 8;
+      animation: dashMove 1.5s linear infinite;
+    }
+    @keyframes dashMove {
+      to { stroke-dashoffset: -16; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 p-3 sm:p-6 min-h-screen">
+  <div class="max-w-5xl mx-auto space-y-4">
+
+    <!-- Header & Concept Badge -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-full text-xs font-bold mb-2">
+            <span>✨ PROTOTYPE DEMO</span>
+            <span>·</span>
+            <span>NEXT-GEN ROUTE MAP 2026</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+            🗺️ ดราฟต์หน้าตาแผนที่ใหม่: ลำดับเส้นทาง Day-by-Day คมชัด 100%
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            แก้ปัญหาเส้นทางพันกันข้ามวันด้วย <strong class="text-sky-400">ระบบกรองวัน (Day Filter)</strong>, <strong class="text-rose-400">พินหยดน้ำพร้อมตัวเลขลำดับ (#1, #2, #3)</strong>, และ <strong class="text-amber-400">การเชื่อมโยงสองทาง (Interactive 2-Way Sync)</strong>
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400 hidden sm:inline">โหมดมุมมอง:</span>
+          <div class="bg-slate-800 p-1 rounded-xl flex gap-1 border border-slate-700">
+            <button id="view-map-btn" onclick="switchView('map')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white transition">🗺️ แผนที่จริง</button>
+            <button id="view-metro-btn" onclick="switchView('metro')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition">🚇 ผังรถไฟ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Map Interactive Container -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      
+      <!-- 1. Day-by-Day Selector Tabs Bar -->
+      <div class="bg-slate-900/95 border-b border-slate-800 px-4 py-3">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            <span class="text-xs font-bold text-slate-400 whitespace-nowrap hidden md:inline">🗓️ เลือกดูวัน:</span>
+            <button onclick="selectDay('all')" id="tab-all" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500 whitespace-nowrap">
+              <span>🌟</span> ทุกวัน (All Days)
+            </button>
+            <button onclick="selectDay(1)" id="tab-1" class="day-tab active px-3.5 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 bg-sky-500 text-white shadow-lg shadow-sky-500/25 whitespace-nowrap">
+              <span>🔵</span> Day 1: โตเกียว (3 จุด)
+            </button>
+            <button onclick="selectDay(2)" id="tab-2" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500 whitespace-nowrap">
+              <span>🟢</span> Day 2: เกียวโต (3 จุด)
+            </button>
+            <button onclick="selectDay(3)" id="tab-3" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500 whitespace-nowrap">
+              <span>🟣</span> Day 3: โอซาก้า (2 จุด บินกลับ)
+            </button>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2">
+            <button onclick="togglePlaySimulation()" id="play-sim-btn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition">
+              <span id="play-icon">▶️</span>
+              <span id="play-text">จำลองเส้นทาง</span>
+            </button>
+            <button onclick="fitAllPoints()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition" title="ซูมพอดีทุกจุด">
+              🎯 Fit
+            </button>
+            <button onclick="toggleFullscreen()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition" title="ขยายเต็มจอ">
+              ⛶
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Dynamic Day Stats Banner -->
+      <div id="day-stats-banner" class="bg-gradient-to-r from-sky-950/60 to-slate-900 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+          <span id="day-stats-title" class="font-bold text-sky-300">📍 Day 1: โตเกียว (Asakusa ➔ Tsukiji ➔ Shibuya)</span>
+        </div>
+        <div class="flex items-center gap-3 text-slate-300">
+          <span id="day-stats-time">⏱️ เดินทางรวม 47 นาที</span>
+          <span>·</span>
+          <span id="day-stats-fare" class="text-emerald-400 font-bold">💳 ค่าเดินทาง ~¥420</span>
+          <span>·</span>
+          <span class="text-purple-400 font-bold">🎫 แนะนำ: Tokyo Subway 24h Pass</span>
+        </div>
+      </div>
+
+      <!-- 3. Interactive Visual Map Canvas Area -->
+      <div class="relative w-full h-[420px] sm:h-[480px] bg-slate-900 overflow-hidden select-none" id="map-canvas-container">
+        
+        <!-- Stylized Map Background Pattern (Simulated Map Graphic) -->
+        <svg class="absolute inset-0 w-full h-full opacity-40" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          
+          <!-- Coastlines & Water accents -->
+          <path d="M 0,260 Q 200,240 380,290 T 700,320 T 1100,280 L 1100,500 L 0,500 Z" fill="#0369a1" opacity="0.25"/>
+          <text x="350" y="380" fill="#38bdf8" opacity="0.3" font-size="28" font-weight="bold" font-family="sans-serif">TOKYO BAY / ภูมิภาคคันโต</text>
+        </svg>
+
+        <!-- Animated Route Polylines Layer (SVG) -->
+        <svg id="route-svg-layer" class="absolute inset-0 w-full h-full pointer-events-none">
+          <!-- Dynamically generated paths & arrows -->
+        </svg>
+
+        <!-- Transit Midpoint Badges Layer -->
+        <div id="transit-badges-layer" class="absolute inset-0 pointer-events-none">
+          <!-- Dynamically generated badges -->
+        </div>
+
+        <!-- Interactive Pins Layer -->
+        <div id="pins-layer" class="absolute inset-0 pointer-events-auto">
+          <!-- Dynamically generated pins -->
+        </div>
+
+        <!-- Floating Interactive Detail Popup Card -->
+        <div id="active-pin-popup" class="hidden absolute z-30 bg-slate-900/95 border border-slate-700 backdrop-blur-md rounded-2xl p-4 shadow-2xl w-72 text-xs transition-all duration-300">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span id="popup-badge" class="px-2 py-0.5 rounded-md text-[11px] font-black text-white bg-sky-500">#1</span>
+              <strong id="popup-title" class="text-sm font-bold text-white">วัดเซนโซจิ อาซากุสะ</strong>
+            </div>
+            <button onclick="closePopup()" class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
+          </div>
+          <p id="popup-desc" class="text-slate-300 mb-2 leading-relaxed">วัดเก่าแก่ที่สุดในโตเกียว ถ่ายรูปคู่โคมแดงยักษ์คามินาริมง</p>
+          <div class="space-y-1 text-[11px] text-slate-400 bg-slate-800/80 p-2 rounded-xl mb-3 border border-slate-700/50">
+            <div>🚉 <span id="popup-station">สถานี Asakusa ทางออก 1</span></div>
+            <div>⏰ <span id="popup-time">09:00 - 11:30 (ควรใช้เวลา 2 ชม.)</span></div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="alert('จำลองการนำทางด้วย Google Maps')" class="flex-1 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg text-center transition">
+              🗺️ นำทาง
+            </button>
+            <button onclick="alert('เปิดการ์ดยื่นให้คนขับแท็กซี่ดูพร้อมเสียงพูด')" class="flex-1 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg text-center transition">
+              🚕 ยื่นให้แท็กซี่ 🔊
+            </button>
+          </div>
+        </div>
+
+        <!-- Floating Map Utility Dock -->
+        <div class="absolute bottom-4 right-4 flex flex-col gap-2 z-20">
+          <button onclick="zoomMap(1.15)" class="w-9 h-9 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl border border-slate-700 flex items-center justify-center font-bold text-lg shadow-lg">
+            +
+          </button>
+          <button onclick="zoomMap(0.85)" class="w-9 h-9 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl border border-slate-700 flex items-center justify-center font-bold text-lg shadow-lg">
+            −
+          </button>
+        </div>
+
+        <!-- Legend Overlay -->
+        <div class="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 backdrop-blur-md rounded-xl p-2.5 text-[11px] text-slate-300 shadow-lg hidden sm:flex items-center gap-3">
+          <div class="flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
+            <span>Day 1 (Tokyo)</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+            <span>Day 2 (Kyoto)</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span>
+            <span>Day 3 (Osaka)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 4. Step-by-Step Linked Timeline Strip (Two-Way Interactive Sync) -->
+      <div class="bg-slate-900 border-t border-slate-800 p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span>📋 ลำดับการเดินทางตามเวลาจริง (คลิกการ์ดเพื่อซูมหาจุดบนแผนที่):</span>
+          </h3>
+          <span class="text-xs text-sky-400 font-semibold">Interactive 2-Way Sync ⟷</span>
+        </div>
+
+        <!-- Cards Row -->
+        <div id="timeline-cards-row" class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Explanation Box: Why this makes it clearer -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-300">
+      <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-1">
+        <div class="font-bold text-sky-400 flex items-center gap-1.5 text-sm">
+          <span>1. กรองดูทีละวัน</span>
+        </div>
+        <p class="text-slate-400">เส้นทางไม่พันกันข้ามเมือง เมื่อกดเลือก Day 1 จะเห็นเฉพาะเส้นทางของวันนั้น และรีเซ็ตลำดับเป็น #1, #2, #3 ชัดเจน</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-1">
+        <div class="font-bold text-emerald-400 flex items-center gap-1.5 text-sm">
+          <span>2. ป้ายเวลาและการต่อรถ</span>
+        </div>
+        <p class="text-slate-400">ระหว่างจุด 1 ไป 2 มีป้ายบอกชื่อสายรถไฟ เวลาที่ใช้ และค่าโดยสารโดยประมาณทันที</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-1">
+        <div class="font-bold text-purple-400 flex items-center gap-1.5 text-sm">
+          <span>3. ซิงก์สองทางแผนที่ ⟷ ไทม์ไลน์</span>
+        </div>
+        <p class="text-slate-400">กดหมุดบนแผนที่ ➔ ไทม์ไลน์เลื่อนหาการ์ดนั้นทันที / กดการ์ดในไทม์ไลน์ ➔ แผนที่บินไปหาหมุดนั้นพร้อมเปิดป๊อปอัป</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Prototype Engine -->
+  <script>
+    const SAMPLE_TRIP_DATA = {
+      1: {
+        dayName: "Day 1: โตเกียว (Tokyo)",
+        themeColor: "#0284c7",
+        themeBg: "bg-sky-500",
+        stats: "⏱️ เดินทางรวม 47 นาที · ค่าเดินทาง ~¥420 · แนะนำ Tokyo Subway Pass",
+        stops: [
+          { id: "s1", num: 1, title: "วัดเซนโซจิ (Asakusa)", icon: "⛩️", x: 180, y: 120, time: "09:00", station: "สถานี Asakusa Exit 1", stay: "2 ชม." },
+          { id: "s2", num: 2, title: "ตลาดปลาซึกิจิ (Tsukiji)", icon: "🍣", x: 380, y: 220, time: "12:30", station: "สถานี Tsukiji Exit 1", stay: "1.5 ชม." },
+          { id: "s3", num: 3, title: "ชิบูย่า สกาย (Shibuya Sky)", icon: "🏙️", x: 620, y: 150, time: "16:30", station: "สถานี Shibuya Exit B6", stay: "2 ชม." }
+        ],
+        legs: [
+          { from: 0, to: 1, label: "🚇 Ginza Line · 18 นาที · ¥210", mode: "subway" },
+          { from: 1, to: 2, label: "🚇 Hibiya + Ginza · 22 นาที · ¥210", mode: "subway" }
+        ]
+      },
+      2: {
+        dayName: "Day 2: เกียวโต (Kyoto)",
+        themeColor: "#10b981",
+        themeBg: "bg-emerald-500",
+        stats: "⏱️ เดินทางรวม 55 นาที · ค่าเดินทาง ~¥680 · แนะนำ Keihan/Subway 1-Day Pass",
+        stops: [
+          { id: "s4", num: 1, title: "ป่าไผ่อาราชิยามะ (Arashiyama)", icon: "🎋", x: 160, y: 200, time: "08:30", station: "สถานี Saga-Arashiyama", stay: "2.5 ชม." },
+          { id: "s5", num: 2, title: "วัดทองคินคะคุจิ (Kinkaku-ji)", icon: "🏯", x: 420, y: 110, time: "12:45", station: "รถบัสสาย 205 ลง Kinkakuji-michi", stay: "1.5 ชม." },
+          { id: "s6", num: 3, title: "ย่านกิออน & ฮานามิโคจิ (Gion)", icon: "🏮", x: 680, y: 240, time: "16:00", station: "สถานี Gion-Shijo Exit 7", stay: "2.5 ชม." }
+        ],
+        legs: [
+          { from: 0, to: 1, label: "🚌 Kyoto Bus #205 · 30 นาที · ¥230", mode: "bus" },
+          { from: 1, to: 2, label: "🚇 Keihan Line · 25 นาที · ¥450", mode: "subway" }
+        ]
+      },
+      3: {
+        dayName: "Day 3: โอซาก้า (Osaka - วันบินกลับ)",
+        themeColor: "#a855f7",
+        themeBg: "bg-purple-500",
+        stats: "⏱️ เที่ยวเบา 2 จุด · เช้า-เที่ยง เว้นบ่ายว่างกันตกเครื่อง KIX",
+        stops: [
+          { id: "s7", num: 1, title: "ตลาดคุโรมอน (Kuromon Market)", icon: "🥩", x: 260, y: 220, time: "10:00", station: "สถานี Nippombashi Exit 10", stay: "1.5 ชม." },
+          { id: "s8", num: 2, title: "ย่านโดทงโบริ (Dotonbori Glico)", icon: "🏃", x: 550, y: 180, time: "12:30", station: "สถานี Namba Exit 14", stay: "2 ชม. (ช้อปของฝาก)" }
+        ],
+        legs: [
+          { from: 0, to: 1, label: "🚶 เดินเท้าเลียบย่านช้อปปิ้ง · 8 นาที (500 ม.)", mode: "walk" }
+        ]
+      }
+    };
+
+    let currentDay = 1;
+    let isSimulating = false;
+    let simInterval = null;
+
+    function selectDay(day) {
+      currentDay = day;
+      
+      // Update Tab Styles
+      document.querySelectorAll('.day-tab').forEach(btn => {
+        btn.classList.remove('bg-sky-500', 'bg-emerald-500', 'bg-purple-500', 'bg-amber-500', 'text-white', 'shadow-lg');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+
+      const activeBtn = document.getElementById(`tab-${day}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+        if (day === 1) activeBtn.classList.add('bg-sky-500', 'text-white', 'shadow-lg');
+        else if (day === 2) activeBtn.classList.add('bg-emerald-500', 'text-white', 'shadow-lg');
+        else if (day === 3) activeBtn.classList.add('bg-purple-500', 'text-white', 'shadow-lg');
+        else activeBtn.classList.add('bg-amber-500', 'text-white', 'shadow-lg');
+      }
+
+      renderMap();
+      renderTimeline();
+    }
+
+    function renderMap() {
+      const svg = document.getElementById('route-svg-layer');
+      const pinsLayer = document.getElementById('pins-layer');
+      const badgesLayer = document.getElementById('transit-badges-layer');
+      const statsTitle = document.getElementById('day-stats-title');
+      const statsTime = document.getElementById('day-stats-time');
+      const statsFare = document.getElementById('day-stats-fare');
+
+      svg.innerHTML = '';
+      pinsLayer.innerHTML = '';
+      badgesLayer.innerHTML = '';
+      closePopup();
+
+      let daysToRender = currentDay === 'all' ? [1, 2, 3] : [currentDay];
+
+      if (currentDay === 'all') {
+        statsTitle.textContent = "🌟 ทริป 3 วัน 8 จุดหมาย: โตเกียว ➔ เกียวโต ➔ โอซาก้า";
+        statsTime.textContent = "⏱️ เที่ยวครบ 3 ภูมิภาค";
+        statsFare.textContent = "🚅 มีการเดินทางข้ามเมืองด้วย Shinkansen";
+      } else {
+        const d = SAMPLE_TRIP_DATA[currentDay];
+        statsTitle.textContent = `📍 ${d.dayName}`;
+        statsTime.textContent = d.stats.split('·')[0];
+        statsFare.textContent = d.stats.split('·')[1] || "";
+      }
+
+      daysToRender.forEach(dNum => {
+        const dayData = SAMPLE_TRIP_DATA[dNum];
+        const stops = dayData.stops;
+
+        // Draw Lines
+        for (let i = 0; i < stops.length - 1; i++) {
+          const s1 = stops[i];
+          const s2 = stops[i + 1];
+          const leg = dayData.legs[i];
+
+          // Curved SVG Path
+          const dx = s2.x - s1.x;
+          const dy = s2.y - s1.y;
+          const cx = (s1.x + s2.x) / 2;
+          const cy = (s1.y + s2.y) / 2 - 25; // gentle curve up
+
+          const pathD = `M ${s1.x} ${s1.y} Q ${cx} ${cy} ${s2.x} ${s2.y}`;
+
+          // Glow back line
+          const glowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          glowPath.setAttribute("d", pathD);
+          glowPath.setAttribute("fill", "none");
+          glowPath.setAttribute("stroke", dayData.themeColor);
+          glowPath.setAttribute("stroke-width", "6");
+          glowPath.setAttribute("opacity", "0.25");
+          svg.appendChild(glowPath);
+
+          // Moving dashed line
+          const mainPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          mainPath.setAttribute("d", pathD);
+          mainPath.setAttribute("fill", "none");
+          mainPath.setAttribute("stroke", dayData.themeColor);
+          mainPath.setAttribute("stroke-width", "3.5");
+          mainPath.setAttribute("class", "line-dash-move");
+          svg.appendChild(mainPath);
+
+          // Midpoint Badge
+          if (leg) {
+            const badge = document.createElement('div');
+            badge.className = "absolute text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900/90 text-slate-200 border border-slate-700 shadow-lg whitespace-nowrap transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer hover:border-sky-400";
+            badge.style.left = `${cx}px`;
+            badge.style.top = `${cy}px`;
+            badge.textContent = leg.label;
+            badge.onclick = () => alert(`รายละเอียดเส้นทาง: ${leg.label}`);
+            badgesLayer.appendChild(badge);
+          }
+        }
+
+        // Draw Pins
+        stops.forEach((s, idx) => {
+          const pin = document.createElement('div');
+          pin.id = `map-pin-${s.id}`;
+          pin.className = `absolute transform -translate-x-1/2 -translate-y-full cursor-pointer transition-transform hover:scale-110 group z-10`;
+          pin.style.left = `${s.x}px`;
+          pin.style.top = `${s.y}px`;
+
+          pin.innerHTML = `
+            <div class="relative flex flex-col items-center">
+              <!-- Pill Label on Hover/Active -->
+              <div class="mb-1 px-2.5 py-0.5 rounded-lg bg-slate-900/95 border border-slate-700 text-white text-[11px] font-bold shadow-xl whitespace-nowrap flex items-center gap-1 group-hover:border-sky-400">
+                <span>${s.icon}</span>
+                <span>${s.title.split('(')[0]}</span>
+              </div>
+              <!-- Drop Pin Circle -->
+              <div class="w-8 h-8 rounded-full border-2 border-white shadow-xl flex items-center justify-center font-black text-xs text-white ${dayData.themeBg} pin-pulse">
+                ${currentDay === 'all' ? `D${dNum}#${s.num}` : `#${s.num}`}
+              </div>
+              <!-- Pin Pointer Triangle -->
+              <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-white -mt-[1px]"></div>
+            </div>
+          `;
+
+          pin.onclick = (e) => {
+            e.stopPropagation();
+            openPopup(s, dayData, dNum);
+            highlightTimelineCard(s.id);
+          };
+
+          pinsLayer.appendChild(pin);
+        });
+      });
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById('timeline-cards-row');
+      container.innerHTML = '';
+
+      let daysToRender = currentDay === 'all' ? [1, 2, 3] : [currentDay];
+
+      daysToRender.forEach(dNum => {
+        const dayData = SAMPLE_TRIP_DATA[dNum];
+        dayData.stops.forEach((s, idx) => {
+          const card = document.createElement('div');
+          card.id = `timeline-card-${s.id}`;
+          card.className = "flex-shrink-0 w-64 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 hover:border-sky-500 rounded-xl p-3 cursor-pointer transition shadow-md group";
+          
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-1 mb-1.5">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-black text-white ${dayData.themeBg}">
+                ${currentDay === 'all' ? `Day ${dNum} · #${s.num}` : `#${s.num}`}
+              </span>
+              <span class="text-[11px] font-bold text-sky-400">⏰ ${s.time}</span>
+            </div>
+            <div class="font-bold text-xs text-white group-hover:text-sky-300 flex items-center gap-1">
+              <span>${s.icon}</span>
+              <span class="truncate">${s.title}</span>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+              <span>${s.station.split('Exit')[0]}</span>
+              <span class="text-emerald-400 font-semibold">${s.stay}</span>
+            </div>
+          `;
+
+          card.onclick = () => {
+            openPopup(s, dayData, dNum);
+            highlightTimelineCard(s.id);
+          };
+
+          container.appendChild(card);
+        });
+      });
+    }
+
+    function openPopup(stop, dayData, dayNum) {
+      const popup = document.getElementById('active-pin-popup');
+      document.getElementById('popup-badge').textContent = `Day ${dayNum} · #${stop.num}`;
+      document.getElementById('popup-badge').className = `px-2 py-0.5 rounded-md text-[11px] font-black text-white ${dayData.themeBg}`;
+      document.getElementById('popup-title').textContent = `${stop.icon} ${stop.title}`;
+      document.getElementById('popup-station').textContent = stop.station;
+      document.getElementById('popup-time').textContent = `${stop.time} (แนะนำใช้เวลา ${stop.stay})`;
+
+      // Position near the pin
+      let left = stop.x - 140;
+      let top = stop.y - 190;
+      if (left < 10) left = 10;
+      if (top < 10) top = 10;
+
+      popup.style.left = `${left}px`;
+      popup.style.top = `${top}px`;
+      popup.classList.remove('hidden');
+    }
+
+    function closePopup() {
+      const popup = document.getElementById('active-pin-popup');
+      popup.classList.add('hidden');
+    }
+
+    function highlightTimelineCard(id) {
+      document.querySelectorAll('#timeline-cards-row > div').forEach(c => c.classList.remove('border-sky-400', 'bg-slate-700', 'ring-2', 'ring-sky-500'));
+      const activeCard = document.getElementById(`timeline-card-${id}`);
+      if (activeCard) {
+        activeCard.classList.add('border-sky-400', 'bg-slate-700', 'ring-2', 'ring-sky-500');
+        activeCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+
+    function togglePlaySimulation() {
+      const btn = document.getElementById('play-sim-btn');
+      const text = document.getElementById('play-text');
+      const icon = document.getElementById('play-icon');
+
+      if (isSimulating) {
+        clearInterval(simInterval);
+        isSimulating = false;
+        text.textContent = "จำลองเส้นทาง";
+        icon.textContent = "▶️";
+      } else {
+        isSimulating = true;
+        text.textContent = "กำลังจำลอง...";
+        icon.textContent = "⏸️";
+
+        const stops = currentDay === 'all' 
+          ? [...SAMPLE_TRIP_DATA[1].stops, ...SAMPLE_TRIP_DATA[2].stops, ...SAMPLE_TRIP_DATA[3].stops]
+          : SAMPLE_TRIP_DATA[currentDay].stops;
+
+        let curIdx = 0;
+        simInterval = setInterval(() => {
+          if (curIdx >= stops.length) {
+            clearInterval(simInterval);
+            isSimulating = false;
+            text.textContent = "เริ่มใหม่";
+            icon.textContent = "🔄";
+            return;
+          }
+          const s = stops[curIdx];
+          const dNum = currentDay === 'all' ? (curIdx < 3 ? 1 : (curIdx < 6 ? 2 : 3)) : currentDay;
+          openPopup(s, SAMPLE_TRIP_DATA[dNum], dNum);
+          highlightTimelineCard(s.id);
+          curIdx++;
+        }, 1600);
+      }
+    }
+
+    function fitAllPoints() {
+      selectDay('all');
+    }
+
+    function toggleFullscreen() {
+      alert("โหมดขยายเต็มหน้าจอ 100% สำหรับมือถือ (พร้อมแท็บเลื่อนดูสถานที่ด้านล่าง)");
+    }
+
+    function zoomMap(factor) {
+      alert(`ซูมแผนที่ระดับ ${factor > 1 ? 'ขยายเข้า' : 'ซูมออก'}`);
+    }
+
+    function switchView(mode) {
+      const mapBtn = document.getElementById('view-map-btn');
+      const metroBtn = document.getElementById('view-metro-btn');
+
+      if (mode === 'map') {
+        mapBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white transition";
+        metroBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+        renderMap();
+      } else {
+        metroBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-600 text-white transition";
+        mapBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+        alert("สลับไปมุมมองผังเส้นทางรถไฟแบบ Schematic Track (Tokyo Metro / JR Loop Line)");
+      }
+    }
+
+    // Initial Render
+    selectDay(1);
+  </script>
+</body>
+</html>
