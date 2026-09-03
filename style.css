@@ -2033,6 +2033,28 @@ body {
   box-shadow: 0 3px 10px rgba(225, 29, 72, 0.4);
 }
 
+/* Animated Moving Route Polylines in Leaflet (เส้นวิ่งตาม Mockup) */
+.leaflet-route-moving-dash {
+  stroke-dasharray: 10, 10 !important;
+  animation: leafletRouteDashMove 1s linear infinite !important;
+  pointer-events: none !important;
+}
+
+@keyframes leafletRouteDashMove {
+  from {
+    stroke-dashoffset: 20;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.leaflet-route-glow {
+  stroke-linecap: round !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.15));
+}
+
 /* Moving Simulation Vehicle Marker on Leaflet */
 .leaflet-vehicle-marker {
   background: #e11d48;

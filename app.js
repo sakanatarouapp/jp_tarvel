@@ -2143,11 +2143,11 @@ document.addEventListener("DOMContentLoaded", () => {
       scrollWheelZoom: false
     });
 
-    // CartoDB Voyager tiles - ultra clean, easy to read English & Japanese labels, roads & landmarks
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    // Clean OpenStreetMap tiles - reliable, zero watermark
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
-      subdomains: "abcd"
+      subdomains: ["a", "b", "c"]
     }).addTo(leafletRouteMap);
 
     leafletRouteLayerGroup = L.layerGroup().addTo(leafletRouteMap);
@@ -2519,6 +2519,37 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pinEl) pinEl.classList.add("active-selected-pin");
   }
 
+  function getCurvedSegmentLatLngs(p1, p2, curveIntensity = 0.12) {
+    const lat1 = p1[0], lng1 = p1[1];
+    const lat2 = p2[0], lng2 = p2[1];
+
+    const midLat = (lat1 + lat2) / 2;
+    const midLng = (lng1 + lng2) / 2;
+
+    const dLat = lat2 - lat1;
+    const dLng = lng2 - lng1;
+    const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+    if (dist === 0) return { points: [p1, p2], midPoint: [midLat, midLng] };
+
+    // Calculate perpendicular offset for curved arc
+    const normalLat = -dLng * curveIntensity;
+    const normalLng = dLat * curveIntensity;
+
+    const controlLat = midLat + normalLat;
+    const controlLng = midLng + normalLng;
+
+    const points = [];
+    const steps = 14;
+    for (let t = 0; t <= steps; t++) {
+      const factor = t / steps;
+      const inv = 1 - factor;
+      const lat = inv * inv * lat1 + 2 * inv * factor * controlLat + factor * factor * lat2;
+      const lng = inv * inv * lng1 + 2 * inv * factor * controlLng + factor * factor * lng2;
+      points.push([lat, lng]);
+    }
+    return { points, midPoint: [controlLat, controlLng] };
+  }
+
   function renderRouteSimulator() {
     if (!routePresetPills || !routeTimelineList) return;
 
@@ -2697,21 +2728,33 @@ document.addEventListener("DOMContentLoaded", () => {
         totalFareJPY += leg.fareJPY;
 
         const lineColor = getDayColor(item1.day || 1);
-        const dashArray = isCrossRegion ? "10, 8" : "6, 6";
-        const weight = isCrossRegion ? 5 : 4;
+        const curveIntensity = isCrossRegion ? 0.08 : 0.12;
+        const curved = getCurvedSegmentLatLngs(pos1, pos2, curveIntensity);
 
-        // Add segment polyline
-        L.polyline([pos1, pos2], {
+        // 1. Back Glow Line (matching mockup)
+        L.polyline(curved.points, {
           color: lineColor,
-          weight: weight,
-          opacity: 0.9,
-          dashArray: dashArray,
-          lineCap: "round"
+          weight: 8,
+          opacity: 0.28,
+          lineCap: "round",
+          className: "leaflet-route-glow",
+          interactive: false
         }).addTo(leafletRouteLayerGroup);
 
-        // Add Midpoint Transit Badge
-        const midLat = (pos1[0] + pos2[0]) / 2;
-        const midLng = (pos1[1] + pos2[1]) / 2;
+        // 2. Animated Moving Dashed Polyline (เส้นประวิ่งตาม Mockup)
+        L.polyline(curved.points, {
+          color: lineColor,
+          weight: 4.5,
+          opacity: 0.95,
+          dashArray: "10, 10",
+          className: "leaflet-route-moving-dash",
+          lineCap: "round",
+          interactive: false
+        }).addTo(leafletRouteLayerGroup);
+
+        // Add Midpoint Transit Badge at apex of curve
+        const badgeLat = curved.midPoint[0];
+        const badgeLng = curved.midPoint[1];
 
         const badgeHtml = `
           <div class="leaflet-route-badge ${isCrossRegion ? 'shinkansen-badge' : ''}">
@@ -2727,7 +2770,7 @@ document.addEventListener("DOMContentLoaded", () => {
           iconAnchor: [55, 12]
         });
 
-        L.marker([midLat, midLng], { icon: badgeIcon, interactive: false }).addTo(leafletRouteLayerGroup);
+        L.marker([badgeLat, badgeLng], { icon: badgeIcon, interactive: false }).addTo(leafletRouteLayerGroup);
       }
 
       // 2.3 Update Day Stats Banner
